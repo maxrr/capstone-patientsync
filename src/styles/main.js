@@ -1,9 +1,54 @@
 import { StyleSheet } from "react-native";
 
-const styles = {
-    hero: {
-        fontSize: 32
-    }
+const consts = {
+    gapIncrement: 8
 };
 
-export default StyleSheet.create(styles);
+const colors = {
+    GEPurple: "#5A0CB5"
+};
+
+const Styles = StyleSheet.create({
+    colors,
+    consts,
+    container: {
+        display: "flex",
+        flexDirection: "column",
+        gap: consts.gapIncrement,
+        justifyContent: "center",
+        alignItems: "center",
+        textAlign: "center"
+    },
+    hero: {
+        fontSize: 64,
+        textAlign: "center"
+        // fontFamily: "Inter"
+    },
+    h1: {
+        fontSize: 64
+    },
+    h2: {
+        fontSize: 56
+    },
+    h3: {
+        fontSize: 48
+    },
+    h4: {
+        fontSize: 32
+    },
+    h5: {
+        fontSize: 24
+    },
+    h6: {
+        fontSize: 16
+    },
+    screenSkeleton: {
+        contentStyle: {
+            display: "flex",
+            justifyContent: "center",
+            paddingBottom: 100
+        }
+    }
+});
+
+export default Styles;

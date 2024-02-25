@@ -1,12 +1,13 @@
-import { StyleSheet, Text, View } from "react-native";
-// import MainStyles from "../../styles/main";
-// const styles = StyleSheet.create(MainStyles);
+import { Button, Text, View } from "react-native";
+import Styles from "../../styles/main";
 
-function MainMenuScreen(props) {
+function MainMenuScreen({ navigation }) {
     return (
-        <View style={styles.container}>
-            <Text style={{ fontSize: 24, marginTop: -100 }}>Welcome</Text>
-            <Text style={{ width: "60%", textAlign: "center" }}>To begin, select an action</Text>
+        <View style={[Styles.container]}>
+            <Text style={[Styles.hero, { color: Styles.colors.GEPurple }]}>Welcome</Text>
+            <Text style={[Styles.h5]}>To begin, select an action</Text>
+            <Button title="Link patient with a ConnectPlus device" onPress={() => navigation.push("Device Select")} />
+            <Button title="Unlink a patient from a ConnectPlus device" onPress={() => alert("Not yet implemented")} />
         </View>
     );
 }
