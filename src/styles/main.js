@@ -5,13 +5,16 @@ const consts = {
 };
 
 const colors = {
-    GEPurple: "#5A0CB5"
+    GEPurple: "#5A0CB5",
+    TextColor: "#D7D7D7"
 };
 
 const Styles = StyleSheet.create({
     colors,
     consts,
     container: {
+        backgroundColor: "#1A1B1C",
+        height: "100%",
         display: "flex",
         flexDirection: "column",
         gap: consts.gapIncrement,
@@ -25,21 +28,27 @@ const Styles = StyleSheet.create({
         // fontFamily: "Inter"
     },
     h1: {
+        color: colors.TextColor,
         fontSize: 64
     },
     h2: {
+        color: colors.TextColor,
         fontSize: 56
     },
     h3: {
+        color: colors.TextColor,
         fontSize: 48
     },
     h4: {
+        color: colors.TextColor,
         fontSize: 32
     },
     h5: {
+        color: colors.TextColor,
         fontSize: 24
     },
     h6: {
+        color: colors.TextColor,
         fontSize: 16
     },
     screenSkeleton: {
