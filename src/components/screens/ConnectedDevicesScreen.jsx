@@ -37,9 +37,9 @@ function ConnectedDevicesScreen({ navigation }) {
                             { justifyContent: "flex-start", textAlign: "left", alignItems: "flex-start", gap: 0 }
                         ]}
                     >
-                        <Text>{e.name}</Text>
-                        <Text>{e.manufacturer}</Text>
-                        <Text>{e.id}</Text>
+                        <Text style={{ color: Styles.colors.TextColor }}>{e.name}</Text>
+                        <Text style={{ color: Styles.colors.TextColor }}>{e.manufacturer}</Text>
+                        <Text style={{ color: Styles.colors.TextColor }}>{e.id}</Text>
                     </View>
                 ))}
             </ScrollView>
