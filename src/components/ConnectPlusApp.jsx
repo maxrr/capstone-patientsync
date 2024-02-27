@@ -9,6 +9,7 @@ import PatientSelectScreen from "./screens/PatientSelectScreen";
 import PatientConfirmScreen from "./screens/PatientConfirmScreen";
 import LinkConfirmScreen from "./screens/LinkConfirmScreen";
 import LinkCompleteScreen from "./screens/LinkCompleteScreen";
+import PatientConfirmOverrideScreen from "./screens/PatientConfirmOverrideScreen";
 
 const Stack = createNativeStackNavigator();
 export default function ConnectPlusApp(props) {
@@ -28,6 +29,9 @@ export default function ConnectPlusApp(props) {
 
                 {/* I renamed this page from "Link Successsful" to "Link Complete", because it may not be a success */}
                 <Stack.Screen name="Link Complete" options={Styles.screenSkeleton} component={LinkCompleteScreen} />
+
+                {/*Override Screens */}
+                <Stack.Screen name="Confirm Override Patient" options={Styles.screenSkeleton} component={PatientConfirmOverrideScreen} />
             </Stack.Navigator>
         </NavigationContainer>
     );
