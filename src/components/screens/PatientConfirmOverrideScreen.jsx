@@ -26,6 +26,10 @@ function PatientConfirmOverrideScreen({ navigation }) {
             <Text style={[Styles.h6]}>MRN: {patientProfile.mrn}</Text>
             <Text style={[Styles.h6]}>Visit number: {patientProfile.visitNumber}</Text>
 
+            {/*Navigation buttons for override screen. -dt*/}
+             {/*Didn't create more override screens because
+             I'm unsure if we want to set the text on other screens with a variable changing with ?
+             or if we want separate screens. Separate screens might lead to lots of overlap/content. -dt*/}
             <Button title="Override" onPress={() => navigation.push("Enter Patient Info")} />
             <Button title="Choose Another Device" onPress={() => navigation.push("Device Select")} />
         </View>

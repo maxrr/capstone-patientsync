@@ -44,6 +44,10 @@ function ConnectedDevicesScreen({ navigation }) {
                 ))}
             </ScrollView>
             <Button title="Confirm" onPress={() => navigation.push("Enter Patient Info")} />
+             {/*Temp button for override case. Unsure if we want multiple screens for more override screens or just a variable to determine text -dt */}
+             {/*Didn't create more override screens because
+             I'm unsure if we want to set the text on other screens with a variable changing with ?
+             or if we want separate screens. Separate screens might lead to lots of overlap/content. -dt*/}
             <Button title="Confirm (override temp)" onPress={() => navigation.push("Confirm Override Patient")} />
         </View>
     );
