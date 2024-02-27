@@ -9,7 +9,7 @@ function DeviceSelectScreen({ navigation }) {
             <Button title="GECP2427170" onPress={() => navigation.push("Device Screen")} />
 
             {/*Button for getting to the override section of code.*/}
-            <Button title="GECP2309701 (override case)" onPress={() => navigation.push("Confirm Override Patient")} />
+            <Button title="GECP2309701 (override case)" onPress={() => navigation.push("Device Screen")} />
         </View>
     );
 }

@@ -25,7 +25,8 @@ function PatientConfirmOverrideScreen({ navigation }) {
             <Text style={[Styles.h5]}>{patientProfile.dob}</Text>
             <Text style={[Styles.h6]}>MRN: {patientProfile.mrn}</Text>
             <Text style={[Styles.h6]}>Visit number: {patientProfile.visitNumber}</Text>
-            <Button title="Override" onPress={() => navigation.push("Confirm Link")} />
+
+            <Button title="Override" onPress={() => navigation.push("Enter Patient Info")} />
             <Button title="Choose Another Device" onPress={() => navigation.push("Device Select")} />
         </View>
     );

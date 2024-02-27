@@ -44,6 +44,7 @@ function ConnectedDevicesScreen({ navigation }) {
                 ))}
             </ScrollView>
             <Button title="Confirm" onPress={() => navigation.push("Enter Patient Info")} />
+            <Button title="Confirm (override temp)" onPress={() => navigation.push("Confirm Override Patient")} />
         </View>
     );
 }
