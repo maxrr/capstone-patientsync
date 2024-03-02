@@ -4,7 +4,7 @@ import Styles from "../../styles/main";
 function MainMenuScreen({ navigation }) {
     return (
         <View style={[Styles.container]}>
-            <Text style={[Styles.hero, { color: Styles.colors.GEPurple }]}>Welcome</Text>
+            <Text style={[Styles.hero, Styles.underline, { color: Styles.colors.GEPurple }]}>Welcome</Text>
             <Text style={[Styles.h5]}>To begin, select an action</Text>
 
         {/**Using Pressable instead of button because then we can customize it w/ stylesheet -DT */}
@@ -19,7 +19,7 @@ function MainMenuScreen({ navigation }) {
         <Pressable style={Styles.button} onPress={() => alert("Not yet implemented")}>
             <Text style={[Styles.button, Styles.buttonText, { backgroundColor: Styles.colors.GEPurple}]}>Unlink a patient from a ConnectPlus device</Text>
         </Pressable>    
-        
+
         </View>
     );
 }

@@ -81,6 +81,17 @@ const Styles = StyleSheet.create({
         justifyContent: "center",
         alignItems: "center",
     },
+    //Used width and height from figma, can change if needed -DT
+    deviceSelectButton: {
+        width: 330,
+        height: 50,
+        borderRadius: 10,
+    },
+    deviceSelectButtonText: {
+        color: "white",
+        padding: 10,
+        textAlign: "left",
+    }
 });
 
 export default Styles;
