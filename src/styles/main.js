@@ -27,6 +27,9 @@ const Styles = StyleSheet.create({
         textAlign: "center"
         // fontFamily: "Inter"
     },
+    underline: {
+        textDecorationLine: 'underline',
+    },
     h1: {
         color: colors.TextColor,
         fontSize: 64
