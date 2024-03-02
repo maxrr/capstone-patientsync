@@ -24,8 +24,11 @@ function PatientConfirmScreen({ navigation }) {
             <Text style={[Styles.h5]}>{patientProfile.dob}</Text>
             <Text style={[Styles.h6]}>MRN: {patientProfile.mrn}</Text>
             <Text style={[Styles.h6]}>Visit number: {patientProfile.visitNumber}</Text>
+
             <Button title="Yes" onPress={() => navigation.push("Confirm Link")} />
             <Button title="No, scan again" onPress={() => navigation.pop()} />
+            {/* <Button title="Yes" onPress={() => navigation.push("Confirm Link")} />
+            <Button title="No, scan again" onPress={() => navigation.pop()} /> */}
         </View>
     );
 }

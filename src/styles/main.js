@@ -64,6 +64,20 @@ const Styles = StyleSheet.create({
         borderWidth: 1,
         padding: 10,
     },
+    button: {
+    height: 115,
+    width: 335,
+    borderRadius: 10,
+    },
+    buttonText: {
+        color: "white",
+        fontSize: 16,
+        lineHeight: 115,
+        textAlign: "center",
+        alignSelf: "center",
+        justifyContent: "center",
+        alignItems: "center",
+    },
 });
 
 export default Styles;
