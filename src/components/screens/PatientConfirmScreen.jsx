@@ -13,7 +13,7 @@ function PatientConfirmScreen({ navigation }) {
     return (
         // Maybe we could pre-populate the manual information page with the results from the scan on this page? ~mr
         <View style={[Styles.container]}>
-            <Text style={[Styles.h4]}>Patient Select</Text>
+            <Text style={[Styles.h4, Styles.underline]}>Patient Select</Text>
             <Text style={[Styles.h6]}>Is this the right patient?</Text>
             <View style={[Styles.container, { width: 250, height: 250, backgroundColor: Styles.colors.GEPurple }]}>
                 <Text style={{ color: "white", textAlign: "center", padding: 50 }}>(patient picture)</Text>
@@ -27,8 +27,7 @@ function PatientConfirmScreen({ navigation }) {
 
             <Button title="Yes" onPress={() => navigation.push("Confirm Link")} />
             <Button title="No, scan again" onPress={() => navigation.pop()} />
-            {/* <Button title="Yes" onPress={() => navigation.push("Confirm Link")} />
-            <Button title="No, scan again" onPress={() => navigation.pop()} /> */}
+            
         </View>
     );
 }

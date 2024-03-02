@@ -91,6 +91,12 @@ const Styles = StyleSheet.create({
         color: "white",
         padding: 10,
         textAlign: "left",
+    },
+    buttonRow: {
+        flexDirection: "row",
+        justifyContent: 'space-between', 
+        paddingHorizontal: 20,
+        paddingVertical: 20,
     }
 });
 

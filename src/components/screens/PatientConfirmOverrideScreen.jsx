@@ -14,7 +14,7 @@ const patientProfile = {
 function PatientConfirmOverrideScreen({ navigation }) {
     return (
         <View style={[Styles.container]}>
-            <Text style={[Styles.h4]}>Patient Override</Text>
+            <Text style={[Styles.h4, Styles.underline]}>Patient Override</Text>
             <Text style={[Styles.h6]}>This device is already linked to a patient, please confirm to continue.</Text>
             <View style={[Styles.container, { width: 250, height: 250, backgroundColor: Styles.colors.GEPurple }]}>
                 <Text style={{ color: "white", textAlign: "center", padding: 50 }}>(patient picture)</Text>

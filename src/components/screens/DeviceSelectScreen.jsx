@@ -7,9 +7,10 @@ function DeviceSelectScreen({ navigation }) {
             <Text style={[Styles.h4, Styles.underline]}>Device Select</Text>
             <Text style={[Styles.h6]}>Select a device to continue</Text>
 
-            <ScrollView
+            <ScrollView 
                 contentContainerStyle={{
-                    gap: Styles.consts.gapIncrement
+                    gap: Styles.consts.gapIncrement,
+                    backgroundColor: "292A2B"
                 }}
             >
             {/*Using pressable instead of button so we can design, react native is bad w/ natural buttons -DT */}
