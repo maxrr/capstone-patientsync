@@ -1,8 +1,8 @@
-import { Text, View, Button, Modal, Pressable, TextInput, TouchableOpacity } from "react-native";
+import { Text, View, Button, Modal, Pressable, TextInput, TouchableOpacity, Image } from "react-native";
 import React from 'react';
 import { useState } from "react";
 import Styles from "../../styles/main";
-import { Camera, CameraType } from 'expo-camera';
+import { CameraView, useCameraPermissions } from 'expo-camera/next';
 
 function CameraScanScreen({ navigation }) {
 
@@ -10,27 +10,33 @@ function CameraScanScreen({ navigation }) {
     const [modalVisible, setModalVisible] = useState(false);
     const [text, onChangeText] = React.useState('');
 
-    const [type, setType] = useState(CameraType.back);
-    const [permission, requestPermission] = Camera.useCameraPermissions();
+    const [facing, setFacing] = useState('back');
+    const [permission, requestPermission] = useCameraPermissions();
     const [cameraOn, setCamera] = useState(false);
 
+    // if camera is on, scan for barcode
     if(cameraOn && permission){
-        console.log("cam on")
         return (
             <View style={Styles.cameraContainer}>
-                <Camera style={Styles.camera} type={type}>
+                <CameraView 
+                    style={Styles.camera}
+                    facing={facing}
+                    barCodeScannerSettings={{
+                        barCodeTypes: ['pdf417', 'code39', 'code128'],
+                    }}
+                    onBarcodeScanned={() => console.log("we scanned a barcode!")}
+                    >
                     <View style={Styles.cameraButtonContainer}>
                         <TouchableOpacity style={Styles.cameraButton} onPress={() => setCamera(false)}>
                             <Text style={Styles.h5}>Close Camera</Text>
                         </TouchableOpacity>
                     </View>
-                </Camera>
+                </CameraView>
             </View>
         );
     }
 
     else{
-        console.log("cam off")
         return (
             <View style={[Styles.container]}>
 
@@ -68,9 +74,7 @@ function CameraScanScreen({ navigation }) {
                 <Text style={[Styles.h6]}>Scan a patient's barcode to continue</Text>
                 <Pressable onPress={() => {requestPermission; setCamera(true)}}>
                     <View style={[Styles.container, { width: 250, height: 250, backgroundColor: Styles.colors.GEPurple }]}>
-                        <Text style={{ color: "white", textAlign: "center", padding: 50 }}>
-                            (tap to open camera)
-                        </Text>
+                        <Image source={require('../../../assets/camera_icon.webp')} />
                     </View>
                 </Pressable>
                 <Text style={[Styles.h5, { marginTop: 50 }]}>Not working?</Text>
