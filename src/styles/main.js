@@ -97,7 +97,26 @@ const Styles = StyleSheet.create({
         justifyContent: 'space-between', 
         paddingHorizontal: 20,
         paddingVertical: 20,
-    }
+    },
+    // Camera stuff -AA
+    camera: {
+        flex: 1,
+    },
+    cameraContainer: {
+        flex: 1,
+        justifyContent: 'center',
+    },
+    cameraButtonContainer: {
+        flex: 1,
+        flexDirection: 'row',
+        backgroundColor: 'transparent',
+        margin: 64,
+    },
+    cameraButton: {
+        flex: 1,
+        alignSelf: 'flex-end',
+        alignItems: 'center',
+    },
 });
 
 export default Styles;
