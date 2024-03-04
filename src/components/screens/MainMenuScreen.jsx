@@ -4,7 +4,7 @@ import Styles from "../../styles/main";
 function MainMenuScreen({ navigation }) {
     return (
         <View style={[Styles.container]}>
-            <Text style={[Styles.hero, { color: "white"}]}>Welcome</Text>
+            <Text style={[Styles.hero, { color: "white", fontWeight: "bold"}]}>Welcome</Text>
             <Text style={[Styles.h6]}>To begin, select an action</Text>
 
         {/**Using Pressable instead of button because then we can customize it w/ stylesheet -DT */}
