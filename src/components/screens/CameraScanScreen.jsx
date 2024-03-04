@@ -91,8 +91,9 @@ function CameraScanScreen({ navigation }) {
                     </View>
                 </Modal>
 
-                <Text style={[Styles.h4]}>Patient Select</Text>
+                <Text style={[Styles.h4]}><Text style={{color: "white", fontWeight: "bold"}}>Patient Select</Text></Text>
                 <Text style={[Styles.h6]}>Scan a patient's barcode to continue</Text>
+                <View style={{height: 20}}></View>
                 <Pressable onPress={() => {requestPermission(); setCameraState(true)}}>
                     <View style={[Styles.container, { width: 250, height: 250, backgroundColor: Styles.colors.GEPurple }]}>
                         <Image source={require('../../../assets/camera_icon.webp')} />
@@ -100,6 +101,7 @@ function CameraScanScreen({ navigation }) {
                 </Pressable>
                 <Text style={[Styles.h5, { marginTop: 50 }]}>Not working?</Text>
                 <Button title="Enter manually" onPress={() => setModalVisible(true)} />
+                <View style={{height: 50}}></View>
             </View>
         );
     }
