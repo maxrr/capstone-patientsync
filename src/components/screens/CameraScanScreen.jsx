@@ -1,33 +1,54 @@
 import { Text, View, Button, Modal, Pressable, TextInput, TouchableOpacity, Image } from "react-native";
 import React from 'react';
-import { useState } from "react";
+import { useState, useEffect} from "react";
 import Styles from "../../styles/main";
 import { CameraView, useCameraPermissions } from 'expo-camera/next';
 
 function CameraScanScreen({ navigation }) {
 
-    // useState variables for manual input
+    // variables for manual input modal
     const [modalVisible, setModalVisible] = useState(false);
     const [text, onChangeText] = React.useState('');
 
-    const [facing, setFacing] = useState('back');
+    // variables for camera functionality
     const [permission, requestPermission] = useCameraPermissions();
-    const [cameraOn, setCamera] = useState(false);
+    const [cameraState, setCameraState] = useState(false);
+    const [scanResult, setScanResult] = useState('');
+    const [scanBool, setScanBool] = useState(false);
+
+    // store scanned information
+    // TODO: We need to decide how we want this data to persist across screens -AA
+    useEffect(() => {
+        if(scanResult.length != 0){
+            console.log(scanResult.data)
+            console.log(scanResult.type)
+            setScanResult('')
+            setScanBool(false)
+            navigation.push("Confirm Patient")
+        }
+    }, [scanResult])
 
     // if camera is on, scan for barcode
-    if(cameraOn && permission){
+    if(cameraState && permission){
         return (
             <View style={Styles.cameraContainer}>
                 <CameraView 
                     style={Styles.camera}
-                    facing={facing}
+                    facing={'back'}
                     barCodeScannerSettings={{
                         barCodeTypes: ['pdf417', 'code39', 'code128'],
                     }}
-                    onBarcodeScanned={() => console.log("we scanned a barcode!")}
+                    onBarcodeScanned={(scanningResult) => {
+                        if(scanningResult.type != '256' && !scanBool){
+                            // NOTE: temp fix to prevent repeated scanning
+                            setCameraState(false)
+                            setScanBool(true)
+                            setScanResult(scanningResult)
+                        }
+                    }}
                     >
                     <View style={Styles.cameraButtonContainer}>
-                        <TouchableOpacity style={Styles.cameraButton} onPress={() => setCamera(false)}>
+                        <TouchableOpacity style={Styles.cameraButton} onPress={() => setCameraState(false)}>
                             <Text style={Styles.h5}>Close Camera</Text>
                         </TouchableOpacity>
                     </View>
@@ -72,7 +93,7 @@ function CameraScanScreen({ navigation }) {
 
                 <Text style={[Styles.h4]}>Patient Select</Text>
                 <Text style={[Styles.h6]}>Scan a patient's barcode to continue</Text>
-                <Pressable onPress={() => {requestPermission; setCamera(true)}}>
+                <Pressable onPress={() => {requestPermission; setCameraState(true)}}>
                     <View style={[Styles.container, { width: 250, height: 250, backgroundColor: Styles.colors.GEPurple }]}>
                         <Image source={require('../../../assets/camera_icon.webp')} />
                     </View>

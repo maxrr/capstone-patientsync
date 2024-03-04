@@ -44,6 +44,7 @@ function PatientSelectScreen({ navigation }) {
 
             {/*Updating buttons for Patient Select screen -DT */}
             {/**Using Pressable instead of button because then we can customize it w/ stylesheet -DT */}
+            {/*NOTE: can we pop instead of push here? -AA*/}
             <Pressable style={Styles.button} onPress={() => navigation.push("Scan Barcode")}>
                 <Text style={[Styles.button, Styles.buttonText, { backgroundColor: Styles.colors.GEPurple}]}>Scan Patient Barcode</Text>
             </Pressable>
