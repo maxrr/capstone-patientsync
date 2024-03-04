@@ -93,7 +93,7 @@ function CameraScanScreen({ navigation }) {
 
                 <Text style={[Styles.h4]}>Patient Select</Text>
                 <Text style={[Styles.h6]}>Scan a patient's barcode to continue</Text>
-                <Pressable onPress={() => {requestPermission; setCameraState(true)}}>
+                <Pressable onPress={() => {requestPermission(); setCameraState(true)}}>
                     <View style={[Styles.container, { width: 250, height: 250, backgroundColor: Styles.colors.GEPurple }]}>
                         <Image source={require('../../../assets/camera_icon.webp')} />
                     </View>
