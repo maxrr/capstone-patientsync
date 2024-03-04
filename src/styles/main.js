@@ -71,6 +71,7 @@ const Styles = StyleSheet.create({
     height: 115,
     width: 335,
     borderRadius: 10,
+    overflow: "hidden"
     },
     buttonText: {
         color: "white",
@@ -85,7 +86,8 @@ const Styles = StyleSheet.create({
     deviceSelectButton: {
         width: 330,
         height: 50,
-        borderRadius: 10,
+        borderRadius: 5,
+        overflow: "hidden"
     },
     deviceSelectButtonText: {
         color: "white",

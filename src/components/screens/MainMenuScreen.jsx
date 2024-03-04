@@ -9,7 +9,7 @@ function MainMenuScreen({ navigation }) {
 
         {/**Using Pressable instead of button because then we can customize it w/ stylesheet -DT */}
         <Pressable style={Styles.button} onPress={() => navigation.push("Device Select")}>
-            <Text style={[Styles.button, Styles.buttonText, { backgroundColor: Styles.colors.GEPurple}]}>Link patient with a ConnectPlus device</Text>
+            <Text style={[Styles.button, Styles.buttonText, { backgroundColor: Styles.colors.GEPurple }]}>Link patient with a ConnectPlus device</Text>
         </Pressable>
 
         <Text style={[Styles.h4]}>OR</Text>
