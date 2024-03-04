@@ -24,6 +24,7 @@ function ConnectedDevicesScreen({ navigation }) {
         <View style={[Styles.container]}>
             <Text style={[Styles.h4]}><Text style={{color: "white", fontWeight: "bold"}}>Connected Devices</Text></Text>
             <Text style={[Styles.h6]}>Please review the medical devices connected to the ConnectPlus device</Text>
+            <View style={{height: 15}}></View>
             <ScrollView
                 contentContainerStyle={{
                     gap: Styles.consts.gapIncrement
