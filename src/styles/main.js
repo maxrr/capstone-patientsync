@@ -58,7 +58,7 @@ const Styles = StyleSheet.create({
         contentStyle: {
             display: "flex",
             justifyContent: "center",
-            paddingBottom: 100
+            // paddingBottom: 100
         }
     },
     input: {
