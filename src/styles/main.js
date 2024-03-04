@@ -13,6 +13,7 @@ const Styles = StyleSheet.create({
     colors,
     consts,
     container: {
+        padding: 10,
         backgroundColor: "#1A1B1C",
         height: "100%",
         display: "flex",
@@ -95,6 +96,13 @@ const Styles = StyleSheet.create({
         color: "white",
         padding: 10,
         textAlign: "left",
+    },
+    medDeviceSelectButton: {
+        padding: 10,
+        width: 330,
+        height: 80,
+        borderRadius: 5,
+        overflow: "hidden"
     },
     buttonRow: {
         flexDirection: "row",

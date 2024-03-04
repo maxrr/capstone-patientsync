@@ -22,7 +22,7 @@ const devices = [
 function ConnectedDevicesScreen({ navigation }) {
     return (
         <View style={[Styles.container]}>
-            <Text style={[Styles.h4, Styles.underline]}>Connected Devices</Text>
+            <Text style={[Styles.h4]}><Text style={{color: "white", fontWeight: "bold"}}>Connected Devices</Text></Text>
             <Text style={[Styles.h6]}>Please review the medical devices connected to the ConnectPlus device</Text>
             <ScrollView
                 contentContainerStyle={{
@@ -30,23 +30,29 @@ function ConnectedDevicesScreen({ navigation }) {
                 }}
             >
                 {devices.map((e) => (
-                    <View
-                        key={e.id}
-                        style={[
-                            Styles.container,
-                            { justifyContent: "flex-start", textAlign: "left", alignItems: "flex-start", gap: 0 }
-                        ]}
-                    >
-                        <Text style={{ color: Styles.colors.TextColor }}>{e.name}</Text>
-                        <Text style={{ color: Styles.colors.TextColor }}>{e.manufacturer}</Text>
-                        <Text style={{ color: Styles.colors.TextColor }}>{e.id}</Text>
-                    </View>
+                    // <View
+                    //     key={e.id}
+                    //     style={[
+                    //         Styles.container,
+                    //         { justifyContent: "flex-start", textAlign: "left", alignItems: "flex-start", gap: 0 }
+                    //     ]}
+                    // >
+                    //     <Text style={{ color: Styles.colors.TextColor }}>{e.name}</Text>
+                    //     <Text style={{ color: Styles.colors.TextColor }}>{e.manufacturer}</Text>
+                    //     <Text style={{ color: Styles.colors.TextColor }}>{e.id}</Text>
+                    // </View>
+                    <Text style={[Styles.medDeviceSelectButton, { backgroundColor: Styles.colors.GEPurple, flexWrap: "wrap", flexDirection: "row" }]}>
+                        <Text style={[Styles.deviceSelectButtonText]}><Text style={{fontWeight: "bold", fontSize: 16}}>{e.name}</Text>{'\n'}</Text>
+                        <Text style={[Styles.deviceSelectButtonText]}>{e.manufacturer}{'\n'}</Text>
+                        <Text style={[Styles.deviceSelectButtonText]}>{e.id}</Text>
+                    </Text>
                 ))}
             </ScrollView>
  
 
             {/*Have to add back button to connected devices screen to go back to scrollable devices page */}
-            <Button title="Go Back" onPress={() => navigation.pop()} />
+            {/* disabling temporarily because the header has a back button already */}
+            {/* <Button title="Go Back" onPress={() => navigation.pop()} /> */}
 
             <Button title="Confirm" onPress={() => navigation.push("Enter Patient Info")} />
             {/*Temp button for override case. Unsure if we want multiple screens for more override screens or just a variable to determine text -dt */}
@@ -56,8 +62,7 @@ function ConnectedDevicesScreen({ navigation }) {
             or if we want separate screens. Separate screens might lead to lots of overlap/content. -dt*/}
 
             <Button title="Confirm (override temp)" onPress={() => navigation.push("Confirm Override Patient")} />
-            
-    
+            <View style={{marginBottom: 10}}></View>
         </View>
     );
 }
