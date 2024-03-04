@@ -13,13 +13,16 @@
         },
         "assetBundlePatterns": ["**/*"],
         "ios": {
-            "supportsTablet": true
+            "supportsTablet": true,
+            "bundleIdentifier": "com.maxrr.cs639gehealthcare1template"
         },
         "android": {
             "adaptiveIcon": {
                 "foregroundImage": "./assets/adaptive-icon.png",
                 "backgroundColor": "#ffffff"
-            }
+            },
+            "permissions": ["android.permission.CAMERA", "android.permission.RECORD_AUDIO"],
+            "package": "com.maxrr.cs639gehealthcare1template"
         },
         "web": {
             "favicon": "./assets/favicon.png"
@@ -31,6 +34,11 @@
                     "cameraPermission": "Allow LinkaGE to access your camera"
                 }
             ]
-        ]
+        ],
+        "extra": {
+            "eas": {
+                "projectId": "67101cd6-ea09-4c87-b0e6-c35986c9c277"
+            }
+        }
     }
 }

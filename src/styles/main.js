@@ -28,7 +28,7 @@ const Styles = StyleSheet.create({
         // fontFamily: "Inter"
     },
     underline: {
-        textDecorationLine: 'underline',
+        textDecorationLine: "underline"
     },
     h1: {
         color: colors.TextColor,
@@ -65,12 +65,12 @@ const Styles = StyleSheet.create({
         height: 40,
         margin: 12,
         borderWidth: 1,
-        padding: 10,
+        padding: 10
     },
     button: {
-    height: 115,
-    width: 335,
-    borderRadius: 10,
+        height: 115,
+        width: 335,
+        borderRadius: 10
     },
     buttonText: {
         color: "white",
@@ -79,44 +79,47 @@ const Styles = StyleSheet.create({
         textAlign: "center",
         alignSelf: "center",
         justifyContent: "center",
-        alignItems: "center",
+        alignItems: "center"
     },
     //Used width and height from figma, can change if needed -DT
     deviceSelectButton: {
-        width: 330,
-        height: 50,
-        borderRadius: 10,
+        // width: 330,
+        maxWidth: "100%",
+        // height: 50,
+        // borderRadius: 16
+        borderRadius: 16
     },
     deviceSelectButtonText: {
         color: "white",
         padding: 10,
         textAlign: "left",
+        fontSize: 20
     },
     buttonRow: {
         flexDirection: "row",
-        justifyContent: 'space-between', 
+        justifyContent: "space-between",
         paddingHorizontal: 20,
-        paddingVertical: 20,
+        paddingVertical: 20
     },
     // Camera stuff -AA
     camera: {
-        flex: 1,
+        flex: 1
     },
     cameraContainer: {
         flex: 1,
-        justifyContent: 'center',
+        justifyContent: "center"
     },
     cameraButtonContainer: {
         flex: 1,
-        flexDirection: 'row',
-        backgroundColor: 'transparent',
-        margin: 64,
+        flexDirection: "row",
+        backgroundColor: "transparent",
+        margin: 64
     },
     cameraButton: {
         flex: 1,
-        alignSelf: 'flex-end',
-        alignItems: 'center',
-    },
+        alignSelf: "flex-end",
+        alignItems: "center"
+    }
 });
 
 export default Styles;
