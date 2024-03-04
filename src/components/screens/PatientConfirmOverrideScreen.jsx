@@ -14,24 +14,27 @@ const patientProfile = {
 function PatientConfirmOverrideScreen({ navigation }) {
     return (
         <View style={[Styles.container]}>
-            <Text style={[Styles.h4, Styles.underline]}>Patient Override</Text>
+            <Text style={[Styles.h4]}><Text style={{color: "white", fontWeight: "bold"}}>Patient Override</Text></Text>
             <Text style={[Styles.h6]}>This device is already linked to a patient, please confirm to continue.</Text>
+            <View style={{height: 10}}></View>
             <View style={[Styles.container, { width: 250, height: 250, backgroundColor: Styles.colors.GEPurple }]}>
                 <Text style={{ color: "white", textAlign: "center", padding: 50 }}>(patient picture)</Text>
             </View>
+            <View style={{height: 10}}></View>
             <Text style={[Styles.h5]}>
                 {patientProfile.lastName}, {patientProfile.firstName}
             </Text>
             <Text style={[Styles.h5]}>{patientProfile.dob}</Text>
             <Text style={[Styles.h6]}>MRN: {patientProfile.mrn}</Text>
             <Text style={[Styles.h6]}>Visit number: {patientProfile.visitNumber}</Text>
-
+            <View style={{height: 10}}></View>
             {/*Navigation buttons for override screen. -dt*/}
              {/*Didn't create more override screens because
              I'm unsure if we want to set the text on other screens with a variable changing with ?
              or if we want separate screens. Separate screens might lead to lots of overlap/content. -dt*/}
             <Button title="Override" onPress={() => navigation.push("Enter Patient Info")} />
             <Button title="Choose Another Device" onPress={() => navigation.push("Device Select")} />
+            <View style={{height: 10}}></View>
         </View>
     );
 }
