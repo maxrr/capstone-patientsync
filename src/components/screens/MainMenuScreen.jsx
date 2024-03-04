@@ -4,20 +4,20 @@ import Styles from "../../styles/main";
 function MainMenuScreen({ navigation }) {
     return (
         <View style={[Styles.container]}>
-            <Text style={[Styles.hero, Styles.underline, { color: Styles.colors.GEPurple }]}>Welcome</Text>
-            <Text style={[Styles.h5]}>To begin, select an action</Text>
+            <Text style={[Styles.hero, { color: "white"}]}>Welcome</Text>
+            <Text style={[Styles.h6]}>To begin, select an action</Text>
 
         {/**Using Pressable instead of button because then we can customize it w/ stylesheet -DT */}
         <Pressable style={Styles.button} onPress={() => navigation.push("Device Select")}>
-            <Text style={[Styles.button, Styles.buttonText, { backgroundColor: Styles.colors.GEPurple }]}>Link patient with a ConnectPlus device</Text>
+            <Text style={[Styles.button, Styles.buttonText, { backgroundColor: Styles.colors.GEPurple }]}>Link patient</Text>
         </Pressable>
 
-        <Text style={[Styles.h4]}>OR</Text>
+        <Text style={[Styles.h5]}>or</Text>
 
             {/* <Button style={[Styles.button]} title="Link patient with a ConnectPlus device" onPress={() => navigation.push("Device Select")} /> */}
 
         <Pressable style={Styles.button} onPress={() => alert("Not yet implemented")}>
-            <Text style={[Styles.button, Styles.buttonText, { backgroundColor: Styles.colors.GEPurple}]}>Unlink a patient from a ConnectPlus device</Text>
+            <Text style={[Styles.button, Styles.buttonText, { backgroundColor: Styles.colors.GEPurple}]}>Unlink a patient</Text>
         </Pressable>    
 
         </View>

@@ -68,15 +68,17 @@ const Styles = StyleSheet.create({
         padding: 10,
     },
     button: {
-    height: 115,
+    padding: 10,
+    height: 80,
     width: 335,
     borderRadius: 10,
-    overflow: "hidden"
+    overflow: "hidden",
     },
     buttonText: {
         color: "white",
-        fontSize: 16,
-        lineHeight: 115,
+        fontSize: 20,
+        fontWeight: "bold",
+        lineHeight: 45,
         textAlign: "center",
         alignSelf: "center",
         justifyContent: "center",
