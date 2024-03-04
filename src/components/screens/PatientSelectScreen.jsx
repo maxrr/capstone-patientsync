@@ -39,8 +39,8 @@ function PatientSelectScreen({ navigation }) {
                     </View>
                 </View>
             </Modal>
-            <Text style={[Styles.h4, Styles.underline]}>Patient Select</Text>
-            <Text style={[Styles.h6]}>Choose how you want to input patient information</Text>
+            <Text style={[Styles.h4]}><Text style={{color: "white", fontWeight: "bold"}}>Patient Select</Text></Text>
+            <Text style={[Styles.h6]}>Choose method to input patient info</Text>
 
             {/*Updating buttons for Patient Select screen -DT */}
             {/**Using Pressable instead of button because then we can customize it w/ stylesheet -DT */}
@@ -49,12 +49,13 @@ function PatientSelectScreen({ navigation }) {
                 <Text style={[Styles.button, Styles.buttonText, { backgroundColor: Styles.colors.GEPurple}]}>Scan Patient Barcode</Text>
             </Pressable>
 
-            <Text style={[Styles.h4]}>OR</Text>
+            <Text style={[Styles.h5]}>or</Text>
 
             <Pressable style={Styles.button} onPress={() => setModalVisible(true)}>
-                <Text style={[Styles.button, Styles.buttonText, { backgroundColor: Styles.colors.GEPurple}]}>Manually enter patient information</Text>
+                <Text style={[Styles.button, Styles.buttonText, { backgroundColor: Styles.colors.GEPurple}]}>Manually Enter Patient Info</Text>
             </Pressable>
 
+            <View style={{height: 100}}></View>
         </View>
     );
 }
