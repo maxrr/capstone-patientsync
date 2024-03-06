@@ -1,15 +1,22 @@
-import { Button, Text, View } from "react-native";
+import { Button, Text, View} from "react-native";
 import Styles from "../../styles/main";
-
-const patientProfile = {
-    firstName: "John",
-    lastName: "Doe",
-    mrn: "1246988",
-    visitNumber: "1298",
-    dob: "01/23/1994"
-};
+import PatientContext from "../PatientContext";
+import { useContext } from "react";
 
 function PatientConfirmScreen({ navigation }) {
+
+    // Context for patient info
+    const [info, setInfo] = useContext(PatientContext);
+
+    const patientProfile = {
+        firstName: "John",
+        lastName: "Doe",
+        // mrn: "1246988",
+        mrn: info,
+        visitNumber: "1298",
+        dob: "01/23/1994"
+    };
+
     return (
         // Maybe we could pre-populate the manual information page with the results from the scan on this page? ~mr
         <View style={[Styles.container]}>

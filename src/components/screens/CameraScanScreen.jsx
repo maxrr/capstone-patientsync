@@ -1,13 +1,15 @@
 import { Text, View, Button, Modal, Pressable, TextInput, TouchableOpacity, Image } from "react-native";
 import React from 'react';
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import Styles from "../../styles/main";
 import { CameraView, useCameraPermissions } from 'expo-camera/next';
+import PatientContext from "../PatientContext";
 
-function CameraScanScreen({ navigation }) {
+function CameraScanScreen({ route, navigation }) {
 
     // variables for manual input modal
-    const [modalVisible, setModalVisible] = useState(false);
+    const { manual } = route.params;
+    const [modalVisible, setModalVisible] = useState(manual);
     const [text, onChangeText] = React.useState('');
 
     // variables for camera functionality
@@ -16,11 +18,15 @@ function CameraScanScreen({ navigation }) {
     const [scanResult, setScanResult] = useState('');
     const [scanBool, setScanBool] = useState(false);
 
+    // Context for patient info
+    const [info, setInfo] = useContext(PatientContext);
+
     // store scanned information
     useEffect(() => {
         if (scanResult.length != 0) {
-            console.log(scanResult.data)
-            console.log(scanResult.type)
+            // console.log(scanResult.data)
+            // console.log(scanResult.type)
+            setInfo(scanResult.data)
             setScanResult('')
             setScanBool(false)
             navigation.push("Confirm Patient")
@@ -28,7 +34,7 @@ function CameraScanScreen({ navigation }) {
     }, [scanResult])
 
     function confirmInput() {
-        // TODO: store patient ID num
+        setInfo(text)
         navigation.push("Confirm Patient")
         onChangeText('')
         setModalVisible(o => !o)
@@ -82,7 +88,7 @@ function CameraScanScreen({ navigation }) {
                             value={text}
                         ></TextInput>
                         <View style={[Styles.buttonRow]}>
-                            <Button title="go back" color="red" onPress={() => setModalVisible(o => !o)}></Button>
+                            <Button title="scan instead" color="red" onPress={() => setModalVisible(o => !o)}></Button>
                             <Button title="confirm" color="#5A0CB5" onPress={() => confirmInput()}></Button>
                         </View>
                     </View>
