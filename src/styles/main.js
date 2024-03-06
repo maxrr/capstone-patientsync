@@ -1,4 +1,4 @@
-import { StyleSheet } from "react-native";
+import { StyleSheet, Dimensions } from "react-native";
 
 const consts = {
     gapIncrement: 8
@@ -8,6 +8,9 @@ const colors = {
     GEPurple: "#5A0CB5",
     TextColor: "#D7D7D7"
 };
+
+const windowWidth = Dimensions.get('window').width;
+const windowHeight = Dimensions.get('window').height;
 
 const Styles = StyleSheet.create({
     colors,
@@ -63,10 +66,15 @@ const Styles = StyleSheet.create({
         }
     },
     input: {
-        height: 40,
+        height: windowHeight/15,
+        width: windowWidth/1.5,
         margin: 12,
         borderWidth: 1,
         padding: 10,
+        borderColor: "white",
+        color: 'white',
+        textAlign: 'center',
+        fontSize: windowHeight/35
     },
     button: {
     padding: 10,
