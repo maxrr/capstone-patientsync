@@ -35,7 +35,7 @@ function PatientConfirmScreen({ navigation }) {
             <Text style={[Styles.h6]}>Visit number: {patientProfile.visitNumber}</Text>
             <View style={{height: 10}}></View>
             <Button title="Yes" onPress={() => navigation.push("Confirm Link")} />
-            <Button title="No, scan again" onPress={() => navigation.pop()} />
+            <Button title="No, re-enter patient info" onPress={() => navigation.pop(2)} />
             <View style={{height: 10}}></View>
         </View>
     );
