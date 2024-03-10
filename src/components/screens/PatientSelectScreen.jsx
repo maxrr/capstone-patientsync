@@ -3,14 +3,16 @@ import React from 'react';
 import { useState } from "react";
 import Styles from "../../styles/main";
 
-function PatientSelectScreen({ navigation }) {
+function PatientSelectScreen({ route, navigation }) {
 
     const [modalVisible, setModalVisible] = useState(false);
     const [text, onChangeText] = React.useState('');
 
+    const { isOverride } = route.params;
+
     return (
         <View style={[Styles.container]}>
-            <Text style={[Styles.h4]}><Text style={{color: "white", fontWeight: "bold"}}>Patient Select</Text></Text>
+            <Text style={[Styles.h4]}><Text style={{color: "white", fontWeight: "bold"}}>{isOverride ? "Patient Override" : "Patient Select"}</Text></Text>
             <Text style={[Styles.h6]}>Choose method to input patient info</Text>
 
             {/*Updating buttons for Patient Select screen -DT */}

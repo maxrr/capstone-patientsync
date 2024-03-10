@@ -1,4 +1,5 @@
 import { ScrollView, Text, View, Button, Pressable } from "react-native";
+import { useRoute } from '@react-navigation/native';
 import Styles from "../../styles/main";
 
 const devices = [
@@ -20,6 +21,9 @@ const devices = [
 ];
 
 function ConnectedDevicesScreen({ navigation }) {
+    const route = useRoute();
+    const { isOverride } = route.params || { isOverride: false };
+
     return (
         <View style={[Styles.container]}>
             <Text style={[Styles.h4]}><Text style={{color: "white", fontWeight: "bold"}}>Connected Devices</Text></Text>
@@ -49,13 +53,13 @@ function ConnectedDevicesScreen({ navigation }) {
                     </Text>
                 ))}
             </ScrollView>
- 
+
 
             {/*Have to add back button to connected devices screen to go back to scrollable devices page */}
             {/* disabling temporarily because the header has a back button already */}
             {/* <Button title="Go Back" onPress={() => navigation.pop()} /> */}
 
-            <Button title="Confirm" onPress={() => navigation.push("Enter Patient Info")} />
+            <Button title="Confirm" onPress={() => navigation.push("Enter Patient Info", { isOverride })} />
             {/*Temp button for override case. Unsure if we want multiple screens for more override screens or just a variable to determine text -dt */}
 
             {/*Didn't create more override screens because

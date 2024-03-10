@@ -2,6 +2,7 @@ import { Text, View, Button, Pressable, ScrollView } from "react-native";
 import Styles from "../../styles/main";
 
 function DeviceSelectScreen({ navigation }) {
+
     return (
         <View style={[Styles.container]}>
             <Text style={[Styles.h4]}><Text style={{color: "white", fontWeight: "bold"}}>Device Select</Text></Text>
@@ -15,7 +16,7 @@ function DeviceSelectScreen({ navigation }) {
                 }}
             >
             {/*Using pressable instead of button so we can design, react native is bad w/ natural buttons -DT */}
-            <Pressable style={Styles.deviceSelectButton} onPress={() => navigation.push("Device Screen")}>
+            <Pressable style={Styles.deviceSelectButton} onPress={() => navigation.push("Device Screen", { isOverride: false })}>
             <Text style={[Styles.deviceSelectButton, Styles.deviceSelectButtonText, { backgroundColor: Styles.colors.GEPurple }]}><Text style={{fontWeight: "bold", fontSize: 16}}>GECP2427170</Text>{"\n"}Room 412A</Text>
             </Pressable>
 
@@ -24,7 +25,7 @@ function DeviceSelectScreen({ navigation }) {
             <Text style={[Styles.deviceSelectButton, Styles.deviceSelectButtonText, { backgroundColor: Styles.colors.GEPurple }]}><Text style={{fontWeight: "bold", fontSize: 16}}>GECP3128689</Text>{"\n"}Room 413B</Text>
             </Pressable>
 
-            <Pressable style={Styles.deviceSelectButton} onPress={() => navigation.push("Device Screen")}>
+            <Pressable style={Styles.deviceSelectButton} onPress={() => navigation.push("Device Screen", { isOverride: true })}>
             <Text style={[Styles.deviceSelectButton, Styles.deviceSelectButtonText, { backgroundColor: Styles.colors.GEPurple }]}><Text style={{fontWeight: "bold", fontSize: 16}}>GECP2309701(override case)</Text>{"\n"}Room 311C</Text>
             </Pressable>
 
