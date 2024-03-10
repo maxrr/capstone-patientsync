@@ -66,7 +66,9 @@ function ConnectedDevicesScreen({ navigation }) {
             I'm unsure if we want to set the text on other screens with a variable changing with ?
             or if we want separate screens. Separate screens might lead to lots of overlap/content. -dt*/}
 
-            <Button title="Confirm (override temp)" onPress={() => navigation.push("Confirm Override Patient")} />
+            {/*Removed temp override button 3/10/24 */}
+            {/* <Button title="Confirm (override temp)" onPress={() => navigation.push("Confirm Override Patient")} /> */}
+
             <View style={{marginBottom: 10}}></View>
         </View>
     );
