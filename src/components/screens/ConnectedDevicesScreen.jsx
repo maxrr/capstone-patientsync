@@ -59,7 +59,13 @@ function ConnectedDevicesScreen({ navigation }) {
             {/* disabling temporarily because the header has a back button already */}
             {/* <Button title="Go Back" onPress={() => navigation.pop()} /> */}
 
-            <Button title="Confirm" onPress={() => navigation.push("Enter Patient Info", { isOverride })} />
+            <Button title="Confirm" onPress={() => {
+                    if (isOverride) {
+                        navigation.push("Confirm Override Patient", { isOverride });
+                    } else {
+                        navigation.push("Enter Patient Info", { isOverride });
+                    }
+                }} />
             {/*Temp button for override case. Unsure if we want multiple screens for more override screens or just a variable to determine text -dt */}
 
             {/*Didn't create more override screens because

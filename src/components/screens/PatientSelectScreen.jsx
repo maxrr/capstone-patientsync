@@ -8,7 +8,7 @@ function PatientSelectScreen({ route, navigation }) {
     const [modalVisible, setModalVisible] = useState(false);
     const [text, onChangeText] = React.useState('');
 
-    const { isOverride } = route.params;
+    const isOverride = route.params ? route.params.isOverride : false;
 
     return (
         <View style={[Styles.container]}>
