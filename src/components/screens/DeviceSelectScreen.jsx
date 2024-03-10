@@ -30,31 +30,31 @@ function DeviceSelectScreen({ navigation }) {
             </Pressable>
 
             {/*THIS IS HUGEEEE section of placeholder code. This is to show list of devices can be scrollable -DT */}
-            <Pressable style={Styles.deviceSelectButton} onPress={() => navigation.push("Device Screen")}>
+            <Pressable style={Styles.deviceSelectButton} onPress={() => navigation.push("Device Screen", { isOverride: true })}>
             <Text style={[Styles.deviceSelectButton, Styles.deviceSelectButtonText, { backgroundColor: Styles.colors.GEPurple }]}><Text style={{fontWeight: "bold", fontSize: 16}}>GECP2309701(override case)</Text>{"\n"}Room 311C</Text>
             </Pressable>
-            <Pressable style={Styles.deviceSelectButton} onPress={() => navigation.push("Device Screen")}>
+            <Pressable style={Styles.deviceSelectButton} onPress={() => navigation.push("Device Screen", { isOverride: true })}>
             <Text style={[Styles.deviceSelectButton, Styles.deviceSelectButtonText, { backgroundColor: Styles.colors.GEPurple }]}><Text style={{fontWeight: "bold", fontSize: 16}}>GECP2309701(override case)</Text>{"\n"}Room 311C</Text>
             </Pressable>
-            <Pressable style={Styles.deviceSelectButton} onPress={() => navigation.push("Device Screen")}>
+            <Pressable style={Styles.deviceSelectButton} onPress={() => navigation.push("Device Screen", { isOverride: true })}>
             <Text style={[Styles.deviceSelectButton, Styles.deviceSelectButtonText, { backgroundColor: Styles.colors.GEPurple }]}><Text style={{fontWeight: "bold", fontSize: 16}}>GECP2309701(override case)</Text>{"\n"}Room 311C</Text>
             </Pressable>
-            <Pressable style={Styles.deviceSelectButton} onPress={() => navigation.push("Device Screen")}>
+            <Pressable style={Styles.deviceSelectButton} onPress={() => navigation.push("Device Screen", { isOverride: true })}>
             <Text style={[Styles.deviceSelectButton, Styles.deviceSelectButtonText, { backgroundColor: Styles.colors.GEPurple }]}><Text style={{fontWeight: "bold", fontSize: 16}}>GECP2309701(override case)</Text>{"\n"}Room 311C</Text>
             </Pressable>
-            <Pressable style={Styles.deviceSelectButton} onPress={() => navigation.push("Device Screen")}>
+            <Pressable style={Styles.deviceSelectButton} onPress={() => navigation.push("Device Screen", { isOverride: true })}>
             <Text style={[Styles.deviceSelectButton, Styles.deviceSelectButtonText, { backgroundColor: Styles.colors.GEPurple }]}><Text style={{fontWeight: "bold", fontSize: 16}}>GECP2309701(override case)</Text>{"\n"}Room 311C</Text>
             </Pressable>
-            <Pressable style={Styles.deviceSelectButton} onPress={() => navigation.push("Device Screen")}>
+            <Pressable style={Styles.deviceSelectButton} onPress={() => navigation.push("Device Screen", { isOverride: true })}>
             <Text style={[Styles.deviceSelectButton, Styles.deviceSelectButtonText, { backgroundColor: Styles.colors.GEPurple }]}><Text style={{fontWeight: "bold", fontSize: 16}}>GECP2309701(override case)</Text>{"\n"}Room 311C</Text>
             </Pressable>
-            <Pressable style={Styles.deviceSelectButton} onPress={() => navigation.push("Device Screen")}>
+            <Pressable style={Styles.deviceSelectButton} onPress={() => navigation.push("Device Screen", { isOverride: true })}>
             <Text style={[Styles.deviceSelectButton, Styles.deviceSelectButtonText, { backgroundColor: Styles.colors.GEPurple }]}><Text style={{fontWeight: "bold", fontSize: 16}}>GECP2309701(override case)</Text>{"\n"}Room 311C</Text>
             </Pressable>
-            <Pressable style={Styles.deviceSelectButton} onPress={() => navigation.push("Device Screen")}>
+            <Pressable style={Styles.deviceSelectButton} onPress={() => navigation.push("Device Screen", { isOverride: true })}>
             <Text style={[Styles.deviceSelectButton, Styles.deviceSelectButtonText, { backgroundColor: Styles.colors.GEPurple }]}><Text style={{fontWeight: "bold", fontSize: 16}}>GECP2309701(override case)</Text>{"\n"}Room 311C</Text>
             </Pressable>
-            <Pressable style={Styles.deviceSelectButton} onPress={() => navigation.push("Device Screen")}>
+            <Pressable style={Styles.deviceSelectButton} onPress={() => navigation.push("Device Screen", { isOverride: true })}>
             <Text style={[Styles.deviceSelectButton, Styles.deviceSelectButtonText, { backgroundColor: Styles.colors.GEPurple }]}><Text style={{fontWeight: "bold", fontSize: 16}}>GECP2309701(override case)</Text>{"\n"}Room 311C</Text>
             </Pressable>
 
