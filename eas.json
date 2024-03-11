@@ -10,7 +10,8 @@
         "preview": {
             "distribution": "internal",
             "android": {
-                "developmentClient": true
+                "developmentClient": true,
+                "ndk": "26.2.11394342"
             }
         },
         "production": {}
