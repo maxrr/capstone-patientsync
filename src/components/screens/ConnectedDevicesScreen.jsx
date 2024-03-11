@@ -34,7 +34,7 @@ function ConnectedDevicesScreen({ navigation }) {
                     gap: Styles.consts.gapIncrement
                 }}
             >
-                {devices.map((e) => (
+                {devices.map((e, index) => (
                     // <View
                     //     key={e.id}
                     //     style={[
@@ -46,7 +46,7 @@ function ConnectedDevicesScreen({ navigation }) {
                     //     <Text style={{ color: Styles.colors.TextColor }}>{e.manufacturer}</Text>
                     //     <Text style={{ color: Styles.colors.TextColor }}>{e.id}</Text>
                     // </View>
-                    <Text style={[Styles.medDeviceSelectButton, { backgroundColor: Styles.colors.GEPurple, flexWrap: "wrap", flexDirection: "row" }]}>
+                    <Text key={index} style={[Styles.medDeviceSelectButton, { backgroundColor: Styles.colors.GEPurple, flexWrap: "wrap", flexDirection: "row" }]}>
                         <Text style={[Styles.deviceSelectButtonText]}><Text style={{fontWeight: "bold", fontSize: 16}}>{e.name}</Text>{'\n'}</Text>
                         <Text style={[Styles.deviceSelectButtonText]}>{e.manufacturer}{'\n'}</Text>
                         <Text style={[Styles.deviceSelectButtonText]}>{e.id}</Text>
