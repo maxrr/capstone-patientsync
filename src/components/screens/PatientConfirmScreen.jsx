@@ -4,6 +4,7 @@ import PatientContext from "../PatientContext";
 import { useContext } from "react";
 
 function PatientConfirmScreen({ navigation }) {
+    const [info, setInfo] = useContext(PatientContext);
     const patientProfile = {
         firstName: "John",
         lastName: "Doe",
