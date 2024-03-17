@@ -37,6 +37,7 @@ function DeviceSelectScreen({ navigation }) {
 
             {/* Added searchbar to search through connectplus devices -dt 3/17/2024 change */}
             <TextInput
+                style={[Styles.input]}
                 placeholder="Type to search..."
                 onChangeText={setCurrSearch}
                 value={currSearch}
