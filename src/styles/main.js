@@ -1,4 +1,4 @@
-import { StyleSheet } from "react-native";
+import { StyleSheet, Dimensions } from "react-native";
 
 const consts = {
     gapIncrement: 8
@@ -9,10 +9,14 @@ const colors = {
     TextColor: "#D7D7D7"
 };
 
+const windowWidth = Dimensions.get("window").width;
+const windowHeight = Dimensions.get("window").height;
+
 const Styles = StyleSheet.create({
     colors,
     consts,
     container: {
+        padding: 10,
         backgroundColor: "#1A1B1C",
         height: "100%",
         display: "flex",
@@ -57,25 +61,33 @@ const Styles = StyleSheet.create({
     screenSkeleton: {
         contentStyle: {
             display: "flex",
-            justifyContent: "center",
-            paddingBottom: 100
+            justifyContent: "center"
+            // paddingBottom: 100
         }
     },
     input: {
-        height: 40,
+        height: windowHeight / 15,
+        width: windowWidth / 1.5,
         margin: 12,
         borderWidth: 1,
-        padding: 10
+        padding: 10,
+        borderColor: "white",
+        color: "white",
+        textAlign: "center",
+        fontSize: windowHeight / 35
     },
     button: {
-        height: 115,
+        padding: 10,
+        height: 80,
         width: 335,
-        borderRadius: 10
+        borderRadius: 10,
+        overflow: "hidden"
     },
     buttonText: {
         color: "white",
-        fontSize: 16,
-        lineHeight: 115,
+        fontSize: 20,
+        fontWeight: "bold",
+        lineHeight: 45,
         textAlign: "center",
         alignSelf: "center",
         justifyContent: "center",
@@ -83,17 +95,25 @@ const Styles = StyleSheet.create({
     },
     //Used width and height from figma, can change if needed -DT
     deviceSelectButton: {
-        // width: 330,
-        maxWidth: "100%",
-        // height: 50,
-        // borderRadius: 16
-        borderRadius: 16
+        width: 330,
+        height: 60,
+        borderRadius: 5,
+        overflow: "hidden"
     },
     deviceSelectButtonText: {
         color: "white",
         padding: 10,
         textAlign: "left",
-        fontSize: 20
+        flexWrap: "wrap",
+        flexDirection: "row",
+        height: 70
+    },
+    medDeviceSelectButton: {
+        padding: 10,
+        width: 330,
+        height: 80,
+        borderRadius: 5,
+        overflow: "hidden"
     },
     buttonRow: {
         flexDirection: "row",

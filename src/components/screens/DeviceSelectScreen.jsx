@@ -357,8 +357,10 @@ function DeviceSelectScreen({ navigation }) {
     };
 
     return (
-        <View style={[Styles.container, { paddingTop: 12, width: "100%" }]}>
-            <Text style={[Styles.h4, Styles.underline]}>Device Select</Text>
+        <View style={[Styles.container]}>
+            <Text style={[Styles.h4]}>
+                <Text style={{ color: "white", fontWeight: "bold" }}>Device Select</Text>
+            </Text>
             <Text style={[Styles.h6]}>Select a device to continue</Text>
 
             <Button title="Start scan" onPress={startScan} />
@@ -369,8 +371,8 @@ function DeviceSelectScreen({ navigation }) {
                     paddingLeft: Styles.consts.gapIncrement * 2,
                     paddingRight: Styles.consts.gapIncrement * 2,
                     gap: Styles.consts.gapIncrement,
-                    width: "100%",
-                    backgroundColor: "292A2B"
+                    backgroundColor: "292A2B",
+                    paddingBottom: 50
                 }}
                 style={{ width: "100%" }}
             >

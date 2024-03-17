@@ -1,34 +1,66 @@
-import { Text, View, Button, Modal, Pressable, TextInput, TouchableOpacity, Image } from "react-native";
+import { Text, View, Button, TextInput, TouchableOpacity } from "react-native";
 import React from 'react';
-import { useState } from "react";
+import { useState, useEffect, useContext } from "react";
 import Styles from "../../styles/main";
 import { CameraView, useCameraPermissions } from 'expo-camera/next';
+import PatientContext from "../PatientContext";
 
-function CameraScanScreen({ navigation }) {
+function CameraScanScreen({ route, navigation }) {
 
-    // useState variables for manual input
-    const [modalVisible, setModalVisible] = useState(false);
+    // variables for manual input modal
+    const { manual } = route.params;
     const [text, onChangeText] = React.useState('');
 
-    const [facing, setFacing] = useState('back');
+    // variables for camera functionality
     const [permission, requestPermission] = useCameraPermissions();
-    const [cameraOn, setCamera] = useState(false);
+    const [cameraState, setCameraState] = useState(!manual);
+    const [scanBool, setScanBool] = useState(false);
+
+    // Context for patient info
+    const [info, setInfo] = useContext(PatientContext);
+
+    function handleScan(result) {
+        if(scanBool){
+            return
+        }
+        setInfo(result.data)
+        setScanBool(true)
+        navigation.push("Confirm Patient")
+    }
+
+    useEffect(() => {
+        if(cameraState && !permission){
+            requestPermission();
+        }
+    }, [cameraState])
+
+    function confirmInput() {
+        setInfo(text)
+        navigation.push("Confirm Patient")
+        onChangeText('')
+    }
 
     // if camera is on, scan for barcode
-    if(cameraOn && permission){
+    if (cameraState && permission) {
         return (
             <View style={Styles.cameraContainer}>
-                <CameraView 
+                <CameraView
                     style={Styles.camera}
-                    facing={facing}
-                    barCodeScannerSettings={{
-                        barCodeTypes: ['pdf417', 'code39', 'code128'],
+                    facing={'back'}
+                    barcodeScannerSettings={{ barcodeTypes: ['pdf417', 'code39', 'code128']}}
+                    onBarcodeScanned={(scanningResult) => {
+                        handleScan(scanningResult)
+                        console.log(scanningResult.data)
                     }}
-                    onBarcodeScanned={() => console.log("we scanned a barcode!")}
-                    >
+                >
                     <View style={Styles.cameraButtonContainer}>
-                        <TouchableOpacity style={Styles.cameraButton} onPress={() => setCamera(false)}>
-                            <Text style={Styles.h5}>Close Camera</Text>
+                        <TouchableOpacity style={Styles.cameraButton} onPress={() => { setCameraState(false) }}>
+                            <Button 
+                                title="Use Manual Input Instead"
+                                color="red"
+                                onPress={() => { setCameraState(false) }}
+                                >
+                            </Button>
                         </TouchableOpacity>
                     </View>
                 </CameraView>
@@ -36,49 +68,21 @@ function CameraScanScreen({ navigation }) {
         );
     }
 
-    else{
+    else {
         return (
             <View style={[Styles.container]}>
-
-                <Modal
-                    animationType="slide"
-                    visible={modalVisible}
-                    onRequestClose={() => {
-                        setModalVisible(false);
-                    }}>
-                    <View style={[Styles.container]}>
-                        <View style={[Styles.container]}>
-                            <Text style={[Styles.hero]}>Enter patient ID number:</Text>
-                            <TextInput
-                                style={[Styles.input]}
-                                onChangeText={onChangeText}
-                                value={text}
-                                placeholder="input id here"
-                            ></TextInput>
-                            <Pressable
-                                onPress={() => {
-                                    navigation.push("Confirm Patient")
-                                    setModalVisible(o => !o)
-                                }}>
-                                <Text style={{ color: 'green' }}>Confirm</Text>
-                            </Pressable>
-                            <Pressable
-                                onPress={() => setModalVisible(o => !o)}>
-                                <Text style={{ color: 'red' }}>Go back</Text>
-                            </Pressable>
-                        </View>
+                <View style={[Styles.container]}>
+                    <Text style={[Styles.h4]}><Text style={{ color: "white", fontWeight: "bold" }}>Enter Patient ID Number</Text></Text>
+                    <TextInput
+                        style={[Styles.input]}
+                        onChangeText={onChangeText}
+                        value={text}
+                    ></TextInput>
+                    <View style={[Styles.buttonRow]}>
+                        <Button title="scan instead" color="red" onPress={() => { setCameraState(true) }}></Button>
+                        <Button title="confirm" color="#5A0CB5" onPress={() => confirmInput()}></Button>
                     </View>
-                </Modal>
-
-                <Text style={[Styles.h4]}>Patient Select</Text>
-                <Text style={[Styles.h6]}>Scan a patient's barcode to continue</Text>
-                <Pressable onPress={() => {requestPermission; setCamera(true)}}>
-                    <View style={[Styles.container, { width: 250, height: 250, backgroundColor: Styles.colors.GEPurple }]}>
-                        <Image source={require('../../../assets/camera_icon.webp')} />
-                    </View>
-                </Pressable>
-                <Text style={[Styles.h5, { marginTop: 50 }]}>Not working?</Text>
-                <Button title="Enter manually" onPress={() => setModalVisible(true)} />
+                </View>
             </View>
         );
     }
