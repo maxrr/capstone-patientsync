@@ -97,6 +97,10 @@ function DeviceSelectScreen({ navigation }) {
     );
     const [devices, setDevices] = useState([]);
 
+    useEffect(() => {
+        startScan();
+    }, []);
+
     const startScan = () => {
         if (!isScanning) {
             // reset found peripherals before scan
@@ -320,8 +324,6 @@ function DeviceSelectScreen({ navigation }) {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
-    // NOTE: FOR 3/17, rebuild and test for precise location
-
     const handleAndroidPermissions = () => {
         if (Platform.OS === "android" && Platform.Version >= 31) {
             PermissionsAndroid.requestMultiple([
@@ -331,7 +333,6 @@ function DeviceSelectScreen({ navigation }) {
                 PermissionsAndroid.PERMISSIONS.ACCESS_COARSE_LOCATION
             ]).then((result) => {
                 console.log(result);
-                // FIXME: Rebuild should solve this: return = {"android.permission.ACCESS_COARSE_LOCATION": "granted", "android.permission.ACCESS_FINE_LOCATION": "never_ask_again", "android.permission.BLUETOOTH_CONNECT": "granted", "android.permission.BLUETOOTH_SCAN": "granted"}
                 if (result) {
                     console.debug("[handleAndroidPermissions] User accepts runtime permissions android 12+");
                 } else {
@@ -389,6 +390,31 @@ function DeviceSelectScreen({ navigation }) {
                         </Text>
                     </Pressable>
                 ))}
+                {Array.from(peripherals, (a, i) => {
+                    console.log(i, a[1]);
+                    const dev = a[1];
+                    return (
+                        <Pressable key={dev.id} style={Styles.deviceSelectButton}>
+                            <Text
+                                style={[
+                                    Styles.deviceSelectButton,
+                                    Styles.deviceSelectButtonText,
+                                    { backgroundColor: Styles.colors.GEPurple }
+                                ]}
+                            >
+                                <Text style={[{ fontWeight: "bold" }]}>Name: {dev.name}</Text>
+                                {"\n"}
+                                ID: {dev.id}
+                                {"\n"}
+                                RSSI: {dev.rssi}
+                                {"\n"}
+                                Connectable: {dev.advertising.isConnectable ? "yes" : "no"}
+                                {"\n"}
+                                Service UUIDs: {dev.advertising.serviceUUIDs.join(", ")}
+                            </Text>
+                        </Pressable>
+                    );
+                })}
                 {console.log({ peripherals })}
 
                 <Text style={{ textAlign: "center", color: "white" }}>Scroll for more devices...</Text>
