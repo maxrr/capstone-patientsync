@@ -96,7 +96,6 @@ const Styles = StyleSheet.create({
     //Used width and height from figma, can change if needed -DT
     deviceSelectButton: {
         width: 330,
-        height: 60,
         borderRadius: 5,
         overflow: "hidden"
     },
@@ -105,8 +104,8 @@ const Styles = StyleSheet.create({
         padding: 10,
         textAlign: "left",
         flexWrap: "wrap",
-        flexDirection: "row",
-        height: 70
+        flexDirection: "row"
+        // height: 70
     },
     medDeviceSelectButton: {
         padding: 10,
