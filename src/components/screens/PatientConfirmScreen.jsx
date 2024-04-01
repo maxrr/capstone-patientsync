@@ -6,12 +6,11 @@ import { useContext } from "react";
 function PatientConfirmScreen({ navigation }) {
     const [info, setInfo] = useContext(PatientContext);
     const patientProfile = {
-        firstName: "John",
-        lastName: "Doe",
-        // mrn: "1246988",
-        mrn: info,
-        visitNumber: "1298",
-        dob: "01/23/1994"
+        firstName: info.first,
+        lastName: info.last,
+        mrn: info.mrn,
+        visitNumber: info.visit,
+        dob: info.month + "/" + info.day + "/" + info.year
     };
 
     return (
@@ -26,7 +25,7 @@ function PatientConfirmScreen({ navigation }) {
                 <Text style={{ color: "white", textAlign: "center", padding: 50 }}>(patient picture)</Text>
             </View> */}
             <View style={{ height: 10 }}></View>
-            <Text style={[Styles.h5]}>
+            <Text style={[Styles.h4]}>
                 {patientProfile.lastName}, {patientProfile.firstName}
             </Text>
             <Text style={[Styles.h5]}>{patientProfile.dob}</Text>

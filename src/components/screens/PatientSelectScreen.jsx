@@ -1,6 +1,5 @@
-import { Text, View, Button, Modal, Pressable, TextInput } from "react-native";
+import { Text, View, Pressable } from "react-native";
 import React from 'react';
-import { useState } from "react";
 import Styles from "../../styles/main";
 
 function PatientSelectScreen({ route, navigation }) {
