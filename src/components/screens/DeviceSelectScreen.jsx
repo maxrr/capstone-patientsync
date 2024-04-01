@@ -13,16 +13,16 @@ function DeviceSelectScreen({ navigation, route }) {
     const deviceList = [
         {name: 'GECP2427170', room: 'Room 412A', isOverride: false },
         {name: 'GECP4167318', room: 'Room 413B', isOverride: false },
-        {name: 'GECP9834313(override case)', room: 'Room 311C', isOverride: true},
-        {name: 'GECP4934123(override case)', room: 'Room 214A', isOverride: true},
-        {name: 'GECP3018493(override case)', room: 'Room 104D', isOverride: true},
-        {name: 'GECP5813938(override case)', room: 'Room 503C', isOverride: true},
-        {name: 'GECP6847242(override case)', room: 'Room 204E', isOverride: true},
-        {name: 'GECP7892324(override case)', room: 'Room 513B', isOverride: true},
-        {name: 'GECP9342422(override case)', room: 'Room 321A', isOverride: true},
-        {name: 'GECP8432742(override case)', room: 'Room 102F', isOverride: true},
-        {name: 'GECP1032338(override case)', room: 'Room 401C', isOverride: true},
-        {name: 'GECP1238549(override case)', room: 'Room 201A', isOverride: true}
+        {name: 'GECP9834313(patient connected)', room: 'Room 311C', isOverride: true},
+        {name: 'GECP4934123(patient connected)', room: 'Room 214A', isOverride: true},
+        {name: 'GECP3018493(patient connected)', room: 'Room 104D', isOverride: true},
+        {name: 'GECP5813938(patient connected)', room: 'Room 503C', isOverride: true},
+        {name: 'GECP6847242(patient connected)', room: 'Room 204E', isOverride: true},
+        {name: 'GECP7892324(patient connected)', room: 'Room 513B', isOverride: true},
+        {name: 'GECP9342422(patient connected)', room: 'Room 321A', isOverride: true},
+        {name: 'GECP8432742(patient connected)', room: 'Room 102F', isOverride: true},
+        {name: 'GECP1032338(patient connected)', room: 'Room 401C', isOverride: true},
+        {name: 'GECP1238549(patient connected)', room: 'Room 201A', isOverride: true}
         
     ]
 
