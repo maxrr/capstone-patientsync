@@ -16,6 +16,13 @@ function PatientConfirmScreen({ navigation }) {
     return (
         // Maybe we could pre-populate the manual information page with the results from the scan on this page? ~mr
         <View style={[Styles.container]}>
+            <View style={{ marginBottom: 6, display: "flex", flexDirection: "row", gap: 8, alignItems: "center" }}>
+                <View style={{ width: 40, height: 40, backgroundColor: "green", borderRadius: 8 }} />
+                <View style={{ width: 48, height: 4, backgroundColor: "green", borderRadius: 4 }} />
+                <View style={{ width: 40, height: 40, backgroundColor: "white", borderRadius: 8 }} />
+                <View style={{ width: 48, height: 4, backgroundColor: "gray", borderRadius: 4 }} />
+                <View style={{ width: 40, height: 40, backgroundColor: "gray", borderRadius: 8 }} />
+            </View>
             <Text style={[Styles.h4]}>
                 <Text style={{ color: "white", fontWeight: "bold" }}>Patient Select</Text>
             </Text>
