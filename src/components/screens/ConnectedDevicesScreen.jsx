@@ -23,6 +23,7 @@ const devices = [
 function ConnectedDevicesScreen({ navigation }) {
     const route = useRoute();
     const { isOverride } = route.params || { isOverride: false };
+    const { showOverrides } = route.params || { showOverrides: false };
 
     return (
         <View style={[Styles.container]}>
@@ -60,8 +61,8 @@ function ConnectedDevicesScreen({ navigation }) {
             {/* <Button title="Go Back" onPress={() => navigation.pop()} /> */}
 
             <Button title="Confirm" onPress={() => {
-                    if (isOverride) {
-                        navigation.push("Confirm Override Patient", { isOverride });
+                    if (isOverride || showOverrides) {
+                        navigation.push("Confirm Override Patient", { isOverride, showOverrides });
                     } else {
                         navigation.push("Enter Patient Info", { isOverride });
                     }

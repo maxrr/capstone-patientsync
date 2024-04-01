@@ -16,7 +16,7 @@ function MainMenuScreen({ navigation }) {
 
             {/* <Button style={[Styles.button]} title="Link patient with a ConnectPlus device" onPress={() => navigation.push("Device Select")} /> */}
 
-        <Pressable style={Styles.button} onPress={() => alert("Not yet implemented")}>
+        <Pressable style={Styles.button} onPress={() => navigation.push("Device Select", { showOverrides: true })}>
             <Text style={[Styles.button, Styles.buttonText, { backgroundColor: Styles.colors.GEPurple}]}>Unlink a patient</Text>
         </Pressable>    
 

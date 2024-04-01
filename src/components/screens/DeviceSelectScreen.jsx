@@ -2,7 +2,7 @@ import { Text, View, Button, Pressable, ScrollView, TextInput } from "react-nati
 import Styles from "../../styles/main";
 import { useState } from "react";
 
-function DeviceSelectScreen({ navigation }) {
+function DeviceSelectScreen({ navigation, route }) {
     //use state variable to keep track of what is being searched
     const [currSearch, setCurrSearch] = useState('');
 
@@ -26,9 +26,14 @@ function DeviceSelectScreen({ navigation }) {
         
     ]
 
+    //test to see if override only (since unlinking case)
+    const showOverrides = route.params?.showOverrides || false;
+
     //searched devices is a list of devices which have been filtered based on what is typed
     //casted everything to lowercase so none of this is case sensitive -dt note 3/17/24 change
-    const searchedDevices = deviceList.filter(device => device.name.toLowerCase().includes(currSearch.toLowerCase()))
+    const searchedDevices = deviceList.filter(device => 
+    device.name.toLowerCase().includes(currSearch.toLowerCase()) && (!showOverrides || device.isOverride)
+);
 
     return (
         <View style={[Styles.container]}>
@@ -54,7 +59,10 @@ function DeviceSelectScreen({ navigation }) {
                     <Pressable 
                         key={device.name}
                         style={Styles.deviceSelectButton}
-                        onPress={() => navigation.push("Device Screen", { isOverride: device.isOverride || false })}
+                        onPress={() => navigation.push("Device Screen", { 
+                            isOverride: device.isOverride || false,
+                            showOverrides: showOverrides 
+                            })}
                     >
                         <Text style={[Styles.deviceSelectButton, Styles.deviceSelectButtonText, { backgroundColor: Styles.colors.GEPurple }]}>
                             <Text style={{ fontWeight: "bold", fontSize: 16 }}>{device.name}</Text>{"\n"}{device.room}

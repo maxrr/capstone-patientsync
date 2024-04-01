@@ -16,31 +16,51 @@ function PatientConfirmOverrideScreen({ navigation }) {
     const route = useRoute();
     const { isOverride } = route.params || { isOverride: false };
 
+    // *** SHOWOVERRIDES IS THE UNLINK CASE ***
+    // *** SHOWOVERRIDES IS THE UNLINK CASE ***
+    const { showOverrides } = route.params || { showOverrides: false };
+
     return (
         <View style={[Styles.container]}>
             <Text style={[Styles.h4]}>
-                <Text style={{ color: "white", fontWeight: "bold" }}>Patient Override</Text>
+                <Text style={{ color: "white", fontWeight: "bold" }}>{showOverrides ? 'Patient Unlink' : 'Patient Override'}</Text>
             </Text>
-            <Text style={[Styles.h6]}>This device is already linked to a patient, please confirm to continue.</Text>
+
+            <Text style={[Styles.h6]}>{showOverrides ? 'Confirm that this is the correct patient to unlink from the device' : 'This device is already linked to a patient, please confirm to continue.'}</Text>
             <View style={{ height: 10 }}></View>
+
             {/* <View style={[Styles.container, { width: 250, height: 250, backgroundColor: Styles.colors.GEPurple }]}>
                 <Text style={{ color: "white", textAlign: "center", padding: 50 }}>(patient picture)</Text>
             </View> */}
+
             <View style={{ height: 10 }}></View>
             <Text style={[Styles.h5]}>
                 {patientProfile.lastName}, {patientProfile.firstName}
             </Text>
+
             <Text style={[Styles.h5]}>{patientProfile.dob}</Text>
             <Text style={[Styles.h6]}>MRN: {patientProfile.mrn}</Text>
             <Text style={[Styles.h6]}>Visit number: {patientProfile.visitNumber}</Text>
             <View style={{ height: 10 }}></View>
             {/*Navigation buttons for override screen. -dt*/}
             {/*Didn't create more override screens because
-             I'm unsure if we want to set the text on other screens with a variable changing with ?
-             or if we want separate screens. Separate screens might lead to lots of overlap/content. -dt*/}
-            <Button title="Override" onPress={() => navigation.push("Enter Patient Info", { isOverride })} />
-            <Button title="Choose Another Device" onPress={() => navigation.push("Device Select")} />
+
+            I'm unsure if we want to set the text on other screens with a variable changing with ?
+            or if we want separate screens. Separate screens might lead to lots of overlap/content. -dt*/}
+
+            {/* Need to conditionally render the two buttons for either progressing in override case or progressing 
+            in the case of unlinking and just going back to the main menu*/}
+            {!showOverrides && (
+                <Button title="Override Patient" onPress={() => navigation.push("Enter Patient Info", { isOverride: true })} />
+            )}
+
+            {showOverrides && (
+                <Button title="Unlink Patient" onPress={() => navigation.push("Home")} />
+            )}
+
+            <Button title="Choose Another Device" onPress={() => navigation.push("Device Select", { showOverrides: showOverrides })} />
             <View style={{ height: 10 }}></View>
+
         </View>
     );
 }
