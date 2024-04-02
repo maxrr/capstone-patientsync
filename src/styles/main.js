@@ -6,7 +6,8 @@ const consts = {
 
 const colors = {
     GEPurple: "#5A0CB5",
-    TextColor: "#D7D7D7"
+    TextColor: "#D7D7D7",
+    Disabled: "#595959"
 };
 
 const windowWidth = Dimensions.get("window").width;

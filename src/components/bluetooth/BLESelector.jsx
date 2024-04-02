@@ -18,7 +18,11 @@ import {
 } from "react-native";
 import Styles from "../../styles/main";
 
-const SECONDS_TO_SCAN_FOR = 5;
+const SERVICE_PATIENTSYNC_UUID = "50DB505C-8AC4-4738-8448-3B1D9CC09CC5";
+const CHAR_CUR_ROOM_UUID = "EB6E7163-A3EA-424B-87B4-F63EB8CCB65A";
+const CHAR_CUR_PATIENT_UUID = "6DF4D135-1F8A-409E-BCA4-5265DA56DF4F";
+
+const SECONDS_TO_SCAN_FOR = 15;
 const SERVICE_UUIDS = [];
 const ALLOW_DUPLICATES = true;
 
@@ -88,50 +92,59 @@ const bleManagerEmitter = new NativeEventEmitter(BleManagerModule);
 //     }
 // ];
 
-function BLESelector({ isScanning, setIsScanning, desiredScanState, setDesiredScanState }) {
+function BLESelector({ isScanning, setIsScanning }) {
     const [peripherals, setPeripherals] = useState(
         // new Map<Peripheral['id'], Peripheral>(),
         new Map()
     );
+    const [connectingPeripheral, setConnectingPeripheral] = useState(null);
     const [devices, setDevices] = useState([]);
 
-    useEffect(() => {
+    function poll() {
         startScan();
+        retrieveConnected();
+    }
+
+    useEffect(() => {
+        if (isScanning) {
+            poll();
+        }
     }, []);
 
     useEffect(() => {
-        if (desiredScanState) {
-            startScan();
+        console.log(`isScanning update; now: ${isScanning}`);
+        if (isScanning) {
+            poll();
         } else {
             stopScan();
         }
-    }, [desiredScanState]);
+    }, [isScanning]);
 
     const startScan = () => {
-        if (!isScanning) {
-            // reset found peripherals before scan
-            //   setPeripherals(new Map<Peripheral['id'], Peripheral>());
-            setPeripherals(new Map());
+        // if (!isScanning) {
+        // reset found peripherals before scan
+        //   setPeripherals(new Map<Peripheral['id'], Peripheral>());
+        setPeripherals(new Map());
 
-            try {
-                console.debug("[startScan] starting scan...");
-                setIsScanning(true);
-                // BleManager.scan(SERVICE_UUIDS, SECONDS_TO_SCAN_FOR, ALLOW_DUPLICATES, {
-                //     matchMode: BleScanMatchMode.Sticky,
-                //     scanMode: BleScanMode.LowLatency,
-                //     callbackType: BleScanCallbackType.AllMatches
-                // })
-                BleManager.scan(SERVICE_UUIDS, SECONDS_TO_SCAN_FOR, ALLOW_DUPLICATES)
-                    .then(() => {
-                        console.debug("[startScan] scan promise returned successfully.");
-                    })
-                    .catch((err) => {
-                        console.error("[startScan] ble scan returned in error", err);
-                    });
-            } catch (error) {
-                console.error("[startScan] ble scan error thrown", error);
-            }
+        try {
+            console.debug("[startScan] starting scan...");
+            // setIsScanning(true);
+            BleManager.scan(SERVICE_UUIDS, SECONDS_TO_SCAN_FOR, ALLOW_DUPLICATES, {
+                matchMode: BleScanMatchMode.Sticky,
+                scanMode: BleScanMode.LowLatency,
+                callbackType: BleScanCallbackType.AllMatches
+            })
+                // BleManager.scan(SERVICE_UUIDS, SECONDS_TO_SCAN_FOR, ALLOW_DUPLICATES)
+                .then(() => {
+                    console.debug("[startScan] scan promise returned successfully.");
+                })
+                .catch((err) => {
+                    console.error("[startScan] ble scan returned in error", err);
+                });
+        } catch (error) {
+            console.error("[startScan] ble scan error thrown", error);
         }
+        // }
     };
 
     const stopScan = () => {
@@ -175,13 +188,24 @@ function BLESelector({ isScanning, setIsScanning, desiredScanState, setDesiredSc
     };
 
     const handleDiscoverPeripheral = (peripheral) => {
-        console.debug("[handleDiscoverPeripheral] new BLE peripheral=", peripheral);
+        // console.debug("[handleDiscoverPeripheral] new BLE peripheral=", peripheral);
         if (!peripheral.name) {
             peripheral.name = "NO NAME";
         }
-        setPeripherals((map) => {
-            return new Map(map.set(peripheral.id, peripheral));
-        });
+
+        // console.log(
+        //     ">> service uuids:",
+        //     peripheral?.advertising?.serviceUUIDs,
+        //     SERVICE_PATIENTSYNC_UUID.toLowerCase(),
+        //     peripheral?.advertising?.serviceUUIDs?.includes(SERVICE_PATIENTSYNC_UUID.toLowerCase())
+        // );
+
+        // Filter discovered device
+        if (peripheral?.advertising?.serviceUUIDs?.includes(SERVICE_PATIENTSYNC_UUID.toLowerCase())) {
+            setPeripherals((map) => {
+                return new Map(map.set(peripheral.id, peripheral));
+            });
+        }
     };
 
     const togglePeripheralConnection = async (peripheral) => {
@@ -200,10 +224,11 @@ function BLESelector({ isScanning, setIsScanning, desiredScanState, setDesiredSc
     };
 
     const retrieveConnected = async () => {
+        console.log("[retrieveConnected] trying...");
         try {
             const connectedPeripherals = await BleManager.getConnectedPeripherals();
             if (connectedPeripherals.length === 0) {
-                console.warn("[retrieveConnected] No connected peripherals found.");
+                console.debug("[retrieveConnected] No connected peripherals found.");
                 return;
             }
 
@@ -212,11 +237,13 @@ function BLESelector({ isScanning, setIsScanning, desiredScanState, setDesiredSc
             for (var i = 0; i < connectedPeripherals.length; i++) {
                 var peripheral = connectedPeripherals[i];
                 setPeripherals((map) => {
-                    let p = map.get(peripheral.id);
-                    if (p) {
-                        p.connected = true;
-                        return new Map(map.set(p.id, p));
-                    }
+                    let p = map.get(peripheral.id) ?? peripheral;
+                    // if (p) {
+                    p.connected = true;
+                    return new Map(map.set(p.id, p));
+                    // } else {
+                    //     // console.log({ [peripheral.id]: p });
+                    // }
                     return map;
                 });
             }
@@ -226,6 +253,8 @@ function BLESelector({ isScanning, setIsScanning, desiredScanState, setDesiredSc
     };
 
     const connectPeripheral = async (peripheral) => {
+        console.log(`[connectPeripheral] trying with: ${peripheral ?? "(none)"}`);
+        setConnectingPeripheral(peripheral);
         try {
             if (peripheral) {
                 setPeripherals((map) => {
@@ -265,6 +294,7 @@ function BLESelector({ isScanning, setIsScanning, desiredScanState, setDesiredSc
                     return map;
                 });
 
+                // TODO: Maybe run this during device discovery? Not sure if it is already run.
                 const rssi = await BleManager.readRSSI(peripheral.id);
                 console.debug(`[connectPeripheral][${peripheral.id}] retrieved current RSSI value: ${rssi}.`);
 
@@ -285,7 +315,7 @@ function BLESelector({ isScanning, setIsScanning, desiredScanState, setDesiredSc
                                     );
                                 } catch (error) {
                                     console.error(
-                                        `[connectPeripheral][${peripheral.id}] failed to retrieve descriptor ${descriptor} for characteristic ${characteristic}:`,
+                                        `[connectPeripheral][${peripheral.id}] failed to retrieve descriptor ${descriptor?.toString() ?? descriptor} for characteristic ${characteristic?.toString() ?? characteristic}:`,
                                         error
                                     );
                                 }
@@ -303,10 +333,44 @@ function BLESelector({ isScanning, setIsScanning, desiredScanState, setDesiredSc
                     return map;
                 });
 
-                navigation.navigate("PeripheralDetails", { peripheralData: peripheralData });
+                await queryConnectedPeripheral(peripheral);
+
+                // navigation.navigate("PeripheralDetails", { peripheralData: peripheralData });
             }
         } catch (error) {
             console.error(`[connectPeripheral][${peripheral.id}] connectPeripheral error`, error);
+        } finally {
+            setConnectingPeripheral(null);
+        }
+    };
+
+    const queryConnectedPeripheral = async (peripheral) => {
+        const VALID_DESCRIPTORS = [CHAR_CUR_PATIENT_UUID, CHAR_CUR_ROOM_UUID].map((a) => a.toLowerCase());
+        try {
+            const peripheralData = await BleManager.retrieveServices(peripheral.id);
+            // console.log(peripheralData);
+
+            let data = {};
+
+            if (peripheralData.characteristics) {
+                for (const characteristic of peripheralData.characteristics) {
+                    console.log(`\t> characteristic: ${characteristic.characteristic}`);
+                    if (VALID_DESCRIPTORS.includes(characteristic?.characteristic?.toLowerCase())) {
+                        const key = characteristic.characteristic;
+                        const raw = await BleManager.read(peripheral.id, characteristic.service, key);
+                        const value = raw
+                            .map((byte) => {
+                                return String.fromCharCode(byte);
+                            })
+                            .join("");
+                        data[key] = value;
+                    }
+                }
+            }
+
+            console.log(`read from ${peripheral.id}: `, data);
+        } catch (error) {
+            console.error(`[queryConnectedPeripheral][${peripheral.id}] queryConnectedPeripheral error`, error);
         }
     };
 
@@ -351,7 +415,7 @@ function BLESelector({ isScanning, setIsScanning, desiredScanState, setDesiredSc
                 PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
                 PermissionsAndroid.PERMISSIONS.ACCESS_COARSE_LOCATION
             ]).then((result) => {
-                console.log(result);
+                // console.log(result);
                 if (result) {
                     console.debug("[handleAndroidPermissions] User accepts runtime permissions android 12+");
                 } else {
@@ -375,53 +439,62 @@ function BLESelector({ isScanning, setIsScanning, desiredScanState, setDesiredSc
         }
     };
 
-    const handleDeviceSelect = (device) => {
-        console.log(device);
+    const handleDeviceSelect = (peripheral) => {
+        if (connectingPeripheral) {
+            console.debug(
+                `[handleDeviceSelect] User tried to select peripheral ${peripheral?.id ?? "(no id)"} but already connecting`
+            );
+        }
+        console.log("selecting:", peripheral);
+        togglePeripheralConnection(peripheral);
     };
 
     return (
-        <View>
-            {/*Using pressable instead of button so we can design, react native is bad w/ natural buttons -DT */}
-            {devices.map((a) => (
-                <Pressable key={a.name} style={Styles.deviceSelectButton} onPress={() => navigation.push(a.screen)}>
-                    <Text
-                        style={[
-                            Styles.deviceSelectButton,
-                            Styles.deviceSelectButtonText,
-                            { backgroundColor: Styles.colors.GEPurple }
-                        ]}
-                    >
-                        <Text style={[{ fontWeight: "bold" }]}>{a.name}</Text>
-                        {"\n"}
-                        {a.room}
-                    </Text>
-                </Pressable>
-            ))}
-            {Array.from(peripherals, (a, i) => {
-                console.log(i, a[1]);
-                const dev = a[1];
-                return (
-                    <Pressable key={dev.id} style={Styles.deviceSelectButton} onPress={() => handleDeviceSelect(dev)}>
-                        <Text
-                            style={[
-                                Styles.deviceSelectButton,
-                                Styles.deviceSelectButtonText,
-                                { backgroundColor: Styles.colors.GEPurple }
-                            ]}
+        <View style={{ gap: 8 }}>
+            <Text style={{ color: "#FFF" }}>Scanning: {isScanning.toString()}</Text>
+            <Text style={{ color: "#FFF" }}>
+                Connecting: {connectingPeripheral?.id ?? (connectingPeripheral === null ? "(null)" : "(none)")}
+            </Text>
+            {Array.from(peripherals)
+                .map((a) => a[1])
+                .filter((a) => a !== null && a !== undefined)
+                .sort((a, b) => a.rssi - b.rssi)
+                // .sort((a, b) => a.name - b.name)
+                .map((a, i) => {
+                    // console.log(i, a);
+                    const dev = a;
+                    return (
+                        <Pressable
+                            key={dev.id}
+                            style={Styles.deviceSelectButton}
+                            onPress={() => handleDeviceSelect(dev)}
+                            disabled={connectingPeripheral !== null}
                         >
-                            <Text style={[{ fontWeight: "bold" }]}>Name: {dev.name}</Text>
-                            {"\n"}
-                            ID: {dev.id}
-                            {"\n"}
-                            RSSI: {dev.rssi}
-                            {"\n"}
-                            Connectable: {dev.advertising.isConnectable ? "yes" : "no"}
-                            {"\n"}
-                            Service UUIDs: {dev.advertising.serviceUUIDs.join(", ")}
-                        </Text>
-                    </Pressable>
-                );
-            })}
+                            <Text
+                                style={[
+                                    Styles.deviceSelectButton,
+                                    Styles.deviceSelectButtonText,
+                                    {
+                                        backgroundColor:
+                                            connectingPeripheral === null ? Styles.colors.GEPurple : Styles.colors.Disabled
+                                    }
+                                ]}
+                            >
+                                <Text style={[{ fontWeight: "bold" }]}>Name: {dev.name}</Text>
+                                {"\n"}
+                                ID: {dev.id}
+                                {"\n"}
+                                RSSI: {dev.rssi}
+                                {"\n"}
+                                Connectable: {dev.advertising.isConnectable ? "yes" : "no"}
+                                {"\n"}
+                                Connected: {dev.connected ? "yes" : "no"}
+                                {"\n"}
+                                Service UUIDs: {dev.advertising.serviceUUIDs.join(", ")}
+                            </Text>
+                        </Pressable>
+                    );
+                })}
         </View>
     );
 }
