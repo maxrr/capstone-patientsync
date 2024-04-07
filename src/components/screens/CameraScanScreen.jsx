@@ -50,6 +50,7 @@ function CameraScanScreen({ route, navigation }) {
             month = parseInt(dataArray[5]) + 1
         }
 
+        // create patient object with appropriate information
         const patient = {
             mrn: dataArray[0].trim(),
             visit: dataArray[1].trim(),
@@ -64,7 +65,7 @@ function CameraScanScreen({ route, navigation }) {
         return patient
     }
 
-    // request permission if not already granted and camera on
+    // request permission if not already granted and camera is on
     useEffect(() => {
         if(cameraState && !permission){
             requestPermission();
@@ -72,13 +73,14 @@ function CameraScanScreen({ route, navigation }) {
     }, [cameraState])
 
     // confirm manual input
+    // #TODO: Implement call to database and setInfo with appropriate info from there
     function confirmInput() {
         setInfo(text)
         navigation.push("Confirm Patient")
         onChangeText('')
     }
 
-    // if camera is on, scan for barcode
+    // if camera is on and permission is granted, scan for barcode
     if (cameraState && permission) {
         return (
             <View style={Styles.cameraContainer}>
@@ -97,7 +99,7 @@ function CameraScanScreen({ route, navigation }) {
                         <TouchableOpacity style={Styles.cameraButton} onPress={() => { setCameraState(false) }}>
                             <Button 
                                 title="Use Manual Input Instead"
-                                color="red"
+                                color="#5A0CB5"
                                 onPress={() => { setCameraState(false) }}
                                 >
                             </Button>
@@ -117,11 +119,18 @@ function CameraScanScreen({ route, navigation }) {
                         style={[Styles.input]}
                         onChangeText={onChangeText}
                         value={text}
+                        keyboardType="number-pad"
+                        maxLength = {9}
                     ></TextInput>
                     <View style={[Styles.buttonRow]}>
-                        <Button title="scan instead" color="red" onPress={() => { setCameraState(true) }}></Button>
+                        <Button title="scan instead" color="#5A0CB5" onPress={() => { setCameraState(true) }}></Button>
                         <View style={{flex:.6}}></View>
-                        <Button title="confirm" color="#5A0CB5" onPress={() => confirmInput()}></Button>
+                        <Button
+                            title="confirm"
+                            color="green"
+                            onPress={() => confirmInput()}
+                            disabled={text.length < 9 }
+                        ></Button>
                     </View>
                 </View>
             </View>
