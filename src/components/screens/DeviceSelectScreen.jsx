@@ -1,8 +1,14 @@
 import { Text, View, Button, Pressable, ScrollView, TextInput } from "react-native";
 import Styles from "../../styles/main";
 import { useState } from "react";
+import DeviceContext from "../DeviceContext";
+import { useContext } from "react";
 
 function DeviceSelectScreen({ navigation, route }) {
+
+    //context to store device info
+    const [deviceInfo, setDeviceInfo] = useContext(DeviceContext);
+
     //use state variable to keep track of what is being searched
     const [currSearch, setCurrSearch] = useState("");
 
@@ -68,11 +74,18 @@ function DeviceSelectScreen({ navigation, route }) {
                     <Pressable
                         key={device.name}
                         style={Styles.deviceSelectButton}
-                        onPress={() =>
+                        onPress={() => {
+                            const deviceStore = {
+                                name: device.name,
+                                room: device.room,
+                                isOverride: device.isOverride
+                            }
+                            setDeviceInfo(deviceStore)
                             navigation.push("Device Screen", {
                                 isOverride: device.isOverride || false,
                                 showOverrides: showOverrides
                             })
+                        }
                         }
                     >
                         <Text
