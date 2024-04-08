@@ -4,6 +4,7 @@ import PatientContext from "../PatientContext";
 import DeviceContext from "../DeviceContext";
 import { useContext } from "react";
 import { useRoute } from "@react-navigation/native";
+import Stepper from "../comps/Stepper";
 
 function LinkConfirmScreen({ navigation }) {
 
@@ -51,13 +52,7 @@ function LinkConfirmScreen({ navigation }) {
 
             <View style={{ height: 30 }}></View>
 
-            <View style={{ marginBottom: 6, display: "flex", flexDirection: "row", gap: 8, alignItems: "center" }}>
-                <View style={{ width: 40, height: 40, backgroundColor: "green", borderRadius: 8 }} />
-                <View style={{ width: 48, height: 4, backgroundColor: "green", borderRadius: 4 }} />
-                <View style={{ width: 40, height: 40, backgroundColor: "green", borderRadius: 8 }} />
-                <View style={{ width: 48, height: 4, backgroundColor: "green", borderRadius: 4 }} />
-                <View style={{ width: 40, height: 40, backgroundColor: "white", borderRadius: 8 }} />
-            </View>
+            <Stepper step={3}/>
 
             <View style={{ height: 30 }}></View>
 
