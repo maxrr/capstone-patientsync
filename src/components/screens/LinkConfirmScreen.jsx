@@ -3,18 +3,31 @@ import Styles from "../../styles/main";
 import PatientContext from "../PatientContext";
 import DeviceContext from "../DeviceContext";
 import { useContext } from "react";
+import { useRoute } from "@react-navigation/native";
 
 function LinkConfirmScreen({ navigation }) {
 
+    const route = useRoute();
+    const { isUnlinking } = route.params || { isUnlinking: false };
     const [info, setInfo] = useContext(PatientContext);
     const [deviceInfo, setDeviceInfo] = useContext(DeviceContext);
-    const patientProfile = {
+
+    //if unlinking, then don't have MRN and just use the patient profile we generated as an example last month
+    const patientProfile = isUnlinking ? {
+        // Hardcoded values for the unlink scenario
+        firstName: "Ron",
+        lastName: "Smith",
+        mrn: "157849",
+        visitNumber: "2163",
+        dob: "03/14/1992"
+    } : {
         firstName: info.first,
         lastName: info.last,
         mrn: info.mrn,
         visitNumber: info.visit,
         dob: info.month + "/" + info.day + "/" + info.year
     };
+
     
     const deviceList = [
         { name: "GECP2427170", room: "Room 412A", isOverride: false },
@@ -33,8 +46,8 @@ function LinkConfirmScreen({ navigation }) {
     
     return (
         <View style={[Styles.container]}>
-            <Text style={[Styles.h4]}><Text style={{color: "white", fontWeight: "bold"}}>Link</Text></Text>
-            <Text style={[Styles.h6]}>Ready to link?</Text>
+            <Text style={[Styles.h4]}><Text style={{color: "white", fontWeight: "bold"}}>{isUnlinking ? "Unlink" : "Link"}</Text></Text>
+            <Text style={[Styles.h6]}>{isUnlinking ? "Ready to unlink?" : "Ready to link?"}</Text>
 
             <View style={{ height: 30 }}></View>
 
@@ -85,7 +98,7 @@ function LinkConfirmScreen({ navigation }) {
 
             <View style={{ height: 30 }}></View>
 
-            <Button title="Link" onPress={() => navigation.push("Link Complete")} />
+            <Button title={isUnlinking ? "Unlink" : "Link"} onPress={() => navigation.push("Link Complete", {isUnlinking})} />
             <View style={{height: 50}}></View>
         </View>
     );
