@@ -1,34 +1,17 @@
 [
-  {
-    "name": "Bumble1",
-    "address": "F0:F1:F2:F3:F4:F5"
-  },
-  {
-    "name": "Bumble2",
-    "address": "F6:F7:F8:F9:FA:FB"
-  },
-  {
-    "name": "Bumble4",
-    "address": "FB:F3:F5:F7:F9:FB"
-  },
-  {
-    "name": "Bumble3",
-    "address": "F1:F2:F3:F4:F5:F6"
-  },
-  {
-    "name": "Bumble5",
-    "address": "F2:F4:F6:F8:FA:FC"
-  },
-  {
-    "name": "Bumble6",
-    "address": "56:22:31:fd:6e:b8"
-  },
-  {
-    "name": "Bumble7",
-    "address": "62:81:5b:bb:b4:8b"
-  },
-  {
-    "name": "Bumble8",
-    "address": "69:2c:bd:47:60:dd"
-  }
+    {
+        "name": "C+ 471A",
+        "address": "F0:F1:F2:F3:F4:F5",
+        "cur_room": "471A"
+    },
+    {
+        "name": "C+ 301",
+        "address": "F6:F7:F8:F9:FA:FB",
+        "cur_room": "301"
+    },
+    {
+        "name": "C+ 303",
+        "address": "FB:F3:F5:F7:F9:FB",
+        "cur_room": "303"
+    }
 ]

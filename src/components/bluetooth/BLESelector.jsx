@@ -21,6 +21,15 @@ import Styles from "../../styles/main";
 const SERVICE_PATIENTSYNC_UUID = "50DB505C-8AC4-4738-8448-3B1D9CC09CC5";
 const CHAR_CUR_ROOM_UUID = "EB6E7163-A3EA-424B-87B4-F63EB8CCB65A";
 const CHAR_CUR_PATIENT_UUID = "6DF4D135-1F8A-409E-BCA4-5265DA56DF4F";
+const CHAR_LAST_EDIT_TIME_UUID = "2727FACF-E0EC-4667-9799-BE56C80AB5B5";
+const CHAR_LAST_EDIT_USER_ID_UUID = "6A083CD6-A9D6-41A7-A9C5-B4C9C42D7FC8";
+
+const CHARACTERISTIC_UUID_MAP = {
+    [CHAR_CUR_ROOM_UUID]: "cur_room",
+    [CHAR_CUR_PATIENT_UUID]: "cur_patient_mrn",
+    [CHAR_LAST_EDIT_TIME_UUID]: "last_edit_time",
+    [CHAR_LAST_EDIT_USER_ID_UUID]: "last_edit_user_id"
+};
 
 const SECONDS_TO_SCAN_FOR = 15;
 const SERVICE_UUIDS = [];
@@ -92,7 +101,7 @@ const bleManagerEmitter = new NativeEventEmitter(BleManagerModule);
 //     }
 // ];
 
-function BLESelector({ isScanning, setIsScanning }) {
+function BLESelector({ isScanning, setIsScanning, confirmSelectedDevice }) {
     const [peripherals, setPeripherals] = useState(
         // new Map<Peripheral['id'], Peripheral>(),
         new Map()
@@ -105,11 +114,9 @@ function BLESelector({ isScanning, setIsScanning }) {
         retrieveConnected();
     }
 
-    useEffect(() => {
-        if (isScanning) {
-            poll();
-        }
-    }, []);
+    // useEffect(() => {
+    //     setIsScanning(true);
+    // }, []);
 
     useEffect(() => {
         console.log(`isScanning update; now: ${isScanning}`);
@@ -120,6 +127,10 @@ function BLESelector({ isScanning, setIsScanning }) {
         }
     }, [isScanning]);
 
+    useEffect(() => {
+        return stopScan;
+    }, []);
+
     const startScan = () => {
         // if (!isScanning) {
         // reset found peripherals before scan
@@ -129,6 +140,7 @@ function BLESelector({ isScanning, setIsScanning }) {
         try {
             console.debug("[startScan] starting scan...");
             // setIsScanning(true);
+            // FIXME: Once a scan's timer is started, you can call stopScan, but this will not stop it from stopping the scan once the timer runs out if another scan is started.
             BleManager.scan(SERVICE_UUIDS, SECONDS_TO_SCAN_FOR, ALLOW_DUPLICATES, {
                 matchMode: BleScanMatchMode.Sticky,
                 scanMode: BleScanMode.LowLatency,
@@ -156,7 +168,7 @@ function BLESelector({ isScanning, setIsScanning }) {
                 console.error("[stopScan] error thrown", error);
             })
             .finally(() => {
-                setIsScanning(false);
+                // setIsScanning(false);
             });
     };
 
@@ -333,7 +345,7 @@ function BLESelector({ isScanning, setIsScanning }) {
                     return map;
                 });
 
-                await queryConnectedPeripheral(peripheral);
+                return await queryConnectedPeripheral(peripheral);
 
                 // navigation.navigate("PeripheralDetails", { peripheralData: peripheralData });
             }
@@ -345,7 +357,12 @@ function BLESelector({ isScanning, setIsScanning }) {
     };
 
     const queryConnectedPeripheral = async (peripheral) => {
-        const VALID_DESCRIPTORS = [CHAR_CUR_PATIENT_UUID, CHAR_CUR_ROOM_UUID].map((a) => a.toLowerCase());
+        const VALID_DESCRIPTORS = [
+            CHAR_CUR_PATIENT_UUID,
+            CHAR_CUR_ROOM_UUID,
+            CHAR_LAST_EDIT_TIME_UUID,
+            CHAR_LAST_EDIT_USER_ID_UUID
+        ].map((a) => a.toLowerCase());
         try {
             const peripheralData = await BleManager.retrieveServices(peripheral.id);
             // console.log(peripheralData);
@@ -354,21 +371,36 @@ function BLESelector({ isScanning, setIsScanning }) {
 
             if (peripheralData.characteristics) {
                 for (const characteristic of peripheralData.characteristics) {
-                    console.log(`\t> characteristic: ${characteristic.characteristic}`);
+                    // console.log(`\t> characteristic: ${characteristic.characteristic}`);
                     if (VALID_DESCRIPTORS.includes(characteristic?.characteristic?.toLowerCase())) {
                         const key = characteristic.characteristic;
+                        console.log(
+                            key,
+                            key.toUpperCase(),
+                            key.toUpperCase() in CHARACTERISTIC_UUID_MAP,
+                            CHARACTERISTIC_UUID_MAP[key.toUpperCase()]
+                        );
+                        console.log(CHARACTERISTIC_UUID_MAP);
+                        const prettyName =
+                            key.toUpperCase() in CHARACTERISTIC_UUID_MAP ? CHARACTERISTIC_UUID_MAP[key.toUpperCase()] : key;
                         const raw = await BleManager.read(peripheral.id, characteristic.service, key);
                         const value = raw
                             .map((byte) => {
                                 return String.fromCharCode(byte);
                             })
                             .join("");
-                        data[key] = value;
+                        data[prettyName] = value;
                     }
                 }
             }
 
-            console.log(`read from ${peripheral.id}: `, data);
+            // Make a deep copy of peripheral (unsure if this is necessary)
+            // data["peripheral"] = JSON.parse(JSON.stringify(peripheral));
+            data["device_name"] = peripheral.advertising.localName ?? "ERROR: NO NAME FOUND";
+
+            console.log(`\t[!!] >> read from ${peripheral.id}: `, data);
+
+            return data;
         } catch (error) {
             console.error(`[queryConnectedPeripheral][${peripheral.id}] queryConnectedPeripheral error`, error);
         }
@@ -381,7 +413,10 @@ function BLESelector({ isScanning, setIsScanning }) {
     useEffect(() => {
         try {
             BleManager.start({ showAlert: false })
-                .then(() => console.debug("BleManager started."))
+                .then(() => {
+                    console.debug("BleManager started.");
+                    if (isScanning) poll();
+                })
                 .catch((error) => console.error("BeManager could not be started.", error));
         } catch (error) {
             console.error("unexpected error starting BleManager.", error);
@@ -399,7 +434,7 @@ function BLESelector({ isScanning, setIsScanning }) {
         handleAndroidPermissions();
 
         return () => {
-            console.debug("[app] main component unmounting. Removing listeners...");
+            console.debug("[BLESelector] main component unmounting. Removing listeners...");
             for (const listener of listeners) {
                 listener.remove();
             }
@@ -439,22 +474,30 @@ function BLESelector({ isScanning, setIsScanning }) {
         }
     };
 
-    const handleDeviceSelect = (peripheral) => {
+    const handleDeviceSelect = async (peripheral) => {
         if (connectingPeripheral) {
             console.debug(
                 `[handleDeviceSelect] User tried to select peripheral ${peripheral?.id ?? "(no id)"} but already connecting`
             );
         }
         console.log("selecting:", peripheral);
-        togglePeripheralConnection(peripheral);
+        // togglePeripheralConnection(peripheral);
+        const deviceData = await connectPeripheral(peripheral);
+
+        // await sleep(1000);
+
+        // TODO: Add error checking
+        await BleManager.disconnect(peripheral.id);
+        console.log(deviceData);
+        confirmSelectedDevice(deviceData);
     };
 
     return (
         <View style={{ gap: 8 }}>
-            <Text style={{ color: "#FFF" }}>Scanning: {isScanning.toString()}</Text>
+            {/* <Text style={{ color: "#FFF" }}>Scanning: {isScanning.toString()}</Text>
             <Text style={{ color: "#FFF" }}>
                 Connecting: {connectingPeripheral?.id ?? (connectingPeripheral === null ? "(null)" : "(none)")}
-            </Text>
+            </Text> */}
             {Array.from(peripherals)
                 .map((a) => a[1])
                 .filter((a) => a !== null && a !== undefined)

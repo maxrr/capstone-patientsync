@@ -1,0 +1,42 @@
+[
+    {
+        "name": "GE Connect+ 471A",
+        "address": "F0:F1:F2:F3:F4:F5",
+        "cur_room": "471A"
+    },
+    {
+        "name": "GE Connect+ 301",
+        "address": "F6:F7:F8:F9:FA:FB",
+        "cur_room": "301"
+    },
+    {
+        "name": "GE Connect+ 303",
+        "address": "FB:F3:F5:F7:F9:FB",
+        "cur_room": "303"
+    },
+    {
+        "name": "GE Connect+ 305",
+        "address": "F1:F2:F3:F4:F5:F6",
+        "cur_room": "305"
+    },
+    {
+        "name": "GE Connect+ 307",
+        "address": "F2:F4:F6:F8:FA:FC",
+        "cur_room": "307"
+    },
+    {
+        "name": "GE Connect+ 414",
+        "address": "56:22:31:fd:6e:b8",
+        "cur_room": "414"
+    },
+    {
+        "name": "GE Connect+ 425",
+        "address": "62:81:5b:bb:b4:8b",
+        "cur_room": "425"
+    },
+    {
+        "name": "GE Connect+ 105",
+        "address": "69:2c:bd:47:60:dd",
+        "cur_room": "105"
+    }
+]

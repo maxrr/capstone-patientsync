@@ -16,6 +16,8 @@
 # Imports
 # -----------------------------------------------------------------------------
 import asyncio
+import random
+import string
 import struct
 import sys
 import os
@@ -37,8 +39,112 @@ from bumble.gatt import (
     GATT_DEVICE_INFORMATION_SERVICE,
 )
 
+SERVICE_PATIENTSYNC_UUID = '50DB505C-8AC4-4738-8448-3B1D9CC09CC5'
+CHAR_CUR_ROOM_UUID = 'EB6E7163-A3EA-424B-87B4-F63EB8CCB65A'
+CHAR_CUR_PATIENT_UUID = '6DF4D135-1F8A-409E-BCA4-5265DA56DF4F'
+CHAR_LAST_EDIT_TIME_UUID = '2727FACF-E0EC-4667-9799-BE56C80AB5B5'
+CHAR_LAST_EDIT_USER_ID_UUID = '6A083CD6-A9D6-41A7-A9C5-B4C9C42D7FC8'
 
 # -----------------------------------------------------------------------------
+
+class SampleDevicePersistedData:
+    DEVICE_PROPERTIES = ["device_name", "cur_room", "cur_patient_mrn", "last_edit_time", "last_edit_user_id"]
+    DEVICE_WRITABLE_PROPERTIES = ["cur_room", "cur_patient_mrn", "last_edit_time", "last_edit_user_id"]
+    DEVICE_UUID_MAPPINGS = {
+        CHAR_CUR_ROOM_UUID: 'cur_room',
+        CHAR_CUR_PATIENT_UUID: 'cur_patient_mrn',
+        CHAR_LAST_EDIT_TIME_UUID: 'last_edit_time',
+        CHAR_LAST_EDIT_USER_ID_UUID: 'last_edit_user_id'
+    }
+
+    def __init__(self, device_name: str):
+        if not device_name or len(device_name) < 3:
+            raise f'Must supply device name >= 3 chars long'
+
+        self.save_path = None
+        self.data = dict()
+        self.data["device_name"] = device_name
+        self.data["cur_room"] = "-1"
+        self.data["cur_patient_mrn"] = "-1"
+        self.data["last_edit_time"] = "-1"
+        self.data["last_edit_user_id"] = "-1"
+
+    ### Properties ###
+    # https://docs.python.org/3/library/functions.html#property
+ 
+    @property
+    def device_name(self):
+        return self.data["device_name"]
+
+    @device_name.setter
+    def device_name(self, value: bytes):
+        self.data["device_name"] = str(value)
+    
+    @property
+    def cur_room(self):
+        return self.data["cur_room"]
+    
+    @cur_room.setter
+    def cur_room(self, value):
+        self.data["cur_room"] = str(value)
+    
+    @property
+    def cur_patient_mrn(self):
+        return self.data["cur_patient_mrn"]
+
+    @cur_patient_mrn.setter
+    def cur_patient_mrn(self, value):
+        self.data["cur_patient_mrn"] = str(value)
+
+    @property
+    def last_edit_time(self):
+        return self.data["last_edit_time"]
+
+    @last_edit_time.setter
+    def last_edit_time(self, value):
+        self.data["last_edit_time"] = str(value)
+
+    @property
+    def last_edit_user_id(self):
+        return self.data["last_edit_user_id"]
+
+    @last_edit_user_id.setter
+    def last_edit_user_id(self, value):
+        self.data["last_edit_user_id"] = str(value)
+
+    ### Methods
+
+    def load_from_file(self, save_path: str, default_on_not_found: bool = True):
+        if not os.path.exists(save_path):
+            if not default_on_not_found:
+                raise f'Invalid save path: \'{save_path}\' cannot be found or does not exist'
+            else:
+                print(f'File {save_path} not found, continuing with default properties')
+                self.save_path = save_path
+                self.save_to_disk()
+        
+        self.save_path = save_path
+        with open(self.save_path, 'r', encoding='utf-8') as file:
+            parsed = json.load(file)
+
+            print(f'Loaded the following configuration for device \'{self.device_name}\':\n{parsed}')
+
+            for prop in self.DEVICE_PROPERTIES:
+                setattr(self, prop, parsed[prop] or "-1")
+
+            # self.cur_room = parsed["cur_room"] or "-1"
+            # self.cur_patient_mrn = parsed["cur_patient_mrn"] or "-1"
+            # self.last_edit_time = parsed["last_edit_time"] or "-1"
+            # self.last_edit_user_id = parsed["last_edit_user_id"] or "-1"
+
+    def save_to_disk(self):
+        # https://www.w3schools.com/python/python_file_write.asp
+        with open(self.save_path, 'w', encoding='utf-8') as file:
+            json.dump(self.data, file, sort_keys=True, indent=4)
+            print(f'Wrote the following configuration to \'{self.save_path}\':\n{self.data}')
+
+# -----------------------------------------------------------------------------
+
 class Listener(Device.Listener, Connection.Listener):
     def __init__(self, device):
         self.device = device
@@ -50,41 +156,88 @@ class Listener(Device.Listener, Connection.Listener):
     def on_disconnection(self, reason):
         print(f'### Disconnected, reason={reason}')
 
+# TODO: Implement
+# FIXME: These returned functions get overwritten for some reason. Very frustrating. Would work in JS!
 
-def read_room(connection):
-    print('----- READ ROOM from', connection)
-    return bytes(f'Sample room {connection}', 'ascii')
+def construct_reader(data: SampleDevicePersistedData, prop: str):
+    def tmp(connection: Connection):
+            print(f'----- READ PROPERTY {prop} FROM', connection.peer_address or connection)
+            return bytes(getattr(data, prop), 'ascii')
+    return tmp
 
+def construct_readers(data: SampleDevicePersistedData):
+    readers = dict()
+    for prop in SampleDevicePersistedData.DEVICE_PROPERTIES:
+        readers[prop] = construct_reader(data, prop)
+    return readers
 
-def write_room(connection, value):
-    print(f'----- WRITE ROOM from {connection}: {value}')
+    # def read_room(connection):
+    #     print('----- READ ROOM from', connection)
+    #     return bytes(data.cur_room, 'ascii')
 
-def read_patient(connection):
-    print('----- READ PATIENT from', connection)
-    return bytes(f'Sample patient {connection}', 'ascii')
+def construct_writer(data: SampleDevicePersistedData, prop: str):
+    def tmp(connection: Connection, value: bytes):
+        value = value.decode("utf-8")
+        print(f'----- WRITE PROPERTY {prop} = {value} FROM', connection.peer_address or connection)
+        setattr(data, prop, value)
+        data.save_to_disk()
+    return tmp
 
-def write_patient(connection, value):
-    print(f'----- WRITE PATIENT FROM {connection}: {value}')
+def construct_writers(data: SampleDevicePersistedData):
+    writers = dict()
+    for prop in SampleDevicePersistedData.DEVICE_PROPERTIES:
+        writers[prop] = construct_writer(data, prop)
+    return writers
+
+def reader(data: SampleDevicePersistedData, prop: str, connection: Connection):
+    if not prop in SampleDevicePersistedData.DEVICE_PROPERTIES:
+        raise f'Connection {connection.peer_address or connection} tried to READ non-existant property {prop}'
+
+    print(f'----- READ PROPERTY {prop} FROM', connection.peer_address or connection)
+    return bytes(getattr(data, prop), 'ascii')
     
-def my_custom_read_with_error(connection):
-    print('----- READ from', connection, '[returning error]')
-    if connection.is_encrypted:
-        return bytes([123])
+def writer(data: SampleDevicePersistedData, prop: str, value: bytes, connection: Connection):
+    if prop not in SampleDevicePersistedData.DEVICE_PROPERTIES:
+        raise f'Connection {connection.peer_address or connection} tried to WRITE to non-existant property {prop} with value {value}'
 
-    raise ATT_Error(ATT_INSUFFICIENT_ENCRYPTION_ERROR)
+    value = value.decode("utf-8")
+    print(f'----- WRITE PROPERTY {prop} = {value} FROM', connection.peer_address or connection)
+    setattr(data, prop, value)
+    data.save_to_disk()
 
+    # def write_room(connection, value):
+    #     print(f'----- WRITE ROOM from {connection}: {value}')
+    #     data.cur_room = str(value)
+    #     data.save_to_disk()
+    
 
-def my_custom_write_with_error(connection, value):
-    print(f'----- WRITE from {connection}: {value}', '[returning error]')
-    if not connection.is_encrypted:
-        raise ATT_Error(ATT_INSUFFICIENT_ENCRYPTION_ERROR)
+# def read_room(connection):
+#     print('----- READ ROOM from', connection)
+#     return bytes(f'Sample room {connection}', 'ascii')
 
+# def write_room(connection, value):
+#     print(f'----- WRITE ROOM from {connection}: {value}')
+
+# def read_patient(connection):
+#     print('----- READ PATIENT from', connection)
+#     return bytes(f'Sample patient {connection}', 'ascii')
+
+# def write_patient(connection, value):
+#     print(f'----- WRITE PATIENT FROM {connection}: {value}')
+    
+# def my_custom_read_with_error(connection):
+#     print('----- READ from', connection, '[returning error]')
+#     if connection.is_encrypted:
+#         return bytes([123])
+
+#     raise ATT_Error(ATT_INSUFFICIENT_ENCRYPTION_ERROR)
+
+# def my_custom_write_with_error(connection, value):
+#     print(f'----- WRITE from {connection}: {value}', '[returning error]')
+#     if not connection.is_encrypted:
+#         raise ATT_Error(ATT_INSUFFICIENT_ENCRYPTION_ERROR)
 
 # -----------------------------------------------------------------------------
-
-SERVICE_PATIENTSYNC_UUID = '50DB505C-8AC4-4738-8448-3B1D9CC09CC5'
-CHAR_CUR_ROOM_UUID = 'EB6E7163-A3EA-424B-87B4-F63EB8CCB65A'
-CHAR_CUR_PATIENT_UUID = '6DF4D135-1F8A-409E-BCA4-5265DA56DF4F'
 
 def encode_to_hex_str(s: str) -> str:
     acc = ""
@@ -137,12 +290,28 @@ def generate_advertisement_data(name, services: list[str]):
     print(acc)
     return acc
 
-async def run_device(config):
+def construct_characteristics(device: Device, data: SampleDevicePersistedData, uuid_map: dict[str: str]) -> list[Characteristic]:
+    characteristics = []
+    readers = construct_readers(data)
+    writers = construct_writers(data)
+    for uuid in uuid_map:
+        prop = uuid_map[uuid]
+        char = Characteristic(
+            uuid,
+            Characteristic.Properties.READ | Characteristic.Properties.WRITE,
+            Characteristic.READABLE | Characteristic.WRITEABLE,
+            CharacteristicValue(read=readers[prop], write=writers[prop]),
+        )
+        characteristics.append(char)
+    return characteristics
+
+async def run_device(config: DeviceConfiguration, persisted_data: SampleDevicePersistedData):
     async with await open_transport_or_link(sys.argv[2]) as (hci_source, hci_sink):
         print('<<< connected')
 
         device = Device.from_config_with_hci(config, hci_source, hci_sink)
         device.listener = Listener(device)
+        # device.room = config.room
         # Create a device to manage the host
         # device = Device.from_config_file_with_hci(sys.argv[1], hci_source, hci_sink)
         # device.listener = Listener(device)
@@ -153,6 +322,7 @@ async def run_device(config):
             Descriptor.READABLE,
             'An example Connect+ device for use in prototyping.',
         )
+
         manufacturer_name_characteristic = Characteristic(
             GATT_MANUFACTURER_NAME_STRING_CHARACTERISTIC,
             Characteristic.Properties.READ,
@@ -160,48 +330,50 @@ async def run_device(config):
             'The Bar Coders',
             [descriptor],
         )
-        device_info_service = Service(
-            GATT_DEVICE_INFORMATION_SERVICE, [manufacturer_name_characteristic]
-        )
+        device_info_service = Service(GATT_DEVICE_INFORMATION_SERVICE, [manufacturer_name_characteristic])
 
-        print(">>>>ATTN!!", GATT_DEVICE_INFORMATION_SERVICE)
-        patientsync_service = Service(
-            SERVICE_PATIENTSYNC_UUID,
-            [
-                Characteristic(
-                    CHAR_CUR_ROOM_UUID,
-                    Characteristic.Properties.READ | Characteristic.Properties.WRITE,
-                    Characteristic.READABLE | Characteristic.WRITEABLE,
-                    CharacteristicValue(read=read_room, write=write_room),
-                ),
-                Characteristic(
-                    CHAR_CUR_PATIENT_UUID,
-                    Characteristic.Properties.READ | Characteristic.Properties.WRITE,
-                    Characteristic.READABLE | Characteristic.WRITEABLE,
-                    CharacteristicValue(read=read_patient, write=write_patient),
-                ),
-                # Characteristic(
-                #     '552957FB-CF1F-4A31-9535-E78847E1A714',
-                #     Characteristic.Properties.READ | Characteristic.Properties.WRITE,
-                #     Characteristic.READABLE | Characteristic.WRITEABLE,
-                #     CharacteristicValue(
-                #         read=my_custom_read_with_error, write=my_custom_write_with_error
-                #     ),
-                # ),
-                # Characteristic(
-                #     '486F64C6-4B5F-4B3B-8AFF-EDE134A8446A',
-                #     Characteristic.Properties.READ | Characteristic.Properties.NOTIFY,
-                #     Characteristic.READABLE,
-                #     'hello',
-                # ),
-            ],
-        )
+        other_characteristics = construct_characteristics(device, persisted_data, SampleDevicePersistedData.DEVICE_UUID_MAPPINGS)
+
+        # print(">>>>ATTN!!", GATT_DEVICE_INFORMATION_SERVICE)
+        # patientsync_service = Service(
+        #     SERVICE_PATIENTSYNC_UUID,
+        #     [
+        #         Characteristic(
+        #             CHAR_CUR_ROOM_UUID,
+        #             Characteristic.Properties.READ | Characteristic.Properties.WRITE,
+        #             Characteristic.READABLE | Characteristic.WRITEABLE,
+        #             CharacteristicValue(read=cbs.readers.cur_room, write=cbs.writers.cur_room),
+        #         ),
+        #         Characteristic(
+        #             CHAR_CUR_PATIENT_UUID,
+        #             Characteristic.Properties.READ | Characteristic.Properties.WRITE,
+        #             Characteristic.READABLE | Characteristic.WRITEABLE,
+        #             CharacteristicValue(read=cbs.readers.cur_patient_mrn, write=cbs.writers.cur_patient_mrn),
+        #         ),
+        #         # Characteristic(
+        #         #     '552957FB-CF1F-4A31-9535-E78847E1A714',
+        #         #     Characteristic.Properties.READ | Characteristic.Properties.WRITE,
+        #         #     Characteristic.READABLE | Characteristic.WRITEABLE,
+        #         #     CharacteristicValue(
+        #         #         read=my_custom_read_with_error, write=my_custom_write_with_error
+        #         #     ),
+        #         # ),
+        #         # Characteristic(
+        #         #     '486F64C6-4B5F-4B3B-8AFF-EDE134A8446A',
+        #         #     Characteristic.Properties.READ | Characteristic.Properties.NOTIFY,
+        #         #     Characteristic.READABLE,
+        #         #     'hello',
+        #         # ),
+        #     ],
+        # )
+
+        patientsync_service = Service(SERVICE_PATIENTSYNC_UUID, other_characteristics)
         device.add_services([device_info_service, patientsync_service])
 
-        print('\nservices:')
-        for service in device.gatt_server.services:
-            print('\t', service)
-        print()
+        # print('\nservices:')
+        # for service in device.gatt_server.services:
+        #     print('\t', service)
+        # print()
 
         # print("gatt server attributes:")
         # for attribute in device.gatt_server.attributes:
@@ -212,19 +384,19 @@ async def run_device(config):
         # print(device.gatt_server.get_advertising_service_data())
 
         # Debug print
-        for attribute in device.gatt_server.attributes:
-            print(attribute)
+        # for attribute in device.gatt_server.attributes:
+        #     print(attribute)
 
         # Get things going
         await device.power_on()
 
         # Connect to a peer
-        if len(sys.argv) > 3:
-            target_address = sys.argv[3]
-            print(f'=== Connecting to {target_address}...')
-            await device.connect(target_address)
-        else:
-            await device.start_advertising(auto_restart=True)
+        # if len(sys.argv) > 4:
+        #     target_address = sys.argv[3]
+        #     print(f'=== Connecting to {target_address}...')
+        #     await device.connect(target_address)
+        # else:
+        await device.start_advertising(auto_restart=True, advertising_interval_min = 3000, advertising_interval_max=5000)
             # print('done advertising')
 
         print('waiting for HCI termination...')
@@ -234,7 +406,7 @@ async def run_device(config):
 async def main():
     if len(sys.argv) < 3:
         print(
-            'Usage: run_gatt_server.py <device-config> <transport-spec> '
+            'Usage: run_gatt_server.py <device-config> <transport-spec> (device-data-dir)'
             '[<bluetooth-address>]'
         )
         print('example: run_gatt_server.py device1.json usb:0 E1:CA:72:48:C4:E8')
@@ -242,21 +414,45 @@ async def main():
 
     print('<<< connecting to HCI...')
 
+    # Create device data dir if not exists
+    device_data_dir = None
+    if len(sys.argv) >= 4:
+        device_data_dir = sys.argv[3]
+        if not os.path.exists(device_data_dir):
+            os.makedirs(device_data_dir)
+
     configs = []
     with open(sys.argv[1], 'r', encoding='utf-8') as file:
         parsed = json.load(file)
         for entry in parsed:
             config = DeviceConfiguration()
             config.load_from_dict(entry)
+
+            if not config.name:
+                # https://stackoverflow.com/questions/2257441/random-string-generation-with-upper-case-letters-and-digits
+                generated = ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(8))
+                entry["name"] = f'Sample device {generated}'
+                print(f'Device with address \'{config.address}\' has no name, using generated name: \'{config.name}\'')
             # print(config.advertising_data, type(config.advertising_data))
             
             entry["advertising_data"] = generate_advertisement_data(config.name, [SERVICE_PATIENTSYNC_UUID])
             print(entry)
             config = DeviceConfiguration()
             config.load_from_dict(entry)
-            configs.append(config)
+
+            data = SampleDevicePersistedData(config.name)
+
+            if device_data_dir:
+                device_path = device_data_dir + os.sep + config.name.replace(" ", "_") + ".json"
+                print('device_path:', device_path)
+                data.load_from_file(device_path)
+
+                if "cur_room" in entry:
+                    data.cur_room = entry["cur_room"]
+
+            configs.append((config, data))
     
-    await asyncio.gather(*[run_device(i) for i in configs])
+    await asyncio.gather(*[run_device(i[0], i[1]) for i in configs])
 
 
 # -----------------------------------------------------------------------------

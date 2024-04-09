@@ -6,23 +6,22 @@ import Styles from "../../styles/main";
 function DeviceSelectScreen({ navigation }) {
     // FIXME: Sometimes this screen doesn't start as scanning, very annoying
     const [refreshing, setRefreshing] = useState(false);
-    const [isScanning, setIsScanning] = useState(false);
-    // const [desiredScanState, setDesiredScanState] = useState(true);
+    const [isScanning, setIsScanning] = useState(true);
 
     const onRefresh = () => {
         setRefreshing(true);
         setIsScanning(true);
-        // setDesiredScanState(true);
     };
 
     useEffect(() => {
         if (!isScanning && refreshing) setRefreshing(false);
     }, [isScanning]);
 
-    useEffect(() => {
-        // setDesiredScanState(true);
-        setIsScanning(true);
-    }, []);
+    const confirmSelectedDevice = (data) => {
+        navigation.push("Device Screen", {
+            deviceData: data
+        });
+    };
 
     return (
         <SafeAreaView style={[Styles.container]}>
@@ -48,7 +47,7 @@ function DeviceSelectScreen({ navigation }) {
                     }}
                     style={{ width: "100%" }}
                 >
-                    <BLESelector {...{ isScanning, setIsScanning }} />
+                    <BLESelector {...{ isScanning, setIsScanning, confirmSelectedDevice }} />
                     {isScanning ? <ActivityIndicator animating={isScanning} /> : <></>}
                     <Text style={{ textAlign: "center", color: "white" }}>Pull down to refresh...</Text>
                 </ScrollView>
