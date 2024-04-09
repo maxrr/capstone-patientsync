@@ -26,7 +26,9 @@ import json
 import uuid
 import binascii
 
-from bumble.device import Device, Connection, DeviceConfiguration
+from bumble.device import Device, Connection, DeviceConfiguration, AdvertisingParameters, AdvertisingEventProperties
+from bumble.core import AdvertisingData
+from bumble.hci import Address
 from bumble.transport import open_transport_or_link
 from bumble.att import ATT_Error, ATT_INSUFFICIENT_ENCRYPTION_ERROR
 from bumble.gatt import (
@@ -171,10 +173,6 @@ def construct_readers(data: SampleDevicePersistedData):
         readers[prop] = construct_reader(data, prop)
     return readers
 
-    # def read_room(connection):
-    #     print('----- READ ROOM from', connection)
-    #     return bytes(data.cur_room, 'ascii')
-
 def construct_writer(data: SampleDevicePersistedData, prop: str):
     def tmp(connection: Connection, value: bytes):
         value = value.decode("utf-8")
@@ -188,35 +186,6 @@ def construct_writers(data: SampleDevicePersistedData):
     for prop in SampleDevicePersistedData.DEVICE_PROPERTIES:
         writers[prop] = construct_writer(data, prop)
     return writers
-
-def reader(data: SampleDevicePersistedData, prop: str, connection: Connection):
-    if not prop in SampleDevicePersistedData.DEVICE_PROPERTIES:
-        raise f'Connection {connection.peer_address or connection} tried to READ non-existant property {prop}'
-
-    print(f'----- READ PROPERTY {prop} FROM', connection.peer_address or connection)
-    return bytes(getattr(data, prop), 'ascii')
-    
-def writer(data: SampleDevicePersistedData, prop: str, value: bytes, connection: Connection):
-    if prop not in SampleDevicePersistedData.DEVICE_PROPERTIES:
-        raise f'Connection {connection.peer_address or connection} tried to WRITE to non-existant property {prop} with value {value}'
-
-    value = value.decode("utf-8")
-    print(f'----- WRITE PROPERTY {prop} = {value} FROM', connection.peer_address or connection)
-    setattr(data, prop, value)
-    data.save_to_disk()
-
-    # def write_room(connection, value):
-    #     print(f'----- WRITE ROOM from {connection}: {value}')
-    #     data.cur_room = str(value)
-    #     data.save_to_disk()
-    
-
-# def read_room(connection):
-#     print('----- READ ROOM from', connection)
-#     return bytes(f'Sample room {connection}', 'ascii')
-
-# def write_room(connection, value):
-#     print(f'----- WRITE ROOM from {connection}: {value}')
 
 # def read_patient(connection):
 #     print('----- READ PATIENT from', connection)
@@ -306,6 +275,68 @@ def construct_characteristics(device: Device, data: SampleDevicePersistedData, u
     return characteristics
 
 async def run_device(config: DeviceConfiguration, persisted_data: SampleDevicePersistedData):
+    # https://github.com/google/bumble/blob/c65188dcbfa995b4580375498c47b37a18e792e9/examples/run_extended_advertiser_2.py#L31
+    async with await open_transport_or_link(sys.argv[2]) as (hci_source, hci_sink):
+        print('<<< connected')
+
+        device = Device.from_config_with_hci(config, hci_source, hci_sink)
+        device.listener = Listener(device)
+
+        # Add a few entries to the device's GATT server
+        descriptor = Descriptor(
+            GATT_CHARACTERISTIC_USER_DESCRIPTION_DESCRIPTOR,
+            Descriptor.READABLE,
+            'An example Connect+ device for use in prototyping.',
+        )
+
+        manufacturer_name_characteristic = Characteristic(
+            GATT_MANUFACTURER_NAME_STRING_CHARACTERISTIC,
+            Characteristic.Properties.READ,
+            Characteristic.READABLE,
+            'The Bar Coders',
+            [descriptor],
+        )
+
+        device_info_service = Service(GATT_DEVICE_INFORMATION_SERVICE, [manufacturer_name_characteristic])
+        other_characteristics = construct_characteristics(device, persisted_data, SampleDevicePersistedData.DEVICE_UUID_MAPPINGS)
+
+        patientsync_service = Service(SERVICE_PATIENTSYNC_UUID, other_characteristics)
+        device.add_services([device_info_service, patientsync_service])
+
+        await device.power_on()
+        # await device.start_advertising(auto_restart=True, advertising_interval_min = 3000, advertising_interval_max=5000)
+
+        flags = AdvertisingData.LE_GENERAL_DISCOVERABLE_MODE_FLAG | AdvertisingData.BR_EDR_NOT_SUPPORTED_FLAG
+        # print(int("00000110", 2))
+        # print(flags, str(flags))
+        # input("continue?")
+
+        advertising_data = AdvertisingData(
+            [
+                (AdvertisingData.FLAGS, chr(flags).encode("utf-8")),
+                (AdvertisingData.COMPLETE_LOCAL_NAME, config.name.encode("utf-8")),
+                (AdvertisingData.COMPLETE_LIST_OF_128_BIT_SERVICE_CLASS_UUIDS, bytes(reversed(b'\x50\xDB\x50\x5C\x8A\xC4\x47\x38\x84\x48\x3B\x1D\x9C\xC0\x9C\xC5')))
+            ]
+        )
+
+        advertising_set = await device.create_advertising_set(
+            advertising_parameters=AdvertisingParameters(
+                advertising_event_properties=AdvertisingEventProperties(
+                    is_connectable=True,
+                    is_legacy=False
+                )
+            ),
+            advertising_data=bytes(advertising_data),
+            random_address=config.address,
+            auto_start=True,
+            auto_restart=True
+        )
+
+        print('waiting for HCI termination...')
+        await hci_source.wait_for_termination()
+        print('HCI terminated!')
+
+async def run_device_old(config: DeviceConfiguration, persisted_data: SampleDevicePersistedData):
     async with await open_transport_or_link(sys.argv[2]) as (hci_source, hci_sink):
         print('<<< connected')
 
@@ -396,6 +427,7 @@ async def run_device(config: DeviceConfiguration, persisted_data: SampleDevicePe
         #     print(f'=== Connecting to {target_address}...')
         #     await device.connect(target_address)
         # else:
+        # device.start_discovery()
         await device.start_advertising(auto_restart=True, advertising_interval_min = 3000, advertising_interval_max=5000)
             # print('done advertising')
 
@@ -435,8 +467,8 @@ async def main():
                 print(f'Device with address \'{config.address}\' has no name, using generated name: \'{config.name}\'')
             # print(config.advertising_data, type(config.advertising_data))
             
-            entry["advertising_data"] = generate_advertisement_data(config.name, [SERVICE_PATIENTSYNC_UUID])
-            print(entry)
+            # entry["advertising_data"] = generate_advertisement_data(config.name, [SERVICE_PATIENTSYNC_UUID])
+            # print(entry)
             config = DeviceConfiguration()
             config.load_from_dict(entry)
 
@@ -444,13 +476,20 @@ async def main():
 
             if device_data_dir:
                 device_path = device_data_dir + os.sep + config.name.replace(" ", "_") + ".json"
-                print('device_path:', device_path)
+                # print('device_path:', device_path)
                 data.load_from_file(device_path)
 
-                if "cur_room" in entry:
-                    data.cur_room = entry["cur_room"]
+                # if "cur_room" in entry:
+                #     data.cur_room = entry["cur_room"]
+
+                for prop in SampleDevicePersistedData.DEVICE_PROPERTIES:
+                    if prop in entry:
+                        setattr(data, prop, entry[prop])
 
             configs.append((config, data))
+
+            # DEBUG:
+            break
     
     await asyncio.gather(*[run_device(i[0], i[1]) for i in configs])
 

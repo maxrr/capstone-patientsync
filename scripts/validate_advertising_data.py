@@ -63,5 +63,9 @@ def breakdown(input: str) -> None:
         # print(f'\tValue (flp): {field_value_chars_rev}')
 
 if __name__ == '__main__':
-    to_validate = sys.argv[1]
-    breakdown(to_validate)
+    # if len(sys.argv) < 2:
+    #     breakdown(input("Enter raw advertising data: "))
+    # else:
+    #     breakdown(sys.argv[1])
+    while (len(a := input("Enter raw advertising data: ")) > 0):
+        breakdown(a)

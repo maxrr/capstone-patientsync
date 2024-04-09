@@ -72,17 +72,6 @@ function ConnectedDevicesScreen({ navigation }) {
                     {"\n"}
                 </Text>
                 {devices.map((e, index) => (
-                    // <View
-                    //     key={e.id}
-                    //     style={[
-                    //         Styles.container,
-                    //         { justifyContent: "flex-start", textAlign: "left", alignItems: "flex-start", gap: 0 }
-                    //     ]}
-                    // >
-                    //     <Text style={{ color: Styles.colors.TextColor }}>{e.name}</Text>
-                    //     <Text style={{ color: Styles.colors.TextColor }}>{e.manufacturer}</Text>
-                    //     <Text style={{ color: Styles.colors.TextColor }}>{e.id}</Text>
-                    // </View>
                     <Text
                         key={index}
                         style={[

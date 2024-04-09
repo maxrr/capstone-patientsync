@@ -1,8 +1,9 @@
 [
     {
-        "name": "C+ 471A",
+        "name": "GEHC ConnectPlus (1)",
         "address": "F0:F1:F2:F3:F4:F5",
-        "cur_room": "471A"
+        "cur_room": "471A",
+        "classic_enabled": "False"
     },
     {
         "name": "C+ 301",

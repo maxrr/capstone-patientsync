@@ -144,7 +144,8 @@ function BLESelector({ isScanning, setIsScanning, confirmSelectedDevice }) {
             BleManager.scan(SERVICE_UUIDS, SECONDS_TO_SCAN_FOR, ALLOW_DUPLICATES, {
                 matchMode: BleScanMatchMode.Sticky,
                 scanMode: BleScanMode.LowLatency,
-                callbackType: BleScanCallbackType.AllMatches
+                callbackType: BleScanCallbackType.AllMatches,
+                legacy: false
             })
                 // BleManager.scan(SERVICE_UUIDS, SECONDS_TO_SCAN_FOR, ALLOW_DUPLICATES)
                 .then(() => {
