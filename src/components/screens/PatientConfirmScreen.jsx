@@ -3,7 +3,7 @@ import Styles from "../../styles/main";
 import PatientContext from "../PatientContext";
 import { useContext } from "react";
 
-function PatientConfirmScreen({ navigation }) {
+function PatientConfirmScreen({ route, navigation }) {
     const [info, setInfo] = useContext(PatientContext);
     const patientProfile = {
         firstName: info.first,
@@ -12,6 +12,7 @@ function PatientConfirmScreen({ navigation }) {
         visitNumber: info.visit,
         dob: info.month + "/" + info.day + "/" + info.year
     };
+    const { reused } = route.params;
 
     return (
         // Maybe we could pre-populate the manual information page with the results from the scan on this page? ~mr
@@ -40,7 +41,10 @@ function PatientConfirmScreen({ navigation }) {
             <Text style={[Styles.h6]}>Visit number: {patientProfile.visitNumber}</Text>
             <View style={{ height: 10 }}></View>
             <Button title="Yes" onPress={() => navigation.push("Confirm Link")} />
-            <Button title="No, re-enter patient info" onPress={() => navigation.pop(2)} />
+            <Button title="No, re-enter patient info" onPress={() => {
+                if(!reused)navigation.pop(2)
+                else navigation.pop(1)
+                }} />
             <View style={{ height: 10 }}></View>
         </View>
     );
