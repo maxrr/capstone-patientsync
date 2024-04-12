@@ -1,9 +1,23 @@
 import { Button, Text, View } from "react-native";
 import Styles from "../../styles/main";
+import PatientContext from "../PatientContext";
+import DeviceContext from "../DeviceContext";
+import { useContext } from "react";
 
 function LinkCompleteScreen({ navigation }) {
+
+    const [info, setInfo] = useContext(PatientContext);
+    const [deviceInfo, setDeviceInfo] = useContext(DeviceContext);
+
+    function returnHome() {
+        navigation.popToTop()
+        setInfo(null);
+        setDeviceInfo(null);
+    }
+
     return (
         // TODO: On this page, we shouldn't give the user any ability to move backwards ~mr
+
         <View style={[Styles.container]}>
             <View style={{ marginBottom: 6, display: "flex", flexDirection: "row", gap: 8, alignItems: "center" }}>
                 <View style={{ width: 40, height: 40, backgroundColor: "green", borderRadius: 8 }} />
@@ -14,7 +28,7 @@ function LinkCompleteScreen({ navigation }) {
             </View>
             <Text style={[Styles.h4]}><Text style={{color: "white", fontWeight: "bold"}}>Success</Text></Text>
             <Text style={[Styles.h6]}>Link complete!</Text>
-            <Button title="Return home" onPress={() => navigation.popToTop()} />
+            <Button title="Return home" onPress={() => returnHome()} />
             <View style={{height: 50}}></View>
         </View>
     );
