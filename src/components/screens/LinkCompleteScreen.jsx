@@ -15,6 +15,14 @@ function LinkCompleteScreen({ navigation }) {
         setDeviceInfo(null);
     }
 
+    const patientProfile = {
+        firstName: info.first,
+        lastName: info.last,
+        mrn: info.mrn,
+        visitNumber: info.visit,
+        dob: info.month + "/" + info.day + "/" + info.year
+    };
+
     return (
         // TODO: On this page, we shouldn't give the user any ability to move backwards ~mr
 
@@ -27,6 +35,35 @@ function LinkCompleteScreen({ navigation }) {
                 <View style={{ width: 40, height: 40, backgroundColor: "green", borderRadius: 8 }} />
             </View>
             <Text style={[Styles.h4]}><Text style={{color: "white", fontWeight: "bold"}}>Success</Text></Text>
+
+            <View style={Styles.deviceSelectButton}>
+                <Text
+                    style={[
+                        Styles.deviceSelectButton,
+                        Styles.deviceSelectButtonText,
+                        { backgroundColor: Styles.colors.GEPurple }
+                    ]}
+                >
+                    <Text style={{ fontWeight: "bold", fontSize: 16 }}>{"Patient:         " + patientProfile.lastName + ", " + patientProfile.firstName}</Text>
+                    {"\n"}
+                    {"MRN:                        " + patientProfile.mrn}
+                </Text>
+            </View>
+
+            <View style={Styles.deviceSelectButton}>
+                <Text
+                    style={[
+                        Styles.deviceSelectButton,
+                        Styles.deviceSelectButtonText,
+                        { backgroundColor: Styles.colors.GEPurple }
+                    ]}
+                >
+                    <Text style={{ fontWeight: "bold", fontSize: 16 }}>{deviceInfo.name}</Text>
+                    {"\n"}
+                    {deviceInfo.room}
+                </Text>
+            </View>
+
             <Text style={[Styles.h6]}>Link complete!</Text>
             <Button title="Return home" onPress={() => returnHome()} />
             <View style={{height: 50}}></View>
