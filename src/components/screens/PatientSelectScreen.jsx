@@ -35,15 +35,16 @@ function PatientSelectScreen({ route, navigation }) {
                 <Text style={[Styles.button, Styles.buttonText, { backgroundColor: Styles.colors.GEPurple}]}>Manually Enter Patient Info</Text>
             </Pressable>
 
-            <Text style={[Styles.h5]}>or</Text>
 
-            {info != null ? <Pressable style={Styles.smallButton} onPress={() => navigation.push("Confirm Patient", { reused: true })}>
+            {info != null ? <View style={{ alignItems: "center"}}>
+                <Text style={[Styles.h5]}>or</Text>
+                <Pressable style={Styles.smallButton} onPress={() => navigation.push("Confirm Patient", { reused: true })}>
 
                 <Text style={[Styles.smallButton, Styles.buttonText, { backgroundColor: "blue" }]}>
                     Use Information For {'\n'}
                     {info.first} {info.last}
                 </Text>
-            </Pressable> : <></>}
+            </Pressable></View> : <></>}
 
             <View style={{height: 100}}></View>
         </View>
