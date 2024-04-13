@@ -55,7 +55,7 @@ function PatientConfirmOverrideScreen({ navigation }) {
             )}
 
             {showOverrides && (
-                <Button title="Unlink Patient" onPress={() => navigation.push("Home")} />
+                <Button title="Unlink This Patient" onPress={() => navigation.push("Confirm Link", { isUnlinking: true })} />
             )}
 
             <Button title="Choose Another Device" onPress={() => navigation.push("Device Select", { showOverrides: showOverrides })} />

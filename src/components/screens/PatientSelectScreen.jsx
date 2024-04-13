@@ -3,6 +3,7 @@ import React from 'react';
 import Styles from "../../styles/main";
 import PatientContext from "../PatientContext";
 import { useContext } from "react";
+import Stepper from "../comps/Stepper";
 
 function PatientSelectScreen({ route, navigation }) {
 
@@ -13,13 +14,7 @@ function PatientSelectScreen({ route, navigation }) {
 
     return (
         <View style={[Styles.container]}>
-            <View style={{ marginBottom: 6, display: "flex", flexDirection: "row", gap: 8, alignItems: "center" }}>
-                <View style={{ width: 40, height: 40, backgroundColor: "green", borderRadius: 8 }} />
-                <View style={{ width: 48, height: 4, backgroundColor: "green", borderRadius: 4 }} />
-                <View style={{ width: 40, height: 40, backgroundColor: "white", borderRadius: 8 }} />
-                <View style={{ width: 48, height: 4, backgroundColor: "gray", borderRadius: 4 }} />
-                <View style={{ width: 40, height: 40, backgroundColor: "gray", borderRadius: 8 }} />
-            </View>
+            <Stepper step={2}/>
             <Text style={[Styles.h4]}><Text style={{color: "white", fontWeight: "bold"}}>{isOverride ? "Patient Override" : "Patient Select"}</Text></Text>
             <Text style={[Styles.h6]}>Choose method to input patient info</Text>
 
