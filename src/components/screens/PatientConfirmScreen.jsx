@@ -2,21 +2,22 @@ import { Button, Text, View } from "react-native";
 import Styles from "../../styles/main";
 import PatientContext from "../PatientContext";
 import { useContext } from "react";
+import Stepper from "../comps/Stepper";
 
 function PatientConfirmScreen({ navigation }) {
     const [info, setInfo] = useContext(PatientContext);
     const patientProfile = {
-        firstName: "John",
-        lastName: "Doe",
-        // mrn: "1246988",
-        mrn: info,
-        visitNumber: "1298",
-        dob: "01/23/1994"
+        firstName: info.first,
+        lastName: info.last,
+        mrn: info.mrn,
+        visitNumber: info.visit,
+        dob: info.month + "/" + info.day + "/" + info.year
     };
 
     return (
         // Maybe we could pre-populate the manual information page with the results from the scan on this page? ~mr
         <View style={[Styles.container]}>
+            <Stepper step={2}/>
             <Text style={[Styles.h4]}>
                 <Text style={{ color: "white", fontWeight: "bold" }}>Patient Select</Text>
             </Text>
@@ -26,7 +27,7 @@ function PatientConfirmScreen({ navigation }) {
                 <Text style={{ color: "white", textAlign: "center", padding: 50 }}>(patient picture)</Text>
             </View> */}
             <View style={{ height: 10 }}></View>
-            <Text style={[Styles.h5]}>
+            <Text style={[Styles.h4]}>
                 {patientProfile.lastName}, {patientProfile.firstName}
             </Text>
             <Text style={[Styles.h5]}>{patientProfile.dob}</Text>

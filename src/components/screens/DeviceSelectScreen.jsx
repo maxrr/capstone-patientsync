@@ -2,6 +2,10 @@ import { useState, useCallback, useEffect } from "react";
 import { View, ScrollView, Text, Button, ActivityIndicator, SafeAreaView, RefreshControl } from "react-native";
 import BLESelector from "../bluetooth/BLESelector";
 import Styles from "../../styles/main";
+import { useState } from "react";
+import DeviceContext from "../DeviceContext";
+import { useContext } from "react";
+import Stepper from "../comps/Stepper";
 
 function DeviceSelectScreen({ navigation }) {
     // FIXME: Sometimes this screen doesn't start as scanning, very annoying

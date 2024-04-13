@@ -1,6 +1,7 @@
 import { ScrollView, Text, View, Button, Pressable } from "react-native";
 import { useRoute } from "@react-navigation/native";
 import Styles from "../../styles/main";
+import Stepper from "../comps/Stepper";
 
 const devices = [
     {
@@ -22,10 +23,12 @@ const devices = [
 
 function ConnectedDevicesScreen({ navigation }) {
     const route = useRoute();
-    const { isOverride, deviceData } = route.params || { isOverride: false, deviceData: {} };
+    const { isOverride } = route.params || { isOverride: false };
+    const { showOverrides } = route.params || { showOverrides: false };
 
     return (
         <View style={[Styles.container]}>
+            <Stepper step={1} />
             <Text style={[Styles.h4]}>
                 <Text style={{ color: "white", fontWeight: "bold" }}>Connected Devices</Text>
             </Text>
@@ -99,8 +102,8 @@ function ConnectedDevicesScreen({ navigation }) {
             <Button
                 title="Confirm"
                 onPress={() => {
-                    if (isOverride) {
-                        navigation.push("Confirm Override Patient", route.params);
+                    if (isOverride || showOverrides) {
+                        navigation.push("Confirm Override Patient", { isOverride, showOverrides });
                     } else {
                         navigation.push("Enter Patient Info", route.params);
                     }
