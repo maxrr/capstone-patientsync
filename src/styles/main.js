@@ -83,6 +83,13 @@ const Styles = StyleSheet.create({
     borderRadius: 10,
     overflow: "hidden",
     },
+    smallButton: {
+        padding: 5,
+        height: 110,
+        width: 300,
+        borderRadius: 10,
+        // overflow: "hidden",
+    },
     buttonText: {
         color: "white",
         fontSize: 20,
