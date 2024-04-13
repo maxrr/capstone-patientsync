@@ -18,19 +18,14 @@
 import asyncio
 import random
 import string
-import struct
 import sys
 import os
 import logging
 import json
-import uuid
-import binascii
 
 from bumble.device import Device, Connection, DeviceConfiguration, AdvertisingParameters, AdvertisingEventProperties
 from bumble.core import AdvertisingData
-from bumble.hci import Address
 from bumble.transport import open_transport_or_link
-from bumble.att import ATT_Error, ATT_INSUFFICIENT_ENCRYPTION_ERROR
 from bumble.gatt import (
     Service,
     Characteristic,
@@ -46,6 +41,7 @@ CHAR_CUR_ROOM_UUID = 'EB6E7163-A3EA-424B-87B4-F63EB8CCB65A'
 CHAR_CUR_PATIENT_UUID = '6DF4D135-1F8A-409E-BCA4-5265DA56DF4F'
 CHAR_LAST_EDIT_TIME_UUID = '2727FACF-E0EC-4667-9799-BE56C80AB5B5'
 CHAR_LAST_EDIT_USER_ID_UUID = '6A083CD6-A9D6-41A7-A9C5-B4C9C42D7FC8'
+CUSTOM_DATA_ROOM_MAX_BYTES = 15
 
 # -----------------------------------------------------------------------------
 
@@ -134,11 +130,6 @@ class SampleDevicePersistedData:
             for prop in self.DEVICE_PROPERTIES:
                 setattr(self, prop, parsed[prop] or "-1")
 
-            # self.cur_room = parsed["cur_room"] or "-1"
-            # self.cur_patient_mrn = parsed["cur_patient_mrn"] or "-1"
-            # self.last_edit_time = parsed["last_edit_time"] or "-1"
-            # self.last_edit_user_id = parsed["last_edit_user_id"] or "-1"
-
     def save_to_disk(self):
         # https://www.w3schools.com/python/python_file_write.asp
         with open(self.save_path, 'w', encoding='utf-8') as file:
@@ -158,8 +149,7 @@ class Listener(Device.Listener, Connection.Listener):
     def on_disconnection(self, reason):
         print(f'### Disconnected, reason={reason}')
 
-# TODO: Implement
-# FIXME: These returned functions get overwritten for some reason. Very frustrating. Would work in JS!
+# -----------------------------------------------------------------------------
 
 def construct_reader(data: SampleDevicePersistedData, prop: str):
     def tmp(connection: Connection):
@@ -173,18 +163,25 @@ def construct_readers(data: SampleDevicePersistedData):
         readers[prop] = construct_reader(data, prop)
     return readers
 
-def construct_writer(data: SampleDevicePersistedData, prop: str):
+def construct_writer(dev: Device, data: SampleDevicePersistedData, prop: str):
     def tmp(connection: Connection, value: bytes):
         value = value.decode("utf-8")
         print(f'----- WRITE PROPERTY {prop} = {value} FROM', connection.peer_address or connection)
         setattr(data, prop, value)
+
+        if prop == 'cur_room' or prop == 'cur_patient_mrn':
+            # Recompute `advertising_data` on value changes
+            advertising_data = create_advertising_data(dev, data)
+            dev.advertising_data = advertising_data
+            print("Recomputed advertising data:", advertising_data, dev.advertising_data)
+            
         data.save_to_disk()
     return tmp
 
-def construct_writers(data: SampleDevicePersistedData):
+def construct_writers(dev: Device, data: SampleDevicePersistedData):
     writers = dict()
     for prop in SampleDevicePersistedData.DEVICE_PROPERTIES:
-        writers[prop] = construct_writer(data, prop)
+        writers[prop] = construct_writer(dev, data, prop)
     return writers
 
 # def read_patient(connection):
@@ -228,41 +225,41 @@ def prepare_uuid(s: str) -> str:
             acc += segment
     return acc
 
-def generate_advertisement_data(name, services: list[str]):
-    # The elements composed in these fields https://stackoverflow.com/questions/27506474/how-to-byte-swap-a-32-bit-integer-in-python
+# Using a different method of generating advertisement data now
+# def generate_advertisement_data(name, services: list[str]):
+#     # The elements composed in these fields https://stackoverflow.com/questions/27506474/how-to-byte-swap-a-32-bit-integer-in-python
+#     # format: (type, content); content is unreversed
+#     intro = (0x1, '06', 2)
+#     joined_services = "".join(list(map(lambda a : prepare_uuid(a.replace("-", "")), services))).lower()
+#     complete_list_of_services = (0x7, joined_services)
+#     complete_local_name = (0x9, encode_to_hex_str(name))
 
-    # format: (type, content); content is unreversed
-    intro = (0x1, '06', 2)
-    joined_services = "".join(list(map(lambda a : prepare_uuid(a.replace("-", "")), services))).lower()
-    complete_list_of_services = (0x7, joined_services)
-    complete_local_name = (0x9, encode_to_hex_str(name))
+#     to_include = [intro, complete_list_of_services, complete_local_name]
+#     acc = ""
+#     for entry in to_include:
+#         entry_type = num_to_hex_byte(entry[0])
+#         entry_content = entry[1]
+#         entry_content_len = len(entry_content) / 2 + 1
+#         entry_content_len_bytes = num_to_hex_byte(entry_content_len)
+#         if len(entry) > 2:
+#             entry_content_len_bytes = num_to_hex_byte(entry[2])
 
-    to_include = [intro, complete_list_of_services, complete_local_name]
-    acc = ""
-    for entry in to_include:
-        entry_type = num_to_hex_byte(entry[0])
-        entry_content = entry[1]
-        entry_content_len = len(entry_content) / 2 + 1
-        entry_content_len_bytes = num_to_hex_byte(entry_content_len)
-        if len(entry) > 2:
-            entry_content_len_bytes = num_to_hex_byte(entry[2])
+#         print(f'adding type {entry_type} with length {entry_content_len} ({entry_content_len_bytes}): {entry_content}')
+#         # print(type(entry_type), type(entry_content), type(entry_content_len_bytes))
 
-        print(f'adding type {entry_type} with length {entry_content_len} ({entry_content_len_bytes}): {entry_content}')
-        # print(type(entry_type), type(entry_content), type(entry_content_len_bytes))
+#         # acc += entry_content_len_bytes + entry_type + entry_content
+#         acc += entry_content_len_bytes + entry_type + entry_content
 
-        # acc += entry_content_len_bytes + entry_type + entry_content
-        acc += entry_content_len_bytes + entry_type + entry_content
-
-    acc = str(acc)
-    # for i, c in enumerate(acc):
-    #     print(i, c)
-    print(acc)
-    return acc
+#     acc = str(acc)
+#     # for i, c in enumerate(acc):
+#     #     print(i, c)
+#     print(acc)
+#     return acc
 
 def construct_characteristics(device: Device, data: SampleDevicePersistedData, uuid_map: dict[str: str]) -> list[Characteristic]:
     characteristics = []
     readers = construct_readers(data)
-    writers = construct_writers(data)
+    writers = construct_writers(device, data)
     for uuid in uuid_map:
         prop = uuid_map[uuid]
         char = Characteristic(
@@ -273,6 +270,27 @@ def construct_characteristics(device: Device, data: SampleDevicePersistedData, u
         )
         characteristics.append(char)
     return characteristics
+
+def create_advertising_data(device: Device, data: SampleDevicePersistedData):
+    flags = AdvertisingData.LE_GENERAL_DISCOVERABLE_MODE_FLAG | AdvertisingData.BR_EDR_NOT_SUPPORTED_FLAG
+
+    # custom_data: variable length of bytes total, first byte is 1 if patient is connected (mrn is != -1), 0 otherwise; rest of bytes are encoded room string
+    is_patient_associated = (0x0 if int(data.cur_patient_mrn) == -1 else 0x1).to_bytes()
+    encoded_room_string = bytes(data.cur_room.encode("utf-8"))
+    custom_data = is_patient_associated + encoded_room_string
+    print(">>>>>!", custom_data)
+
+    advertising_data = AdvertisingData(
+        [
+            (AdvertisingData.FLAGS, chr(flags).encode("utf-8")),
+            (AdvertisingData.COMPLETE_LOCAL_NAME, device.config.name.encode("utf-8")),
+            # TODO: Generic-ify this to depend on `SERVICE_PATIENTSYNC_UUID`
+            (AdvertisingData.COMPLETE_LIST_OF_128_BIT_SERVICE_CLASS_UUIDS, bytes(reversed(b'\x50\xDB\x50\x5C\x8A\xC4\x47\x38\x84\x48\x3B\x1D\x9C\xC0\x9C\xC5'))),
+            (AdvertisingData.MANUFACTURER_SPECIFIC_DATA, custom_data)
+        ]
+    )
+    
+    return advertising_data
 
 async def run_device(config: DeviceConfiguration, persisted_data: SampleDevicePersistedData):
     # https://github.com/google/bumble/blob/c65188dcbfa995b4580375498c47b37a18e792e9/examples/run_extended_advertiser_2.py#L31
@@ -306,19 +324,7 @@ async def run_device(config: DeviceConfiguration, persisted_data: SampleDevicePe
         await device.power_on()
         # await device.start_advertising(auto_restart=True, advertising_interval_min = 3000, advertising_interval_max=5000)
 
-        flags = AdvertisingData.LE_GENERAL_DISCOVERABLE_MODE_FLAG | AdvertisingData.BR_EDR_NOT_SUPPORTED_FLAG
-        # print(int("00000110", 2))
-        # print(flags, str(flags))
-        # input("continue?")
-
-        advertising_data = AdvertisingData(
-            [
-                (AdvertisingData.FLAGS, chr(flags).encode("utf-8")),
-                (AdvertisingData.COMPLETE_LOCAL_NAME, config.name.encode("utf-8")),
-                (AdvertisingData.COMPLETE_LIST_OF_128_BIT_SERVICE_CLASS_UUIDS, bytes(reversed(b'\x50\xDB\x50\x5C\x8A\xC4\x47\x38\x84\x48\x3B\x1D\x9C\xC0\x9C\xC5')))
-            ]
-        )
-
+        advertising_data = create_advertising_data(device, persisted_data)
         advertising_set = await device.create_advertising_set(
             advertising_parameters=AdvertisingParameters(
                 advertising_event_properties=AdvertisingEventProperties(
@@ -331,6 +337,7 @@ async def run_device(config: DeviceConfiguration, persisted_data: SampleDevicePe
             auto_start=True,
             auto_restart=True
         )
+
 
         print('waiting for HCI termination...')
         await hci_source.wait_for_termination()
@@ -485,11 +492,15 @@ async def main():
                 for prop in SampleDevicePersistedData.DEVICE_PROPERTIES:
                     if prop in entry:
                         setattr(data, prop, entry[prop])
+                    # TODO: Read props from /data/(name)
+
+                data.save_to_disk()
 
             configs.append((config, data))
 
             # DEBUG:
-            break
+            # break
+            
     
     await asyncio.gather(*[run_device(i[0], i[1]) for i in configs])
 

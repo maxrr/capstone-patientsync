@@ -1,0 +1,18 @@
+[
+    {
+        "name": "GEHC ConnectPlus (1)",
+        "address": "F0:F1:F2:F3:F4:F5",
+        "cur_room": "471A",
+        "classic_enabled": "False"
+    },
+    {
+        "name": "C+ 301",
+        "address": "F6:F7:F8:F9:FA:FB",
+        "cur_room": "301"
+    },
+    {
+        "name": "C+ 303",
+        "address": "FB:F3:F5:F7:F9:FB",
+        "cur_room": "303"
+    }
+]

@@ -25,10 +25,13 @@ function DeviceSelectScreen({ navigation }) {
 
     return (
         <SafeAreaView style={[Styles.container]}>
-            <ScrollView
+            {/* <ScrollView
                 contentContainerStyle={[Styles.container]}
-                refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
-            >
+                refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh}/>}
+            > */}
+            {/* FIXME: `refreshControl`, as seen above, does not allow scrolling back upwards when not refreshing */}
+            <ScrollView contentContainerStyle={[Styles.container]}>
+                <Button onPress={onRefresh} title={"Temporary refresh"} />
                 <Text style={[Styles.h4]}>
                     <Text style={{ color: "white", fontWeight: "bold" }}>Device Select</Text>
                 </Text>

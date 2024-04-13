@@ -31,7 +31,7 @@ const CHARACTERISTIC_UUID_MAP = {
     [CHAR_LAST_EDIT_USER_ID_UUID]: "last_edit_user_id"
 };
 
-const SECONDS_TO_SCAN_FOR = 15;
+const SECONDS_TO_SCAN_FOR = 5;
 const SERVICE_UUIDS = [];
 const ALLOW_DUPLICATES = true;
 
@@ -200,6 +200,56 @@ function BLESelector({ isScanning, setIsScanning, confirmSelectedDevice }) {
         );
     };
 
+    /*
+     * Takes in an array of bytes, outputs { curRoom: string, isPatientAssociated: boolean }
+     */
+    const decodeManufacturerCustomField = (bytes) => {
+        const isPatientAssociated = bytes[1] == 1;
+        const curRoom = bytes
+            .slice(2)
+            .map((byte) => {
+                return String.fromCharCode(byte);
+            })
+            .join("");
+        return { curRoom, isPatientAssociated };
+    };
+
+    /*
+     * Takes in `rawData` on BLE device discovery, returns data
+     */
+    const decodeRawAdvertisingData = (data) => {
+        if (!data) return;
+
+        let field_types = {};
+
+        let ptr = 0;
+        while (ptr < data.length) {
+            const field_length = data[ptr];
+            ptr++;
+
+            const field_data_bytes = data.slice(ptr, ptr + field_length + 1);
+            const field_type = field_data_bytes[0];
+            ptr += field_length;
+
+            const field_data_bytes_as_str = field_data_bytes
+                .map((byte) => {
+                    return String.fromCharCode(byte);
+                })
+                .join("");
+
+            field_types[field_type] = {
+                bytes: field_data_bytes,
+                str: field_data_bytes_as_str
+            };
+
+            // console.log({ field_length, field_type, field_data_bytes, field_data_bytes_as_str });
+        }
+
+        // console.log(field_types);
+
+        return field_types;
+    };
+
     const handleDiscoverPeripheral = (peripheral) => {
         // console.debug("[handleDiscoverPeripheral] new BLE peripheral=", peripheral);
         if (!peripheral.name) {
@@ -212,6 +262,17 @@ function BLESelector({ isScanning, setIsScanning, confirmSelectedDevice }) {
         //     SERVICE_PATIENTSYNC_UUID.toLowerCase(),
         //     peripheral?.advertising?.serviceUUIDs?.includes(SERVICE_PATIENTSYNC_UUID.toLowerCase())
         // );
+
+        peripheral.customData = { curRoom: undefined, isPatientAssociated: undefined };
+
+        console.log(peripheral?.advertising);
+        decoded = decodeRawAdvertisingData(peripheral?.advertising?.rawData?.bytes);
+        let curRoom, isPatientAssociated;
+        if (255 in decoded) {
+            peripheral.customData = decodeManufacturerCustomField(decoded[255].bytes);
+        }
+
+        console.log("customData", peripheral.customData);
 
         // Filter discovered device
         if (peripheral?.advertising?.serviceUUIDs?.includes(SERVICE_PATIENTSYNC_UUID.toLowerCase())) {
@@ -524,17 +585,34 @@ function BLESelector({ isScanning, setIsScanning, confirmSelectedDevice }) {
                                     }
                                 ]}
                             >
-                                <Text style={[{ fontWeight: "bold" }]}>Name: {dev.name}</Text>
+                                <Text style={{ fontWeight: "bold", fontSize: 20 }}>
+                                    Room {dev.customData?.curRoom ?? "(undefined)"}
+                                </Text>
                                 {"\n"}
-                                ID: {dev.id}
+
+                                <Text style={[{ fontWeight: "bold" }]}>
+                                    {dev.name} <Text style={{ color: "#bbb" }}>({dev.id})</Text>
+                                </Text>
                                 {"\n"}
+                                <Text
+                                    style={{
+                                        marginBottom: 8,
+                                        color: dev.customData?.isPatientAssociated ? "#ffcf24" : "#75d14b"
+                                    }}
+                                >
+                                    {dev.customData?.isPatientAssociated
+                                        ? "⚠ Has existing patient association"
+                                        : "✓ No patient associated"}
+                                </Text>
+                                {/* {"\n"} */}
+                                {/* {"\n"}
                                 RSSI: {dev.rssi}
                                 {"\n"}
                                 Connectable: {dev.advertising.isConnectable ? "yes" : "no"}
                                 {"\n"}
                                 Connected: {dev.connected ? "yes" : "no"}
                                 {"\n"}
-                                Service UUIDs: {dev.advertising.serviceUUIDs.join(", ")}
+                                Service UUIDs: {dev.advertising.serviceUUIDs.join(", ")} */}
                             </Text>
                         </Pressable>
                     );

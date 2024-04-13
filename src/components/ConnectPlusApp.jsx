@@ -15,7 +15,6 @@ import { useState } from "react";
 
 const Stack = createNativeStackNavigator();
 export default function ConnectPlusApp(props) {
-
     // Context for current patient info
     const [info, setInfo] = useState(null);
 
@@ -23,13 +22,17 @@ export default function ConnectPlusApp(props) {
         // Maybe we could use context stores to keep track of the selected patient and device, instead of having to do prop tunneling? ~mr
         <NavigationContainer>
             <PatientContext.Provider value={[info, setInfo]}>
-                <Stack.Navigator screenOptions={{ headerStyle: { backgroundColor: "#1A1B1C" } }}>
+                <Stack.Navigator screenOptions={{ headerStyle: { backgroundColor: "#FFF" } }}>
                     {/* `name`d these screens below with their corresponding Figma screen name, feel free to change ~mr */}
                     {/* Also, feel free to change order AND feel free to consolidate these screens into one each (ie. one per "step") ~mr */}
                     <Stack.Screen name="Home" options={{ headerShown: false }} component={MainMenuScreen} />
                     <Stack.Screen name="Device Select" options={Styles.screenSkeleton} component={DeviceSelectScreen} />
                     <Stack.Screen name="Device Screen" options={Styles.screenSkeleton} component={ConnectedDevicesScreen} />
-                    <Stack.Screen name="Enter Patient Info" options={Styles.screenSkeleton} component={PatientSelectScreen} />
+                    <Stack.Screen
+                        name="Enter Patient Info"
+                        options={Styles.screenSkeleton}
+                        component={PatientSelectScreen}
+                    />
                     <Stack.Screen name="Scan Barcode" options={Styles.screenSkeleton} component={CameraScanScreen} />
                     <Stack.Screen name="Confirm Patient" options={Styles.screenSkeleton} component={PatientConfirmScreen} />
                     <Stack.Screen name="Confirm Link" options={Styles.screenSkeleton} component={LinkConfirmScreen} />
@@ -38,7 +41,11 @@ export default function ConnectPlusApp(props) {
                     <Stack.Screen name="Link Complete" options={Styles.screenSkeleton} component={LinkCompleteScreen} />
 
                     {/*Override Screens */}
-                    <Stack.Screen name="Confirm Override Patient" options={Styles.screenSkeleton} component={PatientConfirmOverrideScreen} />
+                    <Stack.Screen
+                        name="Confirm Override Patient"
+                        options={Styles.screenSkeleton}
+                        component={PatientConfirmOverrideScreen}
+                    />
                 </Stack.Navigator>
             </PatientContext.Provider>
         </NavigationContainer>
