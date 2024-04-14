@@ -7,7 +7,8 @@ const consts = {
 const colors = {
     GEPurple: "#5A0CB5",
     TextColor: "#D7D7D7",
-    Disabled: "#595959"
+    Disabled: "#595959",
+    Background: "#1A1B1C"
 };
 
 const windowWidth = Dimensions.get("window").width;
@@ -18,12 +19,23 @@ const Styles = StyleSheet.create({
     consts,
     container: {
         padding: 10,
-        backgroundColor: "#1A1B1C",
+        backgroundColor: colors.Background,
         height: "100%",
         display: "flex",
         flexDirection: "column",
         gap: consts.gapIncrement,
         justifyContent: "center",
+        alignItems: "center",
+        textAlign: "center"
+    },
+    scrollContainer: {
+        padding: 10,
+        backgroundColor: colors.Background,
+        flexDirection: "column",
+        padding: consts.gapIncrement * 4,
+        minHeight: "100%",
+        gap: consts.gapIncrement,
+        justifyContent: "flex-start",
         alignItems: "center",
         textAlign: "center"
     },
@@ -66,16 +78,26 @@ const Styles = StyleSheet.create({
             // paddingBottom: 100
         }
     },
+    // input: {
+    //     height: windowHeight / 15,
+    //     width: windowWidth / 1.5,
+    //     margin: 12,
+    //     borderWidth: 1,
+    //     padding: 10,
+    //     borderColor: "white",
+    //     color: "white",
+    //     textAlign: "center",
+    //     fontSize: windowHeight / 35
+    // },
     input: {
-        height: windowHeight / 15,
-        width: windowWidth / 1.5,
-        margin: 12,
+        width: "100%",
+        margin: 6,
         borderWidth: 1,
-        padding: 10,
-        borderColor: "white",
+        borderColor: "#777",
         color: "white",
         textAlign: "center",
-        fontSize: windowHeight / 35
+        fontSize: 14,
+        borderRadius: consts.gapIncrement
     },
     button: {
         padding: 10,
@@ -96,9 +118,10 @@ const Styles = StyleSheet.create({
     },
     //Used width and height from figma, can change if needed -DT
     deviceSelectButton: {
-        width: 330,
+        width: "100%",
         borderRadius: 5,
-        overflow: "hidden"
+        display: "flex",
+        flexDirection: "row"
     },
     deviceSelectButtonText: {
         color: "white",

@@ -1,5 +1,5 @@
-import ConnectPlusApp from "./src/components/ConnectPlusApp";
+import BleMgrWrapper from "./src/components/comps/BleMgrWrapper";
 
 export default function App() {
-    return <ConnectPlusApp />;
+    return <BleMgrWrapper />;
 }
