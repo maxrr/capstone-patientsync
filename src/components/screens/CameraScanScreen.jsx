@@ -1,4 +1,4 @@
-import { Text, View, Button, TextInput, TouchableOpacity } from "react-native";
+import { Text, View, Button, TextInput, TouchableOpacity, Alert } from "react-native";
 import React from 'react';
 import { useState, useEffect, useContext } from "react";
 import Styles from "../../styles/main";
@@ -26,7 +26,21 @@ function CameraScanScreen({ route, navigation }) {
         }
         setInfo(parseData(result))
         setScanBool(true)
-        navigation.push("Confirm Patient", {reused: false})
+        
+        //Adding confirmation that a barcode has been scanned for clarity and easy understanding with an Alert.
+        Alert.alert(
+        "Scaning Complete",
+        "Barcode Successfully Scanned!",
+        [
+            { 
+                text: "OK", 
+                onPress: () => navigation.push("Confirm Patient", { reused: false }) 
+            }
+        ],
+
+        { cancelable: false } 
+
+        );
     }
 
     // function to parse and store data from barcode
