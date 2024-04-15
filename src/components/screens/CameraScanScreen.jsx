@@ -26,7 +26,7 @@ function CameraScanScreen({ route, navigation }) {
         }
         setInfo(parseData(result))
         setScanBool(true)
-        navigation.push("Confirm Patient")
+        navigation.push("Confirm Patient", {reused: false})
     }
 
     // function to parse and store data from barcode
@@ -76,7 +76,7 @@ function CameraScanScreen({ route, navigation }) {
     // #TODO: Implement call to database and setInfo with appropriate info from there
     function confirmInput() {
         setInfo(text)
-        navigation.push("Confirm Patient")
+        navigation.push("Confirm Patient", { reused: false })
         onChangeText('')
     }
 
