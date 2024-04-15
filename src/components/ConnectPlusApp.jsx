@@ -28,7 +28,10 @@ export default function ConnectPlusApp({
     bluetoothStartScan,
     bluetoothStopScan,
     bluetoothRemoveListeners,
-    bluetoothManagerState
+    bluetoothManagerState,
+    bluetoothConnectToDevice,
+    bluetoothDisconnectFromDevice,
+    bluetoothPerformSyncWithDevice
 }) {
     // Context for current patient & device info
     const [info, setInfo] = useState(null);
@@ -52,7 +55,10 @@ export default function ConnectPlusApp({
                     bluetoothConnectedDevice,
                     bluetoothStartScan,
                     bluetoothStopScan,
-                    bluetoothManagerState
+                    bluetoothManagerState,
+                    bluetoothConnectToDevice,
+                    bluetoothDisconnectFromDevice,
+                    bluetoothPerformSyncWithDevice
                 }}
             >
                 <PatientContext.Provider value={[info, setInfo]}>
@@ -68,7 +74,7 @@ export default function ConnectPlusApp({
                                 component={DeviceSelectScreen}
                             />
                             <Stack.Screen
-                                name="Device Screen"
+                                name="Device Details"
                                 options={Styles.screenSkeleton}
                                 component={ConnectedDevicesScreen}
                             />

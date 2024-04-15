@@ -1,7 +1,13 @@
-import { ScrollView, Text, View, Button, Pressable } from "react-native";
+import { useContext, useEffect } from "react";
+import { ScrollView, Text, View, Button, Pressable, StyleSheet } from "react-native";
 import { useRoute } from "@react-navigation/native";
+
 import Styles from "../../styles/main";
 import Stepper from "../comps/Stepper";
+import UniformPageWrapper from "../comps/UniformPageWrapper";
+
+import BluetoothManagerContext from "../BluetoothManagerContext";
+import DeviceInfoPane from "../comps/DeviceInfoPane";
 
 const devices = [
     {
@@ -26,20 +32,42 @@ function ConnectedDevicesScreen({ navigation }) {
     const { isOverride } = route.params || { isOverride: false };
     const { showOverrides } = route.params || { showOverrides: false };
 
+    const {
+        bluetoothDevices,
+        bluetoothConnectingDevice,
+        bluetoothConnectedDevice,
+        bluetoothStartScan,
+        bluetoothStopScan,
+        bluetoothManagerState,
+        bluetoothDisconnectFromDevice
+    } = useContext(BluetoothManagerContext);
+
+    useEffect(() => {
+        // return () => {
+        //     bluetoothDisconnectFromDevice();
+        // };
+    });
+
     return (
-        <View style={[Styles.container]}>
+        <UniformPageWrapper>
             <Stepper step={1} />
             <Text style={[Styles.h4]}>
                 <Text style={{ color: "white", fontWeight: "bold" }}>Connected Devices</Text>
             </Text>
-            <Text style={[Styles.h6]}>Please review the medical devices connected to the ConnectPlus device</Text>
-            <View style={{ height: 15 }}></View>
-            <ScrollView
-                contentContainerStyle={{
-                    gap: Styles.consts.gapIncrement
+            <Text style={[Styles.h6, { textAlign: "center", marginBottom: 8 }]}>
+                Please review the medical devices connected to the ConnectPlus device below:
+            </Text>
+            {/* <View style={{ height: 15 }}></View> */}
+            <DeviceInfoPane device={bluetoothConnectedDevice} showOverrides={showOverrides} detailed={true} />
+            <View
+                style={{
+                    gap: Styles.consts.gapIncrement,
+                    display: "flex",
+                    flexDirection: "column",
+                    width: "100%"
                 }}
             >
-                <Text
+                {/* <Text
                     style={[
                         Styles.medDeviceSelectButton,
                         { height: "auto", backgroundColor: Styles.colors.GEPurple, flexWrap: "wrap", flexDirection: "row" }
@@ -50,30 +78,31 @@ function ConnectedDevicesScreen({ navigation }) {
                         {"\n"}
                     </Text>
                     <Text style={[Styles.deviceSelectButtonText]}>
-                        device_name: {deviceData.device_name ?? "%device_name%"}
+                        device_name: {bluetoothConnectedDevice?.device_name ?? "(name)"}
                         {"\n"}
                     </Text>
                     <Text style={[Styles.deviceSelectButtonText]}>
-                        cur_room: {deviceData.cur_room ?? "%cur_room%"}
+                        cur_room: {bluetoothConnectedDevice?.cur_room ?? "(room)"}
                         {"\n"}
                     </Text>
                     <Text style={[Styles.deviceSelectButtonText]}>
-                        cur_patient_mrn: {deviceData.cur_patient_mrn ?? "%cur_patient_mrn%"}
+                        cur_patient_mrn: {bluetoothConnectedDevice?.cur_patient_mrn ?? "(mrn)"}
                         {"\n"}
                     </Text>
                     <Text style={[Styles.deviceSelectButtonText]}>
-                        last_edit_time: {deviceData.last_edit_time ?? "%last_edit_time%"}
+                        last_edit_time: {bluetoothConnectedDevice?.last_edit_time ?? "%last_edit_time%"}
                         {"\n"}
                     </Text>
                     <Text style={[Styles.deviceSelectButtonText]}>
-                        last_edit_user_id: {deviceData.last_edit_user_id ?? "%last_edit_user_id%"}
+                        last_edit_user_id: {bluetoothConnectedDevice?.last_edit_user_id ?? "%last_edit_user_id%"}
                     </Text>
-                </Text>
+                </Text> */}
 
-                <Text style={[Styles.deviceSelectButtonText, { margin: 0 }]}>
+                {/* <Text style={[Styles.deviceSelectButtonText, { margin: 0 }]}>
                     <Text style={{ fontWeight: "bold", fontSize: 16, margin: 0 }}>Connected devices (placeholder):</Text>
                     {"\n"}
-                </Text>
+                </Text> */}
+                <View style={{ borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: "#999" }} />
                 {devices.map((e, index) => (
                     <Text
                         key={index}
@@ -93,7 +122,7 @@ function ConnectedDevicesScreen({ navigation }) {
                         <Text style={[Styles.deviceSelectButtonText]}>{e.id}</Text>
                     </Text>
                 ))}
-            </ScrollView>
+            </View>
 
             {/*Have to add back button to connected devices screen to go back to scrollable devices page */}
             {/* disabling temporarily because the header has a back button already */}
@@ -117,9 +146,7 @@ function ConnectedDevicesScreen({ navigation }) {
 
             {/*Removed temp override button 3/10/24 */}
             {/* <Button title="Confirm (override temp)" onPress={() => navigation.push("Confirm Override Patient")} /> */}
-
-            <View style={{ marginBottom: 10 }}></View>
-        </View>
+        </UniformPageWrapper>
     );
 }
 

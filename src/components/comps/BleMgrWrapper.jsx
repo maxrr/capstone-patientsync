@@ -48,10 +48,11 @@ const BLE_MGR_ALL_STATES = [
 // TODO: Properly implement state management
 export const BLE_MGR_VALID_ENTRY_STATES = {
     [BLE_MGR_STATE_OFFLINE]: BLE_MGR_ALL_STATES,
-    [BLE_MGR_STATE_IDLE]: [BLE_MGR_STATE_OFFLINE, BLE_MGR_STATE_UNKNOWN],
+    // [BLE_MGR_STATE_IDLE]: [BLE_MGR_STATE_OFFLINE, BLE_MGR_STATE_UNKNOWN],
+    [BLE_MGR_STATE_IDLE]: BLE_MGR_ALL_STATES,
     [BLE_MGR_STATE_SEARCHING]: [BLE_MGR_STATE_IDLE],
     [BLE_MGR_STATE_STOPPING]: [BLE_MGR_STATE_SEARCHING],
-    [BLE_MGR_STATE_CONNECTING]: [BLE_MGR_STATE_SEARCHING],
+    [BLE_MGR_STATE_CONNECTING]: [BLE_MGR_STATE_SEARCHING, BLE_MGR_STATE_IDLE],
     [BLE_MGR_STATE_CONNECTED]: [BLE_MGR_STATE_CONNECTING],
     [BLE_MGR_STATE_DISCONNECTING]: [BLE_MGR_STATE_CONNECTED],
     [BLE_MGR_STATE_DISABLED]: BLE_MGR_ALL_STATES,
@@ -116,7 +117,7 @@ function BleMgrWrapper() {
     // Current state of the bluetooth manager
     const [managerState, setManagerState] = useState(BLE_MGR_STATE_OFFLINE);
     useEffect(() => {
-        if (stateTimeout) {
+        if (stateTimeout && stateTimeout.cancelTimeout) {
             cancelTimeout(stateTimeout);
             console.debug("[BleMgr] Cancelled state timeout");
         }
@@ -133,6 +134,8 @@ function BleMgrWrapper() {
 
     const [stateTimeout, setStateTimeout] = useState(null);
 
+    const [rssiPending, setRssiPending] = useState([]);
+
     // Choice-enabled module things
     // NOTE: Left off here!
     const [BleScanCallbackType, setBleScanCallbackType] = useState(null);
@@ -148,18 +151,23 @@ function BleMgrWrapper() {
         for (const [id, peripheral] of peripherals) {
             // console.log("peripheral:", peripheral);
             if (peripheral) {
-                devs.push({
-                    name: peripheral.name ?? "(no name)",
-                    room: peripheral?.customData?.curRoom ?? "(no room)",
-                    isOverride: peripheral?.customData?.isPatientAssociated,
-                    id,
-                    rssi: peripheral.rssi ?? "??"
-                });
+                devs.push(transformPeripheralToDevice(peripheral));
             }
         }
 
         devs.sort((a, b) => a.rssi - b.rssi);
         return devs;
+    };
+
+    const transformPeripheralToDevice = (peripheral, extraData = {}) => {
+        return (props = {
+            name: peripheral.name ?? "(no name)",
+            room: peripheral?.customData?.curRoom ?? "(no room)",
+            isOverride: peripheral?.customData?.isPatientAssociated,
+            id: peripheral?.id ?? "**(no id)**",
+            rssi: peripheral.rssi ?? "??",
+            ...extraData
+        });
     };
 
     /**
@@ -173,7 +181,7 @@ function BleMgrWrapper() {
                 return String.fromCharCode(byte);
             })
             .join("");
-        return { curRoom, isPatientAssociated };
+        return { read: true, curRoom, isPatientAssociated };
     };
 
     /**
@@ -283,7 +291,7 @@ function BleMgrWrapper() {
                 if (peripheral) {
                     console.log(`[BleMgr] Attempting connection with: ${peripheral ?? "(none)"}`);
 
-                    setConnectingDevice(peripheral.id);
+                    setConnectingDevice(transformPeripheralToDevice(peripheral));
 
                     setPeripherals((map) => {
                         let p = map.get(peripheral.id);
@@ -362,7 +370,7 @@ function BleMgrWrapper() {
                     });
 
                     const queryData = await queryConnectedPeripheral(peripheral);
-                    setConnectedDevice(devices.get(peripheral.id));
+                    setConnectedDevice(transformPeripheralToDevice(peripheral, queryData));
                     return queryData;
 
                     // navigation.navigate("PeripheralDetails", { peripheralData: peripheralData });
@@ -402,12 +410,14 @@ function BleMgrWrapper() {
                         console.log(
                             key,
                             key.toUpperCase(),
-                            key.toUpperCase() in CHARACTERISTIC_UUID_MAP,
-                            CHARACTERISTIC_UUID_MAP[key.toUpperCase()]
+                            key.toUpperCase() in config.CHARACTERISTIC_UUID_MAP,
+                            config.CHARACTERISTIC_UUID_MAP[key.toUpperCase()]
                         );
-                        console.log(CHARACTERISTIC_UUID_MAP);
+                        // console.log(config.CHARACTERISTIC_UUID_MAP);
                         const prettyName =
-                            key.toUpperCase() in CHARACTERISTIC_UUID_MAP ? CHARACTERISTIC_UUID_MAP[key.toUpperCase()] : key;
+                            key.toUpperCase() in config.CHARACTERISTIC_UUID_MAP
+                                ? config.CHARACTERISTIC_UUID_MAP[key.toUpperCase()]
+                                : key;
                         const raw = await manager.read(peripheral.id, characteristic.service, key);
                         const value = raw
                             .map((byte) => {
@@ -500,7 +510,7 @@ function BleMgrWrapper() {
         );
     };
 
-    const handleDiscoverPeripheral = (peripheral) => {
+    const handleDiscoverPeripheral = (peripheral, manager) => {
         // console.debug("[BleMgr] Discovered peripheral", peripheral.id);
 
         if (!peripheral.name) {
@@ -514,7 +524,7 @@ function BleMgrWrapper() {
         //     peripheral?.advertising?.serviceUUIDs?.includes(SERVICE_PATIENTSYNC_UUID.toLowerCase())
         // );
 
-        peripheral.customData = { curRoom: undefined, isPatientAssociated: undefined };
+        peripheral.customData = { read: false, curRoom: undefined, isPatientAssociated: undefined };
 
         // console.log(peripheral?.advertising);
         decoded = decodeRawAdvertisingData(peripheral?.advertising?.rawData?.bytes);
@@ -529,25 +539,34 @@ function BleMgrWrapper() {
         // Filter discovered device
         if (peripheral?.advertising?.serviceUUIDs?.includes(SERVICE_PATIENTSYNC_UUID.toLowerCase())) {
             // console.log(`[BleMgr] Peripheral ${peripheral.id} passed UUID check`);
-            // TODO: Maybe run this during device discovery? Not sure if it is already run.
             setPeripherals((map) => {
                 return new Map(map.set(peripheral.id, peripheral));
             });
 
             if (!manager?.readRSSI) console.debug(`[BleMgr] manager.readRSSI doesn't exist! manager:`, manager);
 
-            manager
-                ?.readRSSI(peripheral.id)
-                .then((rssi) => {
-                    peripheral = peripherals.get(peripheral.id) ?? peripheral;
-                    peripheral.rssi = rssi;
-                    setPeripherals((map) => {
-                        return new Map(map.set(peripheral.id, peripheral));
-                    });
-                })
-                .catch((error) => {
-                    console.log(`[BleMgr] Error while retrieving peripheral ${peripheral.id} RSSI:`, error);
+            // TODO: Maybe run this during device discovery? Not sure if it is already run. (that's what we're trying to do, thanks past max!)
+            // FIXME: This does not work and I have no idea why ~mr
+            if (false && manager?.readRSSI && !rssiPending.includes(peripheral.id)) {
+                setRssiPending((a) => {
+                    a.push(peripheral.id);
+                    return a;
                 });
+
+                manager
+                    ?.readRSSI(peripheral.id)
+                    .then((rssi) => {
+                        console.debug(`[BleMgr] RSSI for ${peripheral.id}: ${rssi}`);
+                        peripheral = peripherals.get(peripheral.id) ?? peripheral;
+                        peripheral.rssi = rssi;
+                        setPeripherals((map) => {
+                            return new Map(map.set(peripheral.id, peripheral));
+                        });
+                    })
+                    .catch((error) => {
+                        console.log(`[BleMgr] Error while retrieving peripheral ${peripheral.id} RSSI:`, error);
+                    });
+            }
         } else {
             // console.log(`[BleMgr] Peripheral ${peripheral.id} does not include service UUID: ${SERVICE_PATIENTSYNC_UUID}`);
             // console.log(peripheral?.advertising?.serviceUUIDs);
@@ -564,6 +583,7 @@ function BleMgrWrapper() {
             if (validStates.includes(managerState)) {
                 console.log("[BleMgr] Starting manager");
                 try {
+                    // https://stackoverflow.com/questions/36367532/how-can-i-conditionally-import-an-es6-module ~mr
                     import("react-native-ble-manager")
                         .then((mgrModule) => {
                             const mgr = mgrModule.default;
@@ -576,7 +596,9 @@ function BleMgrWrapper() {
                                 .catch((error) => console.error("[BleMgr] Manager could not be started:", error));
 
                             setEventListeners([
-                                mgr.addListener("BleManagerDiscoverPeripheral", handleDiscoverPeripheral),
+                                mgr.addListener("BleManagerDiscoverPeripheral", (peripheral) =>
+                                    handleDiscoverPeripheral(peripheral, mgr)
+                                ),
                                 mgr.addListener("BleManagerStopScan", handleStopScan),
                                 mgr.addListener("BleManagerDisconnectPeripheral", handleDisconnectedPeripheral),
                                 mgr.addListener(
@@ -660,7 +682,7 @@ function BleMgrWrapper() {
                     setStateTimeout(
                         setTimeout(() => {
                             console.debug(
-                                `[BleMgr] Manager took more than ${config.SCAN_STOP_TIMEOUT} ms to stop, setting state back to idle`
+                                `[BleMgr] Manager took more than ${config.SCAN_STOP_TIMEOUT} ms to stop, assuming something is broken and going back to idle state`
                             );
                             setManagerState(BLE_MGR_STATE_IDLE);
                         }, config.SCAN_STOP_TIMEOUT)
@@ -683,10 +705,13 @@ function BleMgrWrapper() {
     const connectToDevice = async (id) => {
         const peripheral = peripherals.get(id);
         if (peripheral) {
-            if (connectingDevice) {
-                console.debug(`[BleMgr] User tried to select peripheral ${id}, but already connecting`);
-                return null;
+            if (connectingDevice || connectedDevice) {
+                console.debug(
+                    `[BleMgr] User tried to select peripheral ${id}, but already connecting/connected to ${connectingDevice?.id ?? connectedDevice.id}, disconnecting from there...`
+                );
+                await disconnectFromDevice();
             }
+
             const deviceData = await connectPeripheral(peripheral);
             console.debug("[BleMgr] (debug) device data:", deviceData);
 
@@ -702,6 +727,64 @@ function BleMgrWrapper() {
         }
     };
 
+    const disconnectFromDevice = async () => {
+        // TODO: Check for incoming states
+
+        const id = connectingDevice?.id ?? connectedDevice?.id;
+        if (id) {
+            console.log(`[BleMgr] Disconnecting from ${id}`);
+            setManagerState(BLE_MGR_STATE_DISCONNECTING);
+
+            const peripheral = peripherals.get(id);
+            await manager.disconnect(id);
+
+            console.log(`[BleMgr] Disconnected from ${id}`);
+            setManagerState(BLE_MGR_STATE_IDLE);
+            setConnectedDevice(null);
+            setConnectingDevice(null);
+        } else {
+            console.log(`[BleMgr] Tried to disconnect from device, but no connected device found`);
+        }
+    };
+
+    const performSyncWithDevice = async (peripheralId, mrn, changeUserId, statusCallback = () => {}) => {
+        if (peripheralId) {
+            if (mrn && changeUserId) {
+                const uuidMapping = {
+                    [CHAR_CUR_PATIENT_UUID]: [mrn, "patient MRN"],
+                    [CHAR_LAST_EDIT_USER_ID_UUID]: [changeUserId, "editor ID"],
+                    [CHAR_LAST_EDIT_TIME_UUID]: [Math.floor(Date.now() / 1000).toString(), "edit time"]
+                };
+                // console.log(uuidMapping);
+                for (const key in uuidMapping) {
+                    const [val, prettyName] = uuidMapping[key];
+                    // console.log(key);
+                    statusCallback(`Writing ${prettyName} to device...`);
+                    try {
+                        let byteArray = [];
+                        for (let i = 0; i < val.length; i++) {
+                            byteArray.push(val.charCodeAt(i));
+                        }
+
+                        // console.log(`Encoded ${val} to:`, byteArray);
+
+                        await manager.write(peripheralId, SERVICE_PATIENTSYNC_UUID, key, byteArray);
+                    } catch (error) {
+                        console.error(`[BleMgr] Error thrown while writing ${key}=${val} to ${peripheralId}:`, error);
+                        throw new Error(
+                            `Error occurred while writing characteristic "${prettyName}" (${[key]}). Please try again.`
+                        );
+                    }
+                    await sleep(1600);
+                }
+            } else {
+                throw new Error("Invalid MRN, or editor identifier, please try again.");
+            }
+        } else {
+            throw new Error("Invalid peripheral identifier supplied, please try again.");
+        }
+    };
+
     const publicCollection = {
         bluetoothPeripherals: peripherals,
         bluetoothDevices: devices,
@@ -711,7 +794,10 @@ function BleMgrWrapper() {
         bluetoothInitialize: initialize,
         bluetoothStartScan: startScan,
         bluetoothStopScan: stopScan,
-        bluetoothRemoveListeners: removeListeners
+        bluetoothRemoveListeners: removeListeners,
+        bluetoothConnectToDevice: connectToDevice,
+        bluetoothDisconnectFromDevice: disconnectFromDevice,
+        bluetoothPerformSyncWithDevice: performSyncWithDevice
     };
 
     return <ConnectPlusApp {...publicCollection} />;

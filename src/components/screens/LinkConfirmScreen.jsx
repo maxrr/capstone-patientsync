@@ -1,60 +1,53 @@
-import { Button, Text, View } from "react-native";
+import { useContext, useState } from "react";
+import { ActivityIndicator, Alert, Button, Text, View } from "react-native";
+import { useRoute } from "@react-navigation/native";
+
 import Styles from "../../styles/main";
+import Stepper from "../comps/Stepper";
+import DeviceInfoPane from "../comps/DeviceInfoPane";
+import PatientInfoPane from "../comps/PatientInfoPane";
+
 import PatientContext from "../PatientContext";
 import DeviceContext from "../DeviceContext";
-import { useContext } from "react";
-import { useRoute } from "@react-navigation/native";
-import Stepper from "../comps/Stepper";
+import BluetoothManagerContext from "../BluetoothManagerContext";
+import UniformPageWrapper from "../comps/UniformPageWrapper";
+import StyledModal from "../comps/StyledModal";
 
 function LinkConfirmScreen({ navigation }) {
-
     const route = useRoute();
     const { isUnlinking } = route.params || { isUnlinking: false };
     const [info, setInfo] = useContext(PatientContext);
-    const [deviceInfo, setDeviceInfo] = useContext(DeviceContext);
+    // const [deviceInfo, setDeviceInfo] = useContext(DeviceContext);
+    const { bluetoothConnectedDevice, bluetoothPerformSyncWithDevice } = useContext(BluetoothManagerContext);
+
+    const [linkStatusText, setLinkStatusText] = useState("");
+    const [linkStatusModalVisible, setLinkStatusModalVisible] = useState(false);
 
     //if unlinking, then don't have MRN and just use the patient profile we generated as an example last month
-    const patientProfile = isUnlinking ? {
-        // Hardcoded values for the unlink scenario
-        firstName: "Ron",
-        lastName: "Smith",
-        mrn: "157849",
-        visitNumber: "2163",
-        dob: "03/14/1992"
-    } : {
-        firstName: info.first,
-        lastName: info.last,
-        mrn: info.mrn,
-        visitNumber: info.visit,
-        dob: info.month + "/" + info.day + "/" + info.year
-    };
+    const patientProfile = isUnlinking
+        ? {
+              // Hardcoded values for the unlink scenario
+              firstName: "Ron",
+              lastName: "Smith",
+              mrn: "157849",
+              visitNumber: "2163",
+              dob: "03/14/1992"
+          }
+        : {
+              firstName: info.first,
+              lastName: info.last,
+              mrn: info.mrn,
+              visitNumber: info.visit,
+              dob: info.month + "/" + info.day + "/" + info.year
+          };
 
-    
-    const deviceList = [
-        { name: "GECP2427170", room: "Room 412A", isOverride: false },
-        { name: "GECP4167318", room: "Room 413B", isOverride: false },
-        { name: "GECP9834313(patient connected)", room: "Room 311C", isOverride: true },
-        { name: "GECP4934123(patient connected)", room: "Room 214A", isOverride: true },
-        { name: "GECP3018493(patient connected)", room: "Room 104D", isOverride: true },
-        { name: "GECP5813938(patient connected)", room: "Room 503C", isOverride: true },
-        { name: "GECP6847242(patient connected)", room: "Room 204E", isOverride: true },
-        { name: "GECP7892324(patient connected)", room: "Room 513B", isOverride: true },
-        { name: "GECP9342422(patient connected)", room: "Room 321A", isOverride: true },
-        { name: "GECP8432742(patient connected)", room: "Room 102F", isOverride: true },
-        { name: "GECP1032338(patient connected)", room: "Room 401C", isOverride: true },
-        { name: "GECP1238549(patient connected)", room: "Room 201A", isOverride: true }
-    ];
-    
     return (
-        <View style={[Styles.container]}>
-            <Text style={[Styles.h4]}><Text style={{color: "white", fontWeight: "bold"}}>{isUnlinking ? "Unlink" : "Link"}</Text></Text>
+        <UniformPageWrapper>
+            <Stepper step={3} />
+            <Text style={[Styles.h4]}>
+                <Text style={{ color: "white", fontWeight: "bold" }}>{isUnlinking ? "Unlink" : "Link"}</Text>
+            </Text>
             <Text style={[Styles.h6]}>{isUnlinking ? "Ready to unlink?" : "Ready to link?"}</Text>
-
-            <View style={{ height: 30 }}></View>
-
-            <Stepper step={3}/>
-
-            <View style={{ height: 30 }}></View>
 
             {/* <Text style={[Styles.h3]}>
                 {patientProfile.lastName}, {patientProfile.firstName}
@@ -63,7 +56,13 @@ function LinkConfirmScreen({ navigation }) {
             <Text style={[Styles.h6]}>MRN: {patientProfile.mrn}</Text>
             <Text style={[Styles.h6]}>Visit number: {patientProfile.visitNumber}</Text> */}
 
-            <View style={Styles.deviceSelectButton}>
+            <Text style={{ fontSize: 14, color: "#aaa", textAlign: "center", lineHeight: 16, marginTop: 4 }}>
+                You are about to link the following patient and device, please confirm all details before proceeding.
+            </Text>
+
+            <PatientInfoPane profile={patientProfile} style={{ marginTop: 10 }} />
+
+            {/* <View style={Styles.deviceSelectButton}>
                 <Text
                     style={[
                         Styles.deviceSelectButton,
@@ -71,31 +70,61 @@ function LinkConfirmScreen({ navigation }) {
                         { backgroundColor: Styles.colors.GEPurple }
                     ]}
                 >
-                    <Text style={{ fontWeight: "bold", fontSize: 16 }}>{"Patient:         " + patientProfile.lastName + ", " + patientProfile.firstName}</Text>
+                    <Text style={{ fontWeight: "bold", fontSize: 16 }}>
+                        {"Patient:         " + patientProfile.lastName + ", " + patientProfile.firstName}
+                    </Text>
                     {"\n"}
                     {"MRN:                        " + patientProfile.mrn}
                 </Text>
-            </View>
+            </View> */}
 
-                <View style={Styles.deviceSelectButton}>
-                    <Text
-                        style={[
-                            Styles.deviceSelectButton,
-                            Styles.deviceSelectButtonText,
-                            { backgroundColor: Styles.colors.GEPurple }
-                        ]}
-                    >
-                        <Text style={{ fontWeight: "bold", fontSize: 16 }}>{deviceInfo.name}</Text>
-                        {"\n"}
-                        {deviceInfo.room}
-                    </Text>
-                </View>
+            <DeviceInfoPane device={bluetoothConnectedDevice} />
 
-            <View style={{ height: 30 }}></View>
+            {/* <View style={Styles.deviceSelectButton}>
+                <Text
+                    style={[
+                        Styles.deviceSelectButton,
+                        Styles.deviceSelectButtonText,
+                        { backgroundColor: Styles.colors.GEPurple }
+                    ]}
+                >
+                    <Text style={{ fontWeight: "bold", fontSize: 16 }}>{bluetoothConnectedDevice.name}</Text>
+                    {"\n"}
+                    {bluetoothConnectedDevice.room}
+                </Text>
+            </View> */}
 
-            <Button title={isUnlinking ? "Unlink" : "Link"} onPress={() => navigation.push("Link Complete", {isUnlinking})} />
-            <View style={{height: 50}}></View>
-        </View>
+            <StyledModal visible={linkStatusModalVisible} innerStyle={{ gap: Styles.consts.gapIncrement }}>
+                <Text style={{ color: "white", fontSize: 20, textAlign: "center" }}>Syncing...</Text>
+                <Text style={{ color: "white", fontSize: 16, textAlign: "center" }}>{linkStatusText}</Text>
+                <ActivityIndicator style={{ marginVertical: Styles.consts.gapIncrement * 2 }} />
+            </StyledModal>
+
+            <Button
+                title={isUnlinking ? "Unlink" : "Link"}
+                onPress={() => {
+                    setLinkStatusText("Setting up...");
+                    setLinkStatusModalVisible(true);
+                    bluetoothPerformSyncWithDevice(
+                        bluetoothConnectedDevice?.id,
+                        patientProfile.mrn,
+                        "SAMPLEUSERID",
+                        (progress) => {
+                            setLinkStatusText(progress);
+                        }
+                    )
+                        .then((res) => {
+                            console.log("res:", res);
+                            setLinkStatusModalVisible(false);
+                        })
+                        .catch((error) => {
+                            Alert.alert(error.toString());
+                            console.error(error);
+                        });
+                }}
+                // onPress={() => navigation.push("Link Complete", { isUnlinking })}
+            />
+        </UniformPageWrapper>
     );
 }
 

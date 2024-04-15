@@ -133,8 +133,7 @@ const Styles = StyleSheet.create({
     },
     medDeviceSelectButton: {
         padding: 10,
-        width: 330,
-        height: 80,
+        width: "100%",
         borderRadius: 5,
         overflow: "hidden"
     },

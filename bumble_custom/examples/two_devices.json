@@ -1,0 +1,12 @@
+[
+    {
+        "name": "GE Connect+ A",
+        "address": "F0:F1:F2:F3:F4:F5",
+        "cur_room": "105"
+    },
+    {
+        "name": "GE Connect+ B",
+        "address": "F6:F7:F8:F9:FA:FB",
+        "cur_room": "310"
+    }
+]
