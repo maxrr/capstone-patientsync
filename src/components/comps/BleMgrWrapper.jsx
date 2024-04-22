@@ -1,5 +1,5 @@
-import { createContext, useState, useEffect, useMemo } from "react";
-import { Platform, NativeEventEmitter, PermissionsAndroid } from "react-native";
+import { useState, useEffect, useRef } from "react";
+import { Platform, PermissionsAndroid } from "react-native";
 import ConnectPlusApp from "../ConnectPlusApp";
 
 import {
@@ -19,7 +19,8 @@ import {
     BLE_MGR_STATE_DISABLED,
     BLE_MGR_STATE_UNKNOWN,
     BLE_MGR_STATES_STRS,
-    BLE_MGR_VALID_ENTRY_STATES
+    BLE_MGR_VALID_ENTRY_STATES,
+    BLE_MGR_ALL_STATES
 } from "./BleMgrConfig";
 
 const config = {
@@ -66,16 +67,35 @@ function BleMgrWrapper() {
     const [connectingDevice, setConnectingDevice] = useState(null);
 
     // Current state of the bluetooth manager
-    const [managerState, setManagerState] = useState(BLE_MGR_STATE_OFFLINE);
-    useEffect(() => {
-        if (stateTimeout && stateTimeout.cancelTimeout) {
-            cancelTimeout(stateTimeout);
-            console.debug("[BleMgr] Cancelled state timeout");
+    // const [managerState, setManagerState] = useState(BLE_MGR_STATE_OFFLINE);
+    // useEffect(() => {
+    //     if (stateTimeout && stateTimeout.cancelTimeout) {
+    //         cancelTimeout(stateTimeout);
+    //         console.debug("[BleMgr] Cancelled state timeout");
+    //     }
+    //     console.debug(
+    //         `[BleMgr] managerState updated to ${managerState} (${BLE_MGR_STATES_STRS[managerState] ?? "(no str)"})`
+    //     );
+    // }, [managerState]);
+    const [hookedManagerState, setHookedManagerState] = useState(BLE_MGR_STATE_OFFLINE);
+    const managerState = useRef(BLE_MGR_STATE_OFFLINE);
+    const getManagerState = () => {
+        return managerState.current;
+    };
+    const setManagerState = (newState) => {
+        if (BLE_MGR_ALL_STATES.includes(newState)) {
+            console.log(`[BleMgr] Manager state updated to: ${newState} (${BLE_MGR_STATES_STRS[newState]})`);
+            managerState.current = newState;
+            clearStateTimeout();
+            setHookedManagerState(newState);
+        } else {
+            console.log(`[BleMgr] Tried to set manager state to invalid state: ${newState}`);
         }
-        console.debug(
-            `[BleMgr] managerState updated to ${managerState} (${BLE_MGR_STATES_STRS[managerState] ?? "(no str)"})`
-        );
-    }, [managerState]);
+    };
+
+    // useEffect(() => {
+    //     console.log(`[BleMgr] [DEBUG] Hooked manager state changed to: ${hookedManagerState}`);
+    // }, [hookedManagerState]);
 
     // Current instance of the manager
     const [manager, setManager] = useState(null);
@@ -83,7 +103,25 @@ function BleMgrWrapper() {
     // Registered event listeners
     const [eventListeners, setEventListeners] = useState([]);
 
-    const [stateTimeout, setStateTimeout] = useState(null);
+    // const [stateTimeout, setStateTimeout] = useState(null);
+    const stateTimeout = useRef(null);
+    const getStateTimeout = () => {
+        return stateTimeout.current;
+    };
+    const setStateTimeout = (newTimeout) => {
+        clearStateTimeout();
+        console.log(`[BleMgr] New timeout registered: ${newTimeout}`);
+        stateTimeout.current = newTimeout;
+    };
+    const clearStateTimeout = () => {
+        const cur = getStateTimeout();
+        if (cur) {
+            console.log(`[BleMgr] Destroying old state timeout: ${cur}`);
+            clearTimeout(cur);
+        }
+        stateTimeout.current = null;
+        // console.log("[BleMgr] Cleared state timeout");
+    };
 
     const [rssiPending, setRssiPending] = useState([]);
 
@@ -199,7 +237,7 @@ function BleMgrWrapper() {
             BLE_MGR_STATE_STOPPING
         ];
 
-        if (validStates.includes(managerState)) {
+        if (validStates.includes(getManagerState())) {
             console.log("[BleMgr] Retrieving connected peripherals");
             try {
                 const connectedPeripherals = await manager.getConnectedPeripherals();
@@ -229,7 +267,7 @@ function BleMgrWrapper() {
             }
         } else {
             console.log(
-                `[BleMgr] Could not retrieve connected peripherals, current state ${BLE_MGR_STATES_STRS[managerState]}, expected one of: ${validStates}`
+                `[BleMgr] Could not retrieve connected peripherals, current state ${BLE_MGR_STATES_STRS[getManagerState()]}, expected one of: ${validStates}`
             );
         }
     };
@@ -237,7 +275,7 @@ function BleMgrWrapper() {
     const connectPeripheral = async (peripheral) => {
         const validStates = BLE_MGR_VALID_ENTRY_STATES[BLE_MGR_STATE_CONNECTING];
 
-        if (validStates.includes(managerState)) {
+        if (validStates.includes(getManagerState())) {
             try {
                 if (peripheral) {
                     console.log(`[BleMgr] Attempting connection with: ${peripheral ?? "(none)"}`);
@@ -335,7 +373,7 @@ function BleMgrWrapper() {
             }
         } else {
             console.log(
-                `[BleMgr] Could not connect attempt peripheral connection, current state ${BLE_MGR_STATES_STRS[managerState]}, expected one of: ${validStates}`
+                `[BleMgr] Could not connect attempt peripheral connection, current state ${BLE_MGR_STATES_STRS[getManagerState()]}, expected one of: ${validStates}`
             );
         }
     };
@@ -481,7 +519,7 @@ function BleMgrWrapper() {
         decoded = decodeRawAdvertisingData(peripheral?.advertising?.rawData?.bytes);
         if (255 in decoded) {
             peripheral.customData = decodeManufacturerCustomField(decoded[255].bytes);
-            console.debug(decoded[255].bytes, peripheral.customData);
+            // console.debug(decoded[255].bytes, peripheral.customData);
         }
 
         // console.log("customData", peripheral.customData);
@@ -532,7 +570,7 @@ function BleMgrWrapper() {
     const initialize = () => {
         if (ENABLE_BLE_FUNCTIONALITY) {
             const validStates = BLE_MGR_VALID_ENTRY_STATES[BLE_MGR_STATE_IDLE];
-            if (validStates.includes(managerState)) {
+            if (validStates.includes(getManagerState())) {
                 console.log("[BleMgr] Starting manager");
                 try {
                     // https://stackoverflow.com/questions/36367532/how-can-i-conditionally-import-an-es6-module ~mr
@@ -574,7 +612,9 @@ function BleMgrWrapper() {
                     return;
                 }
             } else {
-                console.log(`[BleMgr] Unable to initialize, current state ${managerState}, expected one of: ${validStates}`);
+                console.log(
+                    `[BleMgr] Unable to initialize, current state ${getManagerState()}, expected one of: ${validStates}`
+                );
             }
         } else {
             console.log("[BleMgr] Bluetooth functionality is disabled, should use placeholder devices instead");
@@ -591,7 +631,7 @@ function BleMgrWrapper() {
 
     const startScan = () => {
         const validStates = BLE_MGR_VALID_ENTRY_STATES[BLE_MGR_STATE_SEARCHING];
-        if (validStates.includes(managerState)) {
+        if (validStates.includes(getManagerState())) {
             try {
                 setPeripherals(new Map());
                 retrieveConnected();
@@ -618,29 +658,32 @@ function BleMgrWrapper() {
                 console.error("[BleMgr] Unexpected error while starting scan:", error);
             }
         } else {
-            console.log(`[BleMgr] Unable to start scan, current state ${managerState}, expected one of: ${validStates}`);
+            console.log(
+                `[BleMgr] Unable to start scan, current state ${getManagerState()}, expected one of: ${validStates}`
+            );
         }
     };
 
     // FIXME: This is not working properly when a user leaves the device select screen
     const stopScan = () => {
         const validStates = BLE_MGR_VALID_ENTRY_STATES[BLE_MGR_STATE_STOPPING];
-        if (validStates.includes(managerState)) {
+        if (validStates.includes(getManagerState())) {
             manager
                 ?.stopScan()
                 .then(() => {
                     console.log("[BleMgr] Stopping scan");
                     setManagerState(BLE_MGR_STATE_STOPPING);
-                    setStateTimeout(
-                        setTimeout(() => {
-                            console.debug(
-                                `[BleMgr] Manager took more than ${config.SCAN_STOP_TIMEOUT} ms to stop, assuming something is broken and going back to idle state`
-                            );
-                            setManagerState(BLE_MGR_STATE_IDLE);
-                        }, config.SCAN_STOP_TIMEOUT)
-                    );
 
-                    clearTimeout();
+                    const timeout = setTimeout(() => {
+                        console.debug(
+                            `[BleMgr] Manager took more than ${config.SCAN_STOP_TIMEOUT} ms to stop, assuming something is broken and going back to idle state`
+                        );
+                        setManagerState(BLE_MGR_STATE_IDLE);
+                    }, config.SCAN_STOP_TIMEOUT);
+
+                    console.log(`[BleMgr] [DEBUG] Created new timeout: ${timeout}`);
+                    setStateTimeout(timeout);
+                    // clearStateTimeout();
                 })
                 .catch((error) => {
                     console.error("[BleMgr] Error thrown while stopping scan:", error);
@@ -649,8 +692,8 @@ function BleMgrWrapper() {
                     // setIsScanning(false);
                     // setManagerState(BLE_MGR_STATE_IDLE);
                 });
-        } else {
-            console.log(`[BleMgr] Unable to stop scan, current state ${managerState}, expected one of: ${validStates}`);
+        } else if (getManagerState() != BLE_MGR_STATE_IDLE) {
+            console.log(`[BleMgr] Unable to stop scan, current state ${getManagerState()}, expected one of: ${validStates}`);
         }
     };
 
@@ -729,6 +772,8 @@ function BleMgrWrapper() {
                     }
                     await sleep(1600);
                 }
+
+                return true;
             } else {
                 throw new Error("Invalid MRN, or editor identifier, please try again.");
             }
@@ -742,7 +787,7 @@ function BleMgrWrapper() {
         bluetoothDevices: devices,
         bluetoothConnectingDevice: connectingDevice,
         bluetoothConnectedDevice: connectedDevice,
-        bluetoothManagerState: managerState,
+        bluetoothManagerState: hookedManagerState,
         bluetoothInitialize: initialize,
         bluetoothStartScan: startScan,
         bluetoothStopScan: stopScan,

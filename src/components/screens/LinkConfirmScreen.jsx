@@ -103,7 +103,7 @@ function LinkConfirmScreen({ navigation }) {
             <Button
                 title={isUnlinking ? "Unlink" : "Link"}
                 onPress={() => {
-                    setLinkStatusText("Setting up...");
+                    setLinkStatusText("Starting...");
                     setLinkStatusModalVisible(true);
                     bluetoothPerformSyncWithDevice(
                         bluetoothConnectedDevice?.id,
@@ -116,10 +116,12 @@ function LinkConfirmScreen({ navigation }) {
                         .then((res) => {
                             console.log("res:", res);
                             setLinkStatusModalVisible(false);
+                            navigation.push("Link Complete");
                         })
                         .catch((error) => {
                             Alert.alert(error.toString());
                             console.error(error);
+                            setLinkStatusModalVisible(false);
                         });
                 }}
                 // onPress={() => navigation.push("Link Complete", { isUnlinking })}
