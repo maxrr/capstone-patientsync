@@ -17,7 +17,7 @@ import PatientConfirmOverrideScreen from "./screens/PatientConfirmOverrideScreen
 import PatientContext from "./PatientContext";
 import DeviceContext from "./DeviceContext";
 import BluetoothManagerContext from "./BluetoothManagerContext";
-import { BLE_MGR_STATE_SEARCHING } from "./comps/BleMgrWrapper";
+import { BLE_MGR_STATE_SEARCHING } from "./comps/BleMgrConfig";
 
 const Stack = createNativeStackNavigator();
 export default function ConnectPlusApp({

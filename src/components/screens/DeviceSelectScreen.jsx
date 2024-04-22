@@ -6,7 +6,7 @@ import Stepper from "../comps/Stepper";
 import UniformPageWrapper from "../comps/UniformPageWrapper";
 import DeviceContext from "../DeviceContext";
 import BluetoothManagerContext from "../BluetoothManagerContext";
-import { BLE_MGR_STATE_SEARCHING, ENABLE_BLE_FUNCTIONALITY } from "../comps/BleMgrWrapper";
+import { BLE_MGR_STATE_SEARCHING, ENABLE_BLE_FUNCTIONALITY } from "../comps/BleMgrConfig";
 import DeviceInfoPane from "../comps/DeviceInfoPane";
 import StyledModal from "../comps/StyledModal";
 
@@ -37,18 +37,18 @@ function DeviceSelectScreen({ navigation, route }) {
     // a lot worse than this imo -dt
     // All hardcoded as of right now.
     const deviceList = [
-        { name: "GECP2427170", room: "Room 412A", isOverride: false, id: "00:00:00:00:00:01", rssi: 20 },
-        { name: "GECP4167318", room: "Room 413B", isOverride: false, id: "00:00:00:00:00:02", rssi: 20 },
-        { name: "GECP9834313(patient connected)", room: "Room 311C", isOverride: true, id: "00:00:00:00:00:03", rssi: 20 },
-        { name: "GECP4934123(patient connected)", room: "Room 214A", isOverride: true, id: "00:00:00:00:00:04", rssi: 20 },
-        { name: "GECP3018493(patient connected)", room: "Room 104D", isOverride: true, id: "00:00:00:00:00:05", rssi: 20 },
-        { name: "GECP5813938(patient connected)", room: "Room 503C", isOverride: true, id: "00:00:00:00:00:06", rssi: 20 },
-        { name: "GECP6847242(patient connected)", room: "Room 204E", isOverride: true, id: "00:00:00:00:00:07", rssi: 20 },
-        { name: "GECP7892324(patient connected)", room: "Room 513B", isOverride: true, id: "00:00:00:00:00:08", rssi: 20 },
-        { name: "GECP9342422(patient connected)", room: "Room 321A", isOverride: true, id: "00:00:00:00:00:09", rssi: 20 },
-        { name: "GECP8432742(patient connected)", room: "Room 102F", isOverride: true, id: "00:00:00:00:00:0A", rssi: 20 },
-        { name: "GECP1032338(patient connected)", room: "Room 401C", isOverride: true, id: "00:00:00:00:00:0B", rssi: 20 },
-        { name: "GECP1238549(patient connected)", room: "Room 201A", isOverride: true, id: "00:00:00:00:00:0C", rssi: 20 }
+        { name: "GECP2427170", room: "412A", isOverride: false, id: "00:00:00:00:00:01", rssi: 20 },
+        { name: "GECP4167318", room: "413B", isOverride: false, id: "00:00:00:00:00:02", rssi: 20 },
+        { name: "GECP9834313(patient connected)", room: "311C", isOverride: true, id: "00:00:00:00:00:03", rssi: 20 },
+        { name: "GECP4934123(patient connected)", room: "214A", isOverride: true, id: "00:00:00:00:00:04", rssi: 20 },
+        { name: "GECP3018493(patient connected)", room: "104D", isOverride: true, id: "00:00:00:00:00:05", rssi: 20 },
+        { name: "GECP5813938(patient connected)", room: "503C", isOverride: true, id: "00:00:00:00:00:06", rssi: 20 },
+        { name: "GECP6847242(patient connected)", room: "204E", isOverride: true, id: "00:00:00:00:00:07", rssi: 20 },
+        { name: "GECP7892324(patient connected)", room: "513B", isOverride: true, id: "00:00:00:00:00:08", rssi: 20 },
+        { name: "GECP9342422(patient connected)", room: "321A", isOverride: true, id: "00:00:00:00:00:09", rssi: 20 },
+        { name: "GECP8432742(patient connected)", room: "102F", isOverride: true, id: "00:00:00:00:00:0A", rssi: 20 },
+        { name: "GECP1032338(patient connected)", room: "401C", isOverride: true, id: "00:00:00:00:00:0B", rssi: 20 },
+        { name: "GECP1238549(patient connected)", room: "201A", isOverride: true, id: "00:00:00:00:00:0C", rssi: 20 }
     ];
 
     // Test to see if override only (since unlinking case)
@@ -101,7 +101,7 @@ function DeviceSelectScreen({ navigation, route }) {
 
                 <ActivityIndicator style={{ marginBottom: Styles.consts.gapIncrement * 2 }} />
                 {/* TODO: Add progress bar */}
-                <Pressable onPress={() => setConnectionModalVisible(false)} style={{ width: "100%" }}>
+                {/* <Pressable onPress={() => setConnectionModalVisible(false)} style={{ width: "100%" }}>
                     <Text
                         style={{
                             color: "white",
@@ -114,7 +114,7 @@ function DeviceSelectScreen({ navigation, route }) {
                     >
                         Cancel
                     </Text>
-                </Pressable>
+                </Pressable> */}
             </StyledModal>
             <Stepper step={1} />
             <Text style={[Styles.h4]}>

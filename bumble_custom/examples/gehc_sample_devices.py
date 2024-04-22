@@ -151,6 +151,19 @@ class Listener(Device.Listener, Connection.Listener):
 
 # -----------------------------------------------------------------------------
 
+async def update_device_advertising_data(dev: Device, data: SampleDevicePersistedData):
+    if dev.extended_adv_set != None:
+        extended_adv_data = create_extended_advertising_data(dev, data)
+        advertising_data = bytes(extended_adv_data)
+        await dev.extended_adv_set.set_advertising_data(advertising_data)
+        print("Updated extended advertising data:", advertising_data)
+
+    if dev.legacy_adv_set != None:
+        legacy_adv_data = create_legacy_advertising_data(dev, data)
+        advertising_data = bytes(legacy_adv_data)
+        await dev.legacy_adv_set.set_advertising_data(advertising_data)
+        print("Updated legacy advertising data:", advertising_data)
+
 def construct_reader(data: SampleDevicePersistedData, prop: str):
     def tmp(connection: Connection):
             print(f'----- READ PROPERTY {prop} FROM', connection.peer_address or connection)
@@ -164,16 +177,13 @@ def construct_readers(data: SampleDevicePersistedData):
     return readers
 
 def construct_writer(dev: Device, data: SampleDevicePersistedData, prop: str):
-    def tmp(connection: Connection, value: bytes):
+    async def tmp(connection: Connection, value: bytes):
         value = value.decode("utf-8")
         print(f'----- WRITE PROPERTY {prop} = {value} FROM', connection.peer_address or connection)
         setattr(data, prop, value)
 
         if prop == 'cur_room' or prop == 'cur_patient_mrn':
-            # Recompute `advertising_data` on value changes
-            advertising_data = create_advertising_data(dev, data)
-            dev.advertising_data = advertising_data
-            print("Recomputed advertising data:", advertising_data, dev.advertising_data)
+            await update_device_advertising_data(dev, data)
             
         data.save_to_disk()
     return tmp
@@ -225,37 +235,6 @@ def prepare_uuid(s: str) -> str:
             acc += segment
     return acc
 
-# Using a different method of generating advertisement data now
-# def generate_advertisement_data(name, services: list[str]):
-#     # The elements composed in these fields https://stackoverflow.com/questions/27506474/how-to-byte-swap-a-32-bit-integer-in-python
-#     # format: (type, content); content is unreversed
-#     intro = (0x1, '06', 2)
-#     joined_services = "".join(list(map(lambda a : prepare_uuid(a.replace("-", "")), services))).lower()
-#     complete_list_of_services = (0x7, joined_services)
-#     complete_local_name = (0x9, encode_to_hex_str(name))
-
-#     to_include = [intro, complete_list_of_services, complete_local_name]
-#     acc = ""
-#     for entry in to_include:
-#         entry_type = num_to_hex_byte(entry[0])
-#         entry_content = entry[1]
-#         entry_content_len = len(entry_content) / 2 + 1
-#         entry_content_len_bytes = num_to_hex_byte(entry_content_len)
-#         if len(entry) > 2:
-#             entry_content_len_bytes = num_to_hex_byte(entry[2])
-
-#         print(f'adding type {entry_type} with length {entry_content_len} ({entry_content_len_bytes}): {entry_content}')
-#         # print(type(entry_type), type(entry_content), type(entry_content_len_bytes))
-
-#         # acc += entry_content_len_bytes + entry_type + entry_content
-#         acc += entry_content_len_bytes + entry_type + entry_content
-
-#     acc = str(acc)
-#     # for i, c in enumerate(acc):
-#     #     print(i, c)
-#     print(acc)
-#     return acc
-
 def construct_characteristics(device: Device, data: SampleDevicePersistedData, uuid_map: dict[str: str]) -> list[Characteristic]:
     characteristics = []
     readers = construct_readers(data)
@@ -271,14 +250,13 @@ def construct_characteristics(device: Device, data: SampleDevicePersistedData, u
         characteristics.append(char)
     return characteristics
 
-def create_advertising_data(device: Device, data: SampleDevicePersistedData):
+def create_extended_advertising_data(device: Device, data: SampleDevicePersistedData):
     flags = AdvertisingData.LE_GENERAL_DISCOVERABLE_MODE_FLAG | AdvertisingData.BR_EDR_NOT_SUPPORTED_FLAG
 
     # custom_data: variable length of bytes total, first byte is 1 if patient is connected (mrn is != -1), 0 otherwise; rest of bytes are encoded room string
     is_patient_associated = (0x0 if int(data.cur_patient_mrn) == -1 else 0x1).to_bytes()
     encoded_room_string = bytes(data.cur_room.encode("utf-8"))
     custom_data = is_patient_associated + encoded_room_string
-    print(">>>>>!", custom_data)
 
     advertising_data = AdvertisingData(
         [
@@ -290,6 +268,24 @@ def create_advertising_data(device: Device, data: SampleDevicePersistedData):
         ]
     )
     
+    return advertising_data
+
+def create_legacy_advertising_data(device: Device, data: SampleDevicePersistedData):
+    flags = AdvertisingData.LE_GENERAL_DISCOVERABLE_MODE_FLAG | AdvertisingData.BR_EDR_NOT_SUPPORTED_FLAG
+
+    # custom_data: variable length of bytes total, first byte is 1 if patient is connected (mrn is != -1), 0 otherwise; rest of bytes are encoded room string
+    # TODO: Adapt this to limit name length, and include custom data
+    is_patient_associated = (0x0 if int(data.cur_patient_mrn) == -1 else 0x1).to_bytes()
+    encoded_room_string = bytes(data.cur_room.encode("utf-8"))
+    custom_data = is_patient_associated + encoded_room_string
+
+    advertising_data = AdvertisingData(
+        [
+            (AdvertisingData.FLAGS, chr(flags).encode("utf-8")),
+            (AdvertisingData.COMPLETE_LOCAL_NAME, device.config.name.encode("utf-8")),
+        ]
+    )
+
     return advertising_data
 
 async def run_device(config: DeviceConfiguration, persisted_data: SampleDevicePersistedData):
@@ -322,123 +318,40 @@ async def run_device(config: DeviceConfiguration, persisted_data: SampleDevicePe
         device.add_services([device_info_service, patientsync_service])
 
         await device.power_on()
-        # await device.start_advertising(auto_restart=True, advertising_interval_min = 3000, advertising_interval_max=5000)
 
-        advertising_data = create_advertising_data(device, persisted_data)
-        advertising_set = await device.create_advertising_set(
+        extended_adv_data = create_extended_advertising_data(device, persisted_data)
+        device.extended_adv_set = await device.create_advertising_set(
             advertising_parameters=AdvertisingParameters(
                 advertising_event_properties=AdvertisingEventProperties(
                     is_connectable=True,
-                    is_legacy=False
                 )
             ),
-            advertising_data=bytes(advertising_data),
+            advertising_data=bytes(extended_adv_data),
             random_address=config.address,
             auto_start=True,
             auto_restart=True
         )
+        device.legacy_adv_set = None
 
+        enable_legacy_advertising_set = True
 
-        print('waiting for HCI termination...')
-        await hci_source.wait_for_termination()
-        print('HCI terminated!')
+        if enable_legacy_advertising_set:
+            legacy_adv_data = create_legacy_advertising_data(device, persisted_data)
+            device.legacy_adv_set = await device.create_advertising_set(
+                advertising_parameters=AdvertisingParameters(
+                    advertising_event_properties=AdvertisingEventProperties(
+                        is_connectable=True,
+                        is_legacy=True,
+                        is_scannable=True,
+                    )
+                ),
+                advertising_data=bytes(legacy_adv_data),
+                random_address=config.address,
+                auto_start=True,
+                auto_restart=True
+            )
 
-async def run_device_old(config: DeviceConfiguration, persisted_data: SampleDevicePersistedData):
-    async with await open_transport_or_link(sys.argv[2]) as (hci_source, hci_sink):
-        print('<<< connected')
-
-        device = Device.from_config_with_hci(config, hci_source, hci_sink)
-        device.listener = Listener(device)
-        # device.room = config.room
-        # Create a device to manage the host
-        # device = Device.from_config_file_with_hci(sys.argv[1], hci_source, hci_sink)
-        # device.listener = Listener(device)
-
-        # Add a few entries to the device's GATT server
-        descriptor = Descriptor(
-            GATT_CHARACTERISTIC_USER_DESCRIPTION_DESCRIPTOR,
-            Descriptor.READABLE,
-            'An example Connect+ device for use in prototyping.',
-        )
-
-        manufacturer_name_characteristic = Characteristic(
-            GATT_MANUFACTURER_NAME_STRING_CHARACTERISTIC,
-            Characteristic.Properties.READ,
-            Characteristic.READABLE,
-            'The Bar Coders',
-            [descriptor],
-        )
-        device_info_service = Service(GATT_DEVICE_INFORMATION_SERVICE, [manufacturer_name_characteristic])
-
-        other_characteristics = construct_characteristics(device, persisted_data, SampleDevicePersistedData.DEVICE_UUID_MAPPINGS)
-
-        # print(">>>>ATTN!!", GATT_DEVICE_INFORMATION_SERVICE)
-        # patientsync_service = Service(
-        #     SERVICE_PATIENTSYNC_UUID,
-        #     [
-        #         Characteristic(
-        #             CHAR_CUR_ROOM_UUID,
-        #             Characteristic.Properties.READ | Characteristic.Properties.WRITE,
-        #             Characteristic.READABLE | Characteristic.WRITEABLE,
-        #             CharacteristicValue(read=cbs.readers.cur_room, write=cbs.writers.cur_room),
-        #         ),
-        #         Characteristic(
-        #             CHAR_CUR_PATIENT_UUID,
-        #             Characteristic.Properties.READ | Characteristic.Properties.WRITE,
-        #             Characteristic.READABLE | Characteristic.WRITEABLE,
-        #             CharacteristicValue(read=cbs.readers.cur_patient_mrn, write=cbs.writers.cur_patient_mrn),
-        #         ),
-        #         # Characteristic(
-        #         #     '552957FB-CF1F-4A31-9535-E78847E1A714',
-        #         #     Characteristic.Properties.READ | Characteristic.Properties.WRITE,
-        #         #     Characteristic.READABLE | Characteristic.WRITEABLE,
-        #         #     CharacteristicValue(
-        #         #         read=my_custom_read_with_error, write=my_custom_write_with_error
-        #         #     ),
-        #         # ),
-        #         # Characteristic(
-        #         #     '486F64C6-4B5F-4B3B-8AFF-EDE134A8446A',
-        #         #     Characteristic.Properties.READ | Characteristic.Properties.NOTIFY,
-        #         #     Characteristic.READABLE,
-        #         #     'hello',
-        #         # ),
-        #     ],
-        # )
-
-        patientsync_service = Service(SERVICE_PATIENTSYNC_UUID, other_characteristics)
-        device.add_services([device_info_service, patientsync_service])
-
-        # print('\nservices:')
-        # for service in device.gatt_server.services:
-        #     print('\t', service)
-        # print()
-
-        # print("gatt server attributes:")
-        # for attribute in device.gatt_server.attributes:
-        #     if isinstance(attribute, Service):
-        #         print(attribute, attribute.get_advertising_data()) 
-
-        # print("gatt server advertising service data:")
-        # print(device.gatt_server.get_advertising_service_data())
-
-        # Debug print
-        # for attribute in device.gatt_server.attributes:
-        #     print(attribute)
-
-        # Get things going
-        await device.power_on()
-
-        # Connect to a peer
-        # if len(sys.argv) > 4:
-        #     target_address = sys.argv[3]
-        #     print(f'=== Connecting to {target_address}...')
-        #     await device.connect(target_address)
-        # else:
-        # device.start_discovery()
-        await device.start_advertising(auto_restart=True, advertising_interval_min = 3000, advertising_interval_max=5000)
-            # print('done advertising')
-
-        print('waiting for HCI termination...')
+        print('Device started, waiting for HCI termination...')
         await hci_source.wait_for_termination()
         print('HCI terminated!')
 
@@ -472,10 +385,7 @@ async def main():
                 generated = ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(8))
                 entry["name"] = f'Sample device {generated}'
                 print(f'Device with address \'{config.address}\' has no name, using generated name: \'{config.name}\'')
-            # print(config.advertising_data, type(config.advertising_data))
-            
-            # entry["advertising_data"] = generate_advertisement_data(config.name, [SERVICE_PATIENTSYNC_UUID])
-            # print(entry)
+
             config = DeviceConfiguration()
             config.load_from_dict(entry)
 
@@ -483,23 +393,18 @@ async def main():
 
             if device_data_dir:
                 device_path = device_data_dir + os.sep + config.name.replace(" ", "_") + ".json"
-                # print('device_path:', device_path)
                 data.load_from_file(device_path)
-
-                # if "cur_room" in entry:
-                #     data.cur_room = entry["cur_room"]
 
                 for prop in SampleDevicePersistedData.DEVICE_PROPERTIES:
                     if prop in entry:
                         setattr(data, prop, entry[prop])
-                    # TODO: Read props from /data/(name)
 
                 data.save_to_disk()
 
             configs.append((config, data))
 
             # DEBUG:
-            # break
+            break
             
     
     await asyncio.gather(*[run_device(i[0], i[1]) for i in configs])
