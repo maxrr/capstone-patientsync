@@ -147,6 +147,13 @@ const Styles = StyleSheet.create({
         alignSelf: 'flex-end',
         alignItems: 'center',
     },
+    warning: {
+        textAlign: 'center',
+        textAlignVertical: 'center',
+        marginTop: 600,
+        fontSize: 38,
+        color: 'red',
+    }
 });
 
 export default Styles;

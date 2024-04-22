@@ -5,6 +5,7 @@ import { useContext } from "react";
 import Stepper from "../comps/Stepper";
 
 function PatientConfirmScreen({ route, navigation }) {
+
     const [info, setInfo] = useContext(PatientContext);
     const patientProfile = {
         firstName: info.first,
@@ -21,7 +22,7 @@ function PatientConfirmScreen({ route, navigation }) {
     return (
         // Maybe we could pre-populate the manual information page with the results from the scan on this page? ~mr
         <View style={[Styles.container]}>
-            <Stepper step={2}/>
+            <Stepper step={2} />
             <Text style={[Styles.h4]}>
                 <Text style={{ color: "white", fontWeight: "bold" }}>Patient Select</Text>
             </Text>
@@ -36,14 +37,14 @@ function PatientConfirmScreen({ route, navigation }) {
                 {patientProfile.lastName}, {patientProfile.firstName}
             </Text>
             <Text style={[Styles.h5]}>{patientProfile.dob}</Text>
-            <Text style={[Styles.h6]}>MRN: {patientProfile.mrn}</Text>
-            <Text style={[Styles.h6]}>Visit number: {patientProfile.visitNumber}</Text>
+            <Text style={[Styles.h6]} selectable={true}>MRN: {patientProfile.mrn}</Text>
+            <Text style={[Styles.h6]} selectable={true}>Visit number: {patientProfile.visitNumber}</Text>
             <View style={{ height: 10 }}></View>
             <Button title="Yes" onPress={() => navigation.push("Confirm Link", {isOverride})} />
             <Button title="No, re-enter patient info" onPress={() => {
-                if(!reused)navigation.pop(2)
+                if (!reused) navigation.pop(2)
                 else navigation.pop(1)
-                }} />
+            }} />
             <View style={{ height: 10 }}></View>
         </View>
     );
