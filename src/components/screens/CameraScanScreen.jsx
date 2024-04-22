@@ -8,6 +8,7 @@ import PatientContext from "../PatientContext";
 function CameraScanScreen({ route, navigation }) {
 
     // variables for manual input
+    const { isOverride } = route.params;
     const { manual } = route.params;
     const [text, onChangeText] = useState('');
 
@@ -25,7 +26,7 @@ function CameraScanScreen({ route, navigation }) {
     function handleScan(result) {
         // store the info parsed from the barcode
         setInfo(parseData(result))
-        navigation.navigate("Confirm Patient", { reused: false })
+        navigation.navigate("Confirm Patient", {isOverride}, { reused: false })
 
         // NOTE: We want the transition upon scan to be quick and not require any more button presses,
         //       so more like a flash of green with "barcode scanned!" before navigating. Somthing
@@ -94,7 +95,7 @@ function CameraScanScreen({ route, navigation }) {
     // TODO: Implement call to database and setInfo with appropriate info from there
     function confirmInput() {
         setInfo(text)
-        navigation.push("Confirm Patient", { reused: false })
+        navigation.push("Confirm Patient", {isOverride}, { reused: false })
         onChangeText('')
     }
 

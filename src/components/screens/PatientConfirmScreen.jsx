@@ -7,6 +7,7 @@ import Stepper from "../comps/Stepper";
 function PatientConfirmScreen({ route, navigation }) {
 
     const [info, setInfo] = useContext(PatientContext);
+    const { isOverride } = route.params;
     const patientProfile = {
         firstName: info.first,
         lastName: info.last,
@@ -36,7 +37,7 @@ function PatientConfirmScreen({ route, navigation }) {
             <Text style={[Styles.h6]} selectable={true}>MRN: {patientProfile.mrn}</Text>
             <Text style={[Styles.h6]} selectable={true}>Visit number: {patientProfile.visitNumber}</Text>
             <View style={{ height: 10 }}></View>
-            <Button title="Yes" onPress={() => navigation.push("Confirm Link")} />
+            <Button title="Yes" onPress={() => navigation.push("Confirm Link", {isOverride})} />
             <Button title="No, re-enter patient info" onPress={() => {
                 if (!reused) navigation.pop(2)
                 else navigation.pop(1)

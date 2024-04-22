@@ -20,13 +20,13 @@ function PatientSelectScreen({ route, navigation }) {
 
             {/*Updating buttons for Patient Select screen -DT */}
             {/**Using Pressable instead of button because then we can customize it w/ stylesheet -DT */}
-            <Pressable style={Styles.button} onPress={() => navigation.push("Scan Barcode", {manual: false})}>
+            <Pressable style={Styles.button} onPress={() => navigation.push("Scan Barcode", {isOverride}, {manual: false})}>
                 <Text style={[Styles.button, Styles.buttonText, { backgroundColor: Styles.colors.GEPurple}]}>Scan Patient Barcode</Text>
             </Pressable>
 
             <Text style={[Styles.h5]}>or</Text>
 
-            <Pressable style={Styles.button} onPress={() => navigation.push("Scan Barcode", {manual: true})}>
+            <Pressable style={Styles.button} onPress={() => navigation.push("Scan Barcode", {isOverride}, {manual: true})}>
                 <Text style={[Styles.button, Styles.buttonText, { backgroundColor: Styles.colors.GEPurple}]}>Manually Enter Patient Info</Text>
             </Pressable>
 
