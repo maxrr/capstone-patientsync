@@ -12,17 +12,6 @@ function LinkConfirmScreen({ navigation }) {
     const { isUnlinking } = route.params || { isUnlinking: false };
     const [info, setInfo] = useContext(PatientContext);
     const [deviceInfo, setDeviceInfo] = useContext(DeviceContext);
-    const {isOverride} = route.params;
-
-
-    //case when overriding and want to know what patient we are overriding
-    const overridePatientProfile = {
-        firstName: "RON",
-        lastName: "SMITH",
-        mrn: "157849702",
-        visitNumber: "2163",
-        dob: "03/14/1992"
-    };
 
     //if unlinking, then don't have MRN and just use the patient profile we generated as an example last month
     const patientProfile = isUnlinking ? {
@@ -59,9 +48,21 @@ function LinkConfirmScreen({ navigation }) {
             <Text style={[Styles.h6]}>MRN: {patientProfile.mrn}</Text>
             <Text style={[Styles.h6]}>Visit number: {patientProfile.visitNumber}</Text> */}
 
-
-            <Text style={[Styles.h6]}>{"Device to Link:"}</Text>
             <View style={Styles.deviceSelectButton}>
+                <Text
+                    style={[
+                        Styles.deviceSelectButton,
+                        Styles.deviceSelectButtonText,
+                        { backgroundColor: Styles.colors.GEPurple }
+                    ]}
+                >
+                    <Text style={{ fontWeight: "bold", fontSize: 16 }}>{"Patient:         " + patientProfile.lastName + ", " + patientProfile.firstName}</Text>
+                    {"\n"}
+                    {"MRN:                        " + patientProfile.mrn}
+                </Text>
+            </View>
+
+                <View style={Styles.deviceSelectButton}>
                     <Text
                         style={[
                             Styles.deviceSelectButton,
@@ -74,42 +75,6 @@ function LinkConfirmScreen({ navigation }) {
                         {deviceInfo.room}
                     </Text>
                 </View>
-
-            <Text style={[Styles.h6]}>{"New Patient:"}</Text>
-            <View style={Styles.deviceSelectButton}>
-                <Text
-                    style={[
-                        Styles.deviceSelectButton,
-                        Styles.deviceSelectButtonText,
-                        { backgroundColor: "green" }
-                    ]}
-                >
-                    <Text style={{ fontWeight: "bold", fontSize: 16 }}>{"Patient:         " + patientProfile.lastName + ", " + patientProfile.firstName}</Text>
-                    {"\n"}
-                    {"MRN:                        " + patientProfile.mrn}
-                </Text>
-            </View>
-
-
-            <Text style={[Styles.h6]}>{isOverride ? "Overriden Patient:" : ""}</Text>
-            {/*Block of information present if patient is being overriden to make clear -dt*/}
-            {isOverride && (
-                <>
-                    <View style={Styles.deviceSelectButton}>
-                        <Text
-                            style={[
-                                Styles.deviceSelectButton,
-                                Styles.deviceSelectButtonText,
-                                { backgroundColor: "red" }
-                            ]}
-                        >
-                        <Text style={{ fontWeight: "bold", fontSize: 16 }}>{"Patient:         " + overridePatientProfile.lastName + ", " +      overridePatientProfile.firstName}</Text>
-                        {"\n"}
-                        {"MRN:                        " + overridePatientProfile.mrn}
-                    </Text>
-                </View>
-                </>
-            )}
 
             <View style={{ height: 30 }}></View>
 

@@ -9,8 +9,7 @@ function CameraScanScreen({ route, navigation }) {
 
     // variables for manual input
     const { manual } = route.params;
-    const { isOverride } = route.params;
-    const [text, onChangeText] = React.useState('');
+    const [text, onChangeText] = useState('');
 
     // variables for camera state and permission
     const [permission, requestPermission] = useCameraPermissions();
@@ -26,23 +25,27 @@ function CameraScanScreen({ route, navigation }) {
     function handleScan(result) {
         // store the info parsed from the barcode
         setInfo(parseData(result))
-        setScanBool(true)
-        
-        //Adding confirmation that a barcode has been scanned for clarity and easy understanding with an Alert.
-        Alert.alert(
-        "Scaning Complete",
-        "Barcode Successfully Scanned!",
-        [
-            { 
-                text: "OK", 
-                onPress: () => navigation.push("Confirm Patient", { reused: false }) 
-            }
-        ],
+        navigation.navigate("Confirm Patient", { reused: false })
+
+        // NOTE: We want the transition upon scan to be quick and not require any more button presses,
+        //       so more like a flash of green with "barcode scanned!" before navigating. Somthing
+        //       along those lines, doesn't have to be that exactly. -AA
+        //
+        // Adding confirmation that a barcode has been scanned for clarity and easy understanding with an Alert.
+        // Alert.alert(
+        // "Scaning Complete",
+        // "Barcode Successfully Scanned!",
+        // [
+        //     { 
+        //         text: "OK", 
+        //         onPress: () => navigation.navigate("Confirm Patient", { reused: false }) 
+        //     }
+        // ],
 
         // { cancelable: false } 
 
         // );
-    )}
+    }
 
     // function to parse and store data from barcode
     function parseData(data) {
@@ -91,7 +94,7 @@ function CameraScanScreen({ route, navigation }) {
     // TODO: Implement call to database and setInfo with appropriate info from there
     function confirmInput() {
         setInfo(text)
-        navigation.push("Confirm Patient", {isOverride}, { reused: false })
+        navigation.push("Confirm Patient", { reused: false })
         onChangeText('')
     }
 

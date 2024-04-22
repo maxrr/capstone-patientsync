@@ -14,10 +14,7 @@ function PatientConfirmScreen({ route, navigation }) {
         visitNumber: info.visit,
         dob: info.month + "/" + info.day + "/" + info.year
     };
-
-
     const { reused } = route.params;
-    const { isOverride } = route.params;
 
     return (
         // Maybe we could pre-populate the manual information page with the results from the scan on this page? ~mr
@@ -32,7 +29,6 @@ function PatientConfirmScreen({ route, navigation }) {
                 <Text style={{ color: "white", textAlign: "center", padding: 50 }}>(patient picture)</Text>
             </View> */}
             <View style={{ height: 10 }}></View>
-
             <Text style={[Styles.h4]}>
                 {patientProfile.lastName}, {patientProfile.firstName}
             </Text>
@@ -40,7 +36,7 @@ function PatientConfirmScreen({ route, navigation }) {
             <Text style={[Styles.h6]} selectable={true}>MRN: {patientProfile.mrn}</Text>
             <Text style={[Styles.h6]} selectable={true}>Visit number: {patientProfile.visitNumber}</Text>
             <View style={{ height: 10 }}></View>
-            <Button title="Yes" onPress={() => navigation.push("Confirm Link", {isOverride})} />
+            <Button title="Yes" onPress={() => navigation.push("Confirm Link")} />
             <Button title="No, re-enter patient info" onPress={() => {
                 if (!reused) navigation.pop(2)
                 else navigation.pop(1)
