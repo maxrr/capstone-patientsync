@@ -1,6 +1,9 @@
 import { View } from "react-native";
 import { FontAwesome } from "@expo/vector-icons";
 
+
+//<FontAwesome name="unlink" size={24} color="black" />
+
 export default function Stepper(props) {
     return (
         <>

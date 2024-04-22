@@ -9,6 +9,7 @@ function CameraScanScreen({ route, navigation }) {
 
     // variables for manual input
     const { manual } = route.params;
+    const { isOverride } = route.params;
     const [text, onChangeText] = React.useState('');
 
     // variables for camera functionality
@@ -34,7 +35,7 @@ function CameraScanScreen({ route, navigation }) {
         [
             { 
                 text: "OK", 
-                onPress: () => navigation.push("Confirm Patient", { reused: false }) 
+                onPress: () => navigation.push("Confirm Patient", {isOverride}, { reused: false }) 
             }
         ],
 
@@ -90,7 +91,7 @@ function CameraScanScreen({ route, navigation }) {
     // #TODO: Implement call to database and setInfo with appropriate info from there
     function confirmInput() {
         setInfo(text)
-        navigation.push("Confirm Patient", { reused: false })
+        navigation.push("Confirm Patient", {isOverride}, { reused: false })
         onChangeText('')
     }
 
