@@ -1,10 +1,15 @@
 import { View } from "react-native";
 import { FontAwesome } from "@expo/vector-icons";
+import { useRoute } from "@react-navigation/native";
 
 
 //<FontAwesome name="unlink" size={24} color="black" />
 
 export default function Stepper(props) {
+    //Default to the linking case, AKA linking stepper being true.
+    const route = useRoute();
+    const { linkingStepper } = route.params || { linkingStepper: true };
+
     return (
         <>
             <View style={{ display: "flex", flexDirection: "row", gap: 8, alignItems: "center" }}>
@@ -108,7 +113,7 @@ export default function Stepper(props) {
                         alignItems: "center"
                     }}
                 >
-                    <FontAwesome name="link" size={24} color={props.step > 3 ? "white" : "black"} />
+                    <FontAwesome name={linkingStepper ? "link" : "unlink"} size={24} color={props.step > 3 ? "white" : "black"} />
                 </View>
             </View>
         </>

@@ -17,17 +17,28 @@ function LinkCompleteScreen({ navigation }) {
         setDeviceInfo(null);
     }
 
-    const patientProfile = {
+
+
+    const route = useRoute();
+    const { isUnlinking } = route.params || { isUnlinking: false };
+
+
+    //Must have hardcoded patient information when we are unlinking to display properly. We don't have the database set up to do
+    //this otherwise, and obviously no info comes from scanning in this case so must be hardcoded for unlinking -DT
+    const patientProfile = isUnlinking ? {
+        // Hardcoded values for the unlink scenario
+        firstName: "Ron",
+        lastName: "Smith",
+        mrn: "157849",
+        visitNumber: "2163",
+        dob: "03/14/1992"
+    } : {
         firstName: info.first,
         lastName: info.last,
         mrn: info.mrn,
         visitNumber: info.visit,
         dob: info.month + "/" + info.day + "/" + info.year
     };
-
-
-    const route = useRoute();
-    const { isUnlinking } = route.params || { isUnlinking: false };
     
     return (
         // TODO: On this page, we shouldn't give the user any ability to move backwards ~mr

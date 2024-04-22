@@ -43,12 +43,12 @@ function LinkConfirmScreen({ navigation }) {
     
     return (
         <View style={[Styles.container]}>
+            <Stepper step={3}/>
             <Text style={[Styles.h4]}><Text style={{color: "white", fontWeight: "bold"}}>{isUnlinking ? "Unlink" : "Link"}</Text></Text>
             <Text style={[Styles.h6]}>{isUnlinking ? "Ready to unlink?" : "Ready to link?"}</Text>
 
             <View style={{ height: 30 }}></View>
 
-            <Stepper step={3}/>
 
             <View style={{ height: 30 }}></View>
 

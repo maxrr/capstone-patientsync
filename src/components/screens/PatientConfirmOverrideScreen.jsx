@@ -3,6 +3,7 @@ import Styles from "../../styles/main";
 import { useRoute } from "@react-navigation/native";
 import PatientContext from "../PatientContext";
 import { useContext } from "react";
+import Stepper from "../comps/Stepper";
 
 
 const patientProfile = {
@@ -29,6 +30,7 @@ function PatientConfirmOverrideScreen({ navigation }) {
 
     return (
         <View style={[Styles.container]}>
+            <Stepper step={2}/>
             <Text style={[Styles.h4]}>
                 <Text style={{ color: "white", fontWeight: "bold" }}>{showOverrides ? 'Patient Unlink' : 'Patient Override'}</Text>
             </Text>
