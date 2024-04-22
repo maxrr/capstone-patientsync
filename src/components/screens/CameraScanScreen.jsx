@@ -42,7 +42,7 @@ function CameraScanScreen({ route, navigation }) {
         // { cancelable: false } 
 
         // );
-    }
+    )}
 
     // function to parse and store data from barcode
     function parseData(data) {
