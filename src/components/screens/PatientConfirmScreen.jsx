@@ -5,8 +5,9 @@ import { useContext } from "react";
 import Stepper from "../comps/Stepper";
 import UniformPageWrapper from "../comps/UniformPageWrapper";
 
-function PatientConfirmScreen({ navigation }) {
+function PatientConfirmScreen({ route, navigation }) {
     const [patientInfo, setPatientInfo] = useContext(PatientContext);
+    const { isOverride } = route.params;
     const patientProfile = {
         firstName: patientInfo.first,
         lastName: patientInfo.last,
@@ -14,6 +15,7 @@ function PatientConfirmScreen({ navigation }) {
         visitNumber: patientInfo.visit,
         dob: patientInfo.month + "/" + patientInfo.day + "/" + patientInfo.year
     };
+    const { reused } = route.params;
 
     return (
         // Maybe we could pre-populate the manual information page with the results from the scan on this page? ~mr
@@ -30,11 +32,21 @@ function PatientConfirmScreen({ navigation }) {
                 {patientProfile.lastName}, {patientProfile.firstName}
             </Text>
             <Text style={[Styles.h5]}>{patientProfile.dob}</Text>
-            <Text style={[Styles.h6]}>MRN: {patientProfile.mrn}</Text>
-            <Text style={[Styles.h6]}>Visit number: {patientProfile.visitNumber}</Text>
+            <Text style={[Styles.h6]} selectable={true}>
+                MRN: {patientProfile.mrn}
+            </Text>
+            <Text style={[Styles.h6]} selectable={true}>
+                Visit number: {patientProfile.visitNumber}
+            </Text>
             <View style={{ height: 10 }}></View>
-            <Button title="Yes" onPress={() => navigation.push("Confirm Link")} />
-            <Button title="No, re-enter patient info" onPress={() => navigation.pop(2)} />
+            <Button title="Yes" onPress={() => navigation.push("Confirm Link", { isOverride })} />
+            <Button
+                title="No, re-enter patient info"
+                onPress={() => {
+                    if (!reused) navigation.pop(2);
+                    else navigation.pop(1);
+                }}
+            />
             <View style={{ height: 10 }}></View>
         </UniformPageWrapper>
     );

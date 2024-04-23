@@ -1,6 +1,10 @@
 import { Button, Text, View } from "react-native";
 import Styles from "../../styles/main";
 import { useRoute } from "@react-navigation/native";
+import PatientContext from "../PatientContext";
+import { useContext } from "react";
+import Stepper from "../comps/Stepper";
+
 
 const patientProfile = {
     firstName: "Ron",
@@ -10,11 +14,15 @@ const patientProfile = {
     dob: "03/14/1992"
 };
 
+
 //Very similar to PatientConfirmScreen, but doing this with the override section instead.
 //I figured having separate screens would be easier for the override side of the app if we wanted to change things around -dt
 function PatientConfirmOverrideScreen({ navigation }) {
     const route = useRoute();
     const { isOverride } = route.params || { isOverride: false };
+    
+    const [info, setInfo] = useContext(PatientContext);
+    setInfo(patientProfile);
 
     // *** SHOWOVERRIDES IS THE UNLINK CASE ***
     // *** SHOWOVERRIDES IS THE UNLINK CASE ***
@@ -22,6 +30,7 @@ function PatientConfirmOverrideScreen({ navigation }) {
 
     return (
         <View style={[Styles.container]}>
+            <Stepper step={2}/>
             <Text style={[Styles.h4]}>
                 <Text style={{ color: "white", fontWeight: "bold" }}>{showOverrides ? 'Patient Unlink' : 'Patient Override'}</Text>
             </Text>

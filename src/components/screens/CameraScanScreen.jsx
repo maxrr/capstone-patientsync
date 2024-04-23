@@ -31,25 +31,44 @@ const samplePatientDatabase = {
 
 function CameraScanScreen({ route, navigation }) {
     // variables for manual input
+    const { isOverride } = route.params;
     const { manual } = route.params;
     const [text, setText] = React.useState("");
 
-    // variables for camera functionality
+    // variables for camera state and permission
     const [permission, requestPermission] = useCameraPermissions();
     const [cameraState, setCameraState] = useState(!manual);
-    const [scanBool, setScanBool] = useState(false);
 
     // Context for patient info
     const [info, setInfo] = useContext(PatientContext);
 
+    // text to assess barcode viability
+    const [scanningText, setScanningText] = useState("");
+
     // function to handle barcode scan
     function handleScan(result) {
-        if (scanBool) {
-            return;
-        }
+        // store the info parsed from the barcode
         setInfo(parseData(result));
-        setScanBool(true);
-        navigation.push("Confirm Patient");
+        navigation.navigate("Confirm Patient", { isOverride }, { reused: false });
+
+        // NOTE: We want the transition upon scan to be quick and not require any more button presses,
+        //       so more like a flash of green with "barcode scanned!" before navigating. Somthing
+        //       along those lines, doesn't have to be that exactly. -AA
+        //
+        // Adding confirmation that a barcode has been scanned for clarity and easy understanding with an Alert.
+        // Alert.alert(
+        // "Scaning Complete",
+        // "Barcode Successfully Scanned!",
+        // [
+        //     {
+        //         text: "OK",
+        //         onPress: () => navigation.navigate("Confirm Patient", { reused: false })
+        //     }
+        // ],
+
+        // { cancelable: false }
+
+        // );
     }
 
     // function to parse and store data from barcode
@@ -98,11 +117,11 @@ function CameraScanScreen({ route, navigation }) {
     }, [cameraState]);
 
     // confirm manual input
-    // #TODO: Implement call to database and setInfo with appropriate info from there
+    // TODO: Implement call to database and setInfo with appropriate info from there
     function confirmInput() {
         if (text in samplePatientDatabase) {
             setInfo(samplePatientDatabase[text]);
-            navigation.push("Confirm Patient");
+            navigation.push("Confirm Patient", { isOverride }, { reused: false });
             setText("");
         } else {
             Alert.alert("MRN lookup unsuccessful, please try again.");
@@ -118,12 +137,23 @@ function CameraScanScreen({ route, navigation }) {
                     facing={"back"}
                     barcodeScannerSettings={{ barcodeTypes: ["pdf417", "code39", "code128"] }}
                     onBarcodeScanned={(scanningResult) => {
-                        //console.log(scanningResult.data.length)
+                        // console.log(scanningResult.data.length)
+
+                        // if barcode is expected length, parse the information
                         if (scanningResult.data.length === 53) {
+                            setScanningText("");
                             handleScan(scanningResult.data);
+                        } else if (scanningResult.data.length < 53) {
+                            setScanningText("Barcode is too short!");
+                        } else {
+                            setScanningText("Barcode is too long!");
                         }
                     }}
                 >
+                    <View>
+                        <Text style={Styles.warning}>{scanningText}</Text>
+                    </View>
+
                     <View style={Styles.cameraButtonContainer}>
                         <TouchableOpacity
                             style={Styles.cameraButton}
@@ -156,7 +186,9 @@ function CameraScanScreen({ route, navigation }) {
                         value={text}
                         keyboardType="number-pad"
                         maxLength={9}
+                        clearButtonMode="always" // ios only :(
                     ></TextInput>
+                    {text.length < 9 ? <Text style={{ color: "red", fontSize: 20 }}>Must be 9 digits long!</Text> : <></>}
                     <View style={[Styles.buttonRow]}>
                         <Button
                             title="scan instead"
@@ -164,6 +196,13 @@ function CameraScanScreen({ route, navigation }) {
                             onPress={() => {
                                 setCameraState(true);
                             }}
+                        ></Button>
+                        <View style={{ flex: 0.6 }}></View>
+                        <Button
+                            title="confirm"
+                            color="green"
+                            onPress={() => confirmInput()}
+                            disabled={text.length < 9}
                         ></Button>
                         <View style={{ flex: 0.6 }}></View>
                         <Button title="Confirm" color="green" onPress={confirmInput} disabled={text.length < 9}></Button>

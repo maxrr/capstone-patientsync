@@ -106,6 +106,13 @@ const Styles = StyleSheet.create({
         borderRadius: 10,
         overflow: "hidden"
     },
+    smallButton: {
+        padding: 5,
+        height: 110,
+        width: 300,
+        borderRadius: 10,
+        // overflow: "hidden",
+    },
     buttonText: {
         color: "white",
         fontSize: 20,
@@ -161,6 +168,13 @@ const Styles = StyleSheet.create({
         flex: 1,
         alignSelf: "flex-end",
         alignItems: "center"
+    }
+    warning: {
+        textAlign: 'center',
+        textAlignVertical: 'center',
+        marginTop: 600,
+        fontSize: 38,
+        color: 'red',
     }
 });
 

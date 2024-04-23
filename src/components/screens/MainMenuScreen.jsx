@@ -1,8 +1,13 @@
 import { Button, Text, View, Pressable, SafeAreaView } from "react-native";
 import Styles from "../../styles/main";
 import SafeAreaViewAndroid from "../comps/SafeAreaViewAndroid";
+import { useState, useEffect, useContext } from "react";
 
 function MainMenuScreen({ navigation }) {
+    //Variable to dictate what stepper to show. Either show stepper for linking process, which has the last image as a link,
+    //or if this is false then show the stepper for the unlinking process which is an unlink. Set this value to true by default.
+    const [linkingStepper, setLinkingStepper] = useState(true);
+
     return (
         <SafeAreaView style={SafeAreaViewAndroid.AndroidSafeArea}>
             <View style={[Styles.container, { justifyContent: "space-between" }]}>
@@ -12,7 +17,12 @@ function MainMenuScreen({ navigation }) {
                     <Text style={[Styles.h6]}>To begin, select an action</Text>
 
                     {/**Using Pressable instead of button because then we can customize it w/ stylesheet -DT */}
-                    <Pressable style={Styles.button} onPress={() => navigation.push("Device Select")}>
+                    <Pressable
+                        style={Styles.button}
+                        onPress={() => {
+                            navigation.push("Device Select", { linkingStepper: true });
+                        }}
+                    >
                         <Text style={[Styles.button, Styles.buttonText, { backgroundColor: Styles.colors.GEPurple }]}>
                             Link patient
                         </Text>
@@ -24,7 +34,9 @@ function MainMenuScreen({ navigation }) {
 
                     <Pressable
                         style={Styles.button}
-                        onPress={() => navigation.push("Device Select", { showOverrides: true })}
+                        onPress={() => {
+                            navigation.push("Device Select", { linkingStepper: false, showOverrides: true });
+                        }}
                     >
                         <Text style={[Styles.button, Styles.buttonText, { backgroundColor: Styles.colors.GEPurple }]}>
                             Unlink a patient

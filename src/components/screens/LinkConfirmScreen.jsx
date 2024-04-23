@@ -139,6 +139,41 @@ function LinkConfirmScreen({ navigation }) {
                 </Text>
             </View> */}
 
+            {/* <Text style={[Styles.h6]}>{"New Patient:"}</Text>
+            <View style={Styles.deviceSelectButton}>
+                <Text
+                    style={[
+                        Styles.deviceSelectButton,
+                        Styles.deviceSelectButtonText,
+                        { backgroundColor: "green" }
+                    ]}
+                >
+                    <Text style={{ fontWeight: "bold", fontSize: 16 }}>{"Patient:         " + patientProfile.lastName + ", " + patientProfile.firstName}</Text>
+                    {"\n"}
+                    {"MRN:                        " + patientProfile.mrn}
+                </Text>
+            </View> */}
+
+            {/* <Text style={[Styles.h6]}>{isOverride ? "Overriden Patient:" : ""}</Text> */}
+            {/*Block of information present if patient is being overriden to make clear -dt*/}
+            {/* {isOverride && (
+                <>
+                    <View style={Styles.deviceSelectButton}>
+                        <Text
+                            style={[
+                                Styles.deviceSelectButton,
+                                Styles.deviceSelectButtonText,
+                                { backgroundColor: "red" }
+                            ]}
+                        >
+                        <Text style={{ fontWeight: "bold", fontSize: 16 }}>{"Patient:         " + overridePatientProfile.lastName + ", " +      overridePatientProfile.firstName}</Text>
+                        {"\n"}
+                        {"MRN:                        " + overridePatientProfile.mrn}
+                    </Text>
+                </View>
+                </>
+            )} */}
+
             <StyledModal visible={linkStatusModalVisible} innerStyle={{ gap: Styles.consts.gapIncrement }}>
                 <Text style={{ color: "white", fontSize: 20, textAlign: "center" }}>Syncing...</Text>
                 <Text style={{ color: "white", fontSize: 16, textAlign: "center" }}>{linkStatusText}</Text>
