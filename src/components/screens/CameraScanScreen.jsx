@@ -181,7 +181,7 @@ function CameraScanScreen({ route, navigation }) {
                         <Text style={{ color: "white", fontWeight: "bold" }}>Enter Patient MRN</Text>
                     </Text>
                     <TextInput
-                        style={[Styles.input]}
+                        style={[Styles.MRNinput]}
                         onChangeText={setText}
                         value={text}
                         keyboardType="number-pad"
@@ -204,8 +204,6 @@ function CameraScanScreen({ route, navigation }) {
                             onPress={() => confirmInput()}
                             disabled={text.length < 9}
                         ></Button>
-                        <View style={{ flex: 0.6 }}></View>
-                        <Button title="Confirm" color="green" onPress={confirmInput} disabled={text.length < 9}></Button>
                     </View>
                 </View>
             </View>

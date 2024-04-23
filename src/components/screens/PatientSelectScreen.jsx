@@ -34,10 +34,7 @@ function PatientSelectScreen({ route, navigation }) {
 
             <Text style={[Styles.h5]}>or</Text>
 
-            <Pressable
-                style={Styles.button}
-                onPress={() => navigation.push("Scan Barcode", { isOverride }, { manual: true })}
-            >
+            <Pressable style={Styles.button} onPress={() => navigation.push("Scan Barcode", { isOverride, manual: true })}>
                 <Text style={[Styles.button, Styles.buttonText, { backgroundColor: Styles.colors.GEPurple }]}>
                     Manually Enter Patient Info
                 </Text>

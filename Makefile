@@ -10,3 +10,6 @@ rsync-push-delete:
 
 bumble-launch:
 	python3 bumble_custom/examples/gehc_sample_devices.py bumble_custom/examples/multiple_devices.json android-netsim .\bumble_custom\examples\data
+
+bumble-launch-usb:
+	python3 bumble_custom/examples/gehc_sample_devices.py bumble_custom/examples/multiple_devices.json usb:0 .\bumble_custom\examples\data

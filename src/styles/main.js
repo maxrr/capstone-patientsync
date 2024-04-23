@@ -78,17 +78,17 @@ const Styles = StyleSheet.create({
             // paddingBottom: 100
         }
     },
-    // input: {
-    //     height: windowHeight / 15,
-    //     width: windowWidth / 1.5,
-    //     margin: 12,
-    //     borderWidth: 1,
-    //     padding: 10,
-    //     borderColor: "white",
-    //     color: "white",
-    //     textAlign: "center",
-    //     fontSize: windowHeight / 35
-    // },
+    MRNinput: {
+        height: windowHeight / 15,
+        width: windowWidth / 1.5,
+        margin: 12,
+        borderWidth: 1,
+        padding: 10,
+        borderColor: "white",
+        color: "white",
+        textAlign: "center",
+        fontSize: windowHeight / 35
+    },
     input: {
         width: "100%",
         margin: 6,
