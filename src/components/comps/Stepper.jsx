@@ -2,7 +2,6 @@ import { View } from "react-native";
 import { FontAwesome } from "@expo/vector-icons";
 import { useRoute } from "@react-navigation/native";
 
-
 //<FontAwesome name="unlink" size={24} color="black" />
 
 export default function Stepper(props) {
@@ -113,7 +112,11 @@ export default function Stepper(props) {
                         alignItems: "center"
                     }}
                 >
-                    <FontAwesome name={linkingStepper ? "link" : "unlink"} size={24} color={props.step > 3 ? "white" : "black"} />
+                    <FontAwesome
+                        name={linkingStepper ? "link" : "unlink"}
+                        size={24}
+                        color={props.step > 3 ? "white" : "black"}
+                    />
                 </View>
             </View>
         </>
