@@ -30,26 +30,63 @@ const config = {
         [CHAR_LAST_EDIT_TIME_UUID]: "last_edit_time",
         [CHAR_LAST_EDIT_USER_ID_UUID]: "last_edit_user_id"
     },
-    SECONDS_TO_SCAN_FOR: 5,
+    SECONDS_TO_SCAN_FOR: 45,
     // NOTE: Filtering is done in handleDiscoverPeripheral
-    SERVICE_UUIDS: [],
+    SERVICE_UUIDS: [SERVICE_PATIENTSYNC_UUID.toLocaleLowerCase()],
     ALLOW_DUPLICATES: true,
     SCAN_STOP_TIMEOUT: 5000
 };
 
 function BleMgrWrapper() {
     // List of all peripherals currently known by the manager
-    const [peripherals, setPeripherals] = useState(new Map());
-    useEffect(
-        // Update formatted 'devices' on peripherals update
-        () => {
-            // console.log("peripherals update, now:", peripherals);
-            setDevices(transformPeripheralsToDevices(peripherals));
-        },
-        [peripherals]
-    );
+    // const [peripherals, setPeripherals] = useState(new Map());
+    // useEffect(
+    //     // Update formatted 'devices' on peripherals update
+    //     () => {
+    //         // console.log("peripherals update, now:", peripherals);
+    //         setDevices(transformPeripheralsToDevices(peripherals));
+    //     },
+    //     [peripherals]
+    // );
 
-    /* Transformed list of devices (stripped properties and properly formatted) adapted from peripherals
+    // Denylist for peripherals that did not contain the correct service UUID
+    const knownInvalidPeripherals = useRef(new Set());
+    const resetKnownInvalidPeripherals = () => {
+        knownInvalidPeripherals.current = new Set();
+    };
+
+    // Raw peripheral data from the Bluetooth manager
+    const peripherals = useRef(new Map());
+    const getPeripherals = () => {
+        return peripherals.current;
+    };
+    const setPeripherals = (newPeripherals) => {
+        // let changed = false;
+        // if (cur.has(peripherals.id)) {
+        //     if (!cur.get(peripherals.id).equals(newPeripherals.get(peripherals.id))) {
+        //         changed = true;
+        //     }
+        // }
+        const cur = getPeripherals();
+        let temp;
+        if (typeof newPeripherals == "function") {
+            temp = newPeripherals(cur);
+        } else if (typeof newPeripherals == "object" && newPeripherals instanceof Map) {
+            temp = newPeripherals;
+        } else {
+            console.error(`[BleMgr] Unexpected \`newPeripherals\` type: ${typeof newPeripherals}`);
+        }
+
+        if (!Object.is(Array.from(temp.keys()), Array.from(cur.keys()))) {
+            console.log({ temp, cur, same: Object.is(temp, cur) });
+            console.log(`[BleMgr] Committing changes to \`devices\``);
+            setDevices(transformPeripheralsToDevices(temp));
+        }
+
+        peripherals.current = temp;
+    };
+
+    /* Transformed list of devices (stripped properties and properly formatted), adapted from peripherals
         Device format: {
             name:       string,  (canonical name of device)
             room:       string,  (advertised room)
@@ -248,7 +285,7 @@ function BleMgrWrapper() {
 
                 // console.debug("[BleMgr] Found these connected peripherals:", connectedPeripherals);
 
-                pendingChange = peripherals;
+                pendingChange = getPeripherals();
 
                 for (var i = 0; i < connectedPeripherals.length; i++) {
                     const peripheral = connectedPeripherals[i];
@@ -500,66 +537,63 @@ function BleMgrWrapper() {
     };
 
     const handleDiscoverPeripheral = (peripheral, manager) => {
-        // console.debug("[BleMgr] Discovered peripheral", peripheral.id);
-
-        if (!peripheral.name) {
-            peripheral.name = "NO NAME";
+        // DEBUG:
+        if (!getPeripherals().has(peripheral.id)) {
+            console.log(`[DEBUG] New peripheral: ${peripheral.id}`);
         }
 
-        // console.log(
-        //     ">> service uuids:",
-        //     peripheral?.advertising?.serviceUUIDs,
-        //     SERVICE_PATIENTSYNC_UUID.toLowerCase(),
-        //     peripheral?.advertising?.serviceUUIDs?.includes(SERVICE_PATIENTSYNC_UUID.toLowerCase())
-        // );
+        // If we've already processed this device, then disregard
+        if (knownInvalidPeripherals.current.has(peripheral.id) || getPeripherals().has(peripheral.id)) {
+            return;
+        }
 
+        // Decode custom data
         peripheral.customData = { read: false, curRoom: undefined, isPatientAssociated: undefined };
-
-        // console.log(peripheral?.advertising);
         decoded = decodeRawAdvertisingData(peripheral?.advertising?.rawData?.bytes);
         if (255 in decoded) {
             peripheral.customData = decodeManufacturerCustomField(decoded[255].bytes);
-            // console.debug(decoded[255].bytes, peripheral.customData);
         }
-
-        // console.log("customData", peripheral.customData);
-
-        // console.log(peripheral);
 
         // Filter discovered device
         if (peripheral?.advertising?.serviceUUIDs?.includes(SERVICE_PATIENTSYNC_UUID.toLowerCase())) {
-            // console.log(`[BleMgr] Peripheral ${peripheral.id} passed UUID check`);
-            setPeripherals((map) => {
-                return new Map(map.set(peripheral.id, peripheral));
-            });
-
-            if (!manager?.readRSSI) console.debug(`[BleMgr] manager.readRSSI doesn't exist! manager:`, manager);
-
-            // TODO: Maybe run this during device discovery? Not sure if it is already run. (that's what we're trying to do, thanks past max!)
-            // FIXME: This does not work and I have no idea why ~mr
-            if (false && manager?.readRSSI && !rssiPending.includes(peripheral.id)) {
-                setRssiPending((a) => {
-                    a.push(peripheral.id);
-                    return a;
+            if (peripheral.id && peripheral.name) {
+                // console.log(`[BleMgr] Peripheral ${peripheral.id} passed UUID check`);
+                setPeripherals((map) => {
+                    return new Map(map.set(peripheral.id, peripheral));
                 });
 
-                manager
-                    ?.readRSSI(peripheral.id)
-                    .then((rssi) => {
-                        console.debug(`[BleMgr] RSSI for ${peripheral.id}: ${rssi}`);
-                        peripheral = peripherals.get(peripheral.id) ?? peripheral;
-                        peripheral.rssi = rssi;
-                        setPeripherals((map) => {
-                            return new Map(map.set(peripheral.id, peripheral));
-                        });
-                    })
-                    .catch((error) => {
-                        console.log(`[BleMgr] Error while retrieving peripheral ${peripheral.id} RSSI:`, error);
+                if (!manager?.readRSSI) console.debug(`[BleMgr] manager.readRSSI doesn't exist! manager:`, manager);
+
+                // TODO: Maybe run this during device discovery? Not sure if it is already run. (that's what we're trying to do, thanks past max!)
+                // FIXME: This does not work and I have no idea why ~mr
+                if (false && manager?.readRSSI && !rssiPending.includes(peripheral.id)) {
+                    setRssiPending((a) => {
+                        a.push(peripheral.id);
+                        return a;
                     });
+
+                    manager
+                        ?.readRSSI(peripheral.id)
+                        .then((rssi) => {
+                            console.debug(`[BleMgr] RSSI for ${peripheral.id}: ${rssi}`);
+                            peripheral = peripherals.get(peripheral.id) ?? peripheral;
+                            peripheral.rssi = rssi;
+                            setPeripherals((map) => {
+                                return new Map(map.set(peripheral.id, peripheral));
+                            });
+                        })
+                        .catch((error) => {
+                            console.log(`[BleMgr] Error while retrieving peripheral ${peripheral.id} RSSI:`, error);
+                        });
+                }
             }
         } else {
             // console.log(`[BleMgr] Peripheral ${peripheral.id} does not include service UUID: ${SERVICE_PATIENTSYNC_UUID}`);
             // console.log(peripheral?.advertising?.serviceUUIDs);
+            if (!knownInvalidPeripherals.current.has(peripheral.id)) {
+                console.log(`[BleMgr] Peripheral ${peripheral.id} does not have valid Service UUID, adding to denylist`);
+                knownInvalidPeripherals.current.add(peripheral.id);
+            }
         }
 
         // console.log("peripherals:", peripherals.entries());
@@ -634,6 +668,7 @@ function BleMgrWrapper() {
         if (validStates.includes(getManagerState())) {
             try {
                 setPeripherals(new Map());
+                resetKnownInvalidPeripherals();
                 retrieveConnected();
                 console.debug("[BleMgr] Starting scan");
                 // FIXME: Once a scan's timer is started, you can call stopScan, but this will not stop it from stopping the scan once the timer runs out if another scan is started.
@@ -698,7 +733,7 @@ function BleMgrWrapper() {
     };
 
     const connectToDevice = async (id) => {
-        const peripheral = peripherals.get(id);
+        const peripheral = getPeripherals().get(id);
         if (peripheral) {
             if (connectingDevice || connectedDevice) {
                 console.debug(
@@ -730,7 +765,7 @@ function BleMgrWrapper() {
             console.log(`[BleMgr] Disconnecting from ${id}`);
             setManagerState(BLE_MGR_STATE_DISCONNECTING);
 
-            const peripheral = peripherals.get(id);
+            const peripheral = getPeripherals().get(id);
             await manager.disconnect(id);
 
             console.log(`[BleMgr] Disconnected from ${id}`);
@@ -783,7 +818,7 @@ function BleMgrWrapper() {
     };
 
     const publicCollection = {
-        bluetoothPeripherals: peripherals,
+        // bluetoothGetPeripherals: getPeripherals,
         bluetoothDevices: devices,
         bluetoothConnectingDevice: connectingDevice,
         bluetoothConnectedDevice: connectedDevice,

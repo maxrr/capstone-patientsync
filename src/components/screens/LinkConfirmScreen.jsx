@@ -41,6 +41,42 @@ function LinkConfirmScreen({ navigation }) {
               dob: info.month + "/" + info.day + "/" + info.year
           };
 
+    const performLink = () => {
+        setLinkStatusText("Starting...");
+        setLinkStatusModalVisible(true);
+        bluetoothPerformSyncWithDevice(bluetoothConnectedDevice?.id, patientProfile.mrn, "SAMPLEUSERID", (progress) => {
+            setLinkStatusText(progress);
+        })
+            .then((res) => {
+                console.log("res:", res);
+                setLinkStatusModalVisible(false);
+                navigation.push("Link Complete");
+            })
+            .catch((error) => {
+                Alert.alert(error.toString());
+                console.error(error);
+                setLinkStatusModalVisible(false);
+            });
+    };
+
+    const performUnlink = () => {
+        setLinkStatusText("Starting...");
+        setLinkStatusModalVisible(true);
+        bluetoothPerformSyncWithDevice(bluetoothConnectedDevice?.id, "-1", "SAMPLEUSERID", (progress) => {
+            setLinkStatusText(progress);
+        })
+            .then((res) => {
+                console.log("res:", res);
+                setLinkStatusModalVisible(false);
+                navigation.push("Link Complete", { isUnlinking });
+            })
+            .catch((error) => {
+                Alert.alert(error.toString());
+                console.error(error);
+                setLinkStatusModalVisible(false);
+            });
+    };
+
     return (
         <UniformPageWrapper>
             <Stepper step={3} />
@@ -102,28 +138,7 @@ function LinkConfirmScreen({ navigation }) {
 
             <Button
                 title={isUnlinking ? "Unlink" : "Link"}
-                onPress={() => {
-                    setLinkStatusText("Starting...");
-                    setLinkStatusModalVisible(true);
-                    bluetoothPerformSyncWithDevice(
-                        bluetoothConnectedDevice?.id,
-                        patientProfile.mrn,
-                        "SAMPLEUSERID",
-                        (progress) => {
-                            setLinkStatusText(progress);
-                        }
-                    )
-                        .then((res) => {
-                            console.log("res:", res);
-                            setLinkStatusModalVisible(false);
-                            navigation.push("Link Complete");
-                        })
-                        .catch((error) => {
-                            Alert.alert(error.toString());
-                            console.error(error);
-                            setLinkStatusModalVisible(false);
-                        });
-                }}
+                onPress={isUnlinking ? performUnlink : performLink}
                 // onPress={() => navigation.push("Link Complete", { isUnlinking })}
             />
         </UniformPageWrapper>
