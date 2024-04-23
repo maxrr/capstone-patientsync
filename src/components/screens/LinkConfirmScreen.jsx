@@ -56,7 +56,7 @@ function LinkConfirmScreen({ navigation }) {
                 console.log("res:", res);
                 setLinkStatusModalVisible(false);
                 navigation.popToTop();
-                navigation.push("Link Complete");
+                navigation.push("Link Complete", { lastConnectedDeviceInfo: { ...bluetoothConnectedDevice } });
                 bluetoothResetSeenDevices();
             })
             .catch((error) => {
@@ -76,7 +76,7 @@ function LinkConfirmScreen({ navigation }) {
                 console.log("res:", res);
                 setLinkStatusModalVisible(false);
                 navigation.popToTop();
-                navigation.push("Link Complete", { isUnlinking });
+                navigation.push("Link Complete", { isUnlinking, lastConnectedDeviceInfo: { ...bluetoothConnectedDevice } });
                 bluetoothResetSeenDevices();
             })
             .catch((error) => {

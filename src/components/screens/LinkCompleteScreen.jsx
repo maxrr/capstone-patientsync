@@ -5,19 +5,20 @@ import DeviceContext from "../DeviceContext";
 import { useContext } from "react";
 import { useRoute } from "@react-navigation/native";
 import Stepper from "../comps/Stepper";
+import BluetoothManagerContext from "../BluetoothManagerContext";
 
 function LinkCompleteScreen({ navigation }) {
     const [info, setInfo] = useContext(PatientContext);
-    const [deviceInfo, setDeviceInfo] = useContext(DeviceContext);
+
+    // const { bluetoothConnectedDevice } = useContext(BluetoothManagerContext);
 
     function returnHome() {
         navigation.popToTop();
         setInfo(null);
-        setDeviceInfo(null);
     }
 
     const route = useRoute();
-    const { isUnlinking } = route.params || { isUnlinking: false };
+    const { isUnlinking, lastConnectedDeviceInfo } = route.params || { isUnlinking: false };
 
     //Must have hardcoded patient information when we are unlinking to display properly. We don't have the database set up to do
     //this otherwise, and obviously no info comes from scanning in this case so must be hardcoded for unlinking -DT
@@ -71,9 +72,9 @@ function LinkCompleteScreen({ navigation }) {
                         { backgroundColor: Styles.colors.GEPurple }
                     ]}
                 >
-                    <Text style={{ fontWeight: "bold", fontSize: 16 }}>{deviceInfo.name}</Text>
+                    <Text style={{ fontWeight: "bold", fontSize: 16 }}>{lastConnectedDeviceInfo.name}</Text>
                     {"\n"}
-                    {deviceInfo.room}
+                    {lastConnectedDeviceInfo.room}
                 </Text>
             </View>
 

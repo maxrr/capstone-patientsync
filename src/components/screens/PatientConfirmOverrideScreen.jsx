@@ -2,7 +2,7 @@ import { Button, Text, View } from "react-native";
 import Styles from "../../styles/main";
 import { useRoute } from "@react-navigation/native";
 import PatientContext from "../PatientContext";
-import { useContext } from "react";
+import { useContext, useEffect } from "react";
 import Stepper from "../comps/Stepper";
 
 const patientProfile = {
@@ -20,7 +20,10 @@ function PatientConfirmOverrideScreen({ navigation }) {
     const { isOverride } = route.params || { isOverride: false };
 
     const [info, setInfo] = useContext(PatientContext);
-    setInfo(patientProfile);
+
+    useEffect(() => {
+        setInfo(patientProfile);
+    }, []);
 
     // *** SHOWOVERRIDES IS THE UNLINK CASE ***
     // *** SHOWOVERRIDES IS THE UNLINK CASE ***
@@ -48,12 +51,12 @@ function PatientConfirmOverrideScreen({ navigation }) {
 
             <View style={{ height: 10 }}></View>
             <Text style={[Styles.h5]}>
-                {patientProfile.lastName}, {patientProfile.firstName}
+                {patientProfile?.lastName}, {patientProfile?.firstName}
             </Text>
 
-            <Text style={[Styles.h5]}>{patientProfile.dob}</Text>
-            <Text style={[Styles.h6]}>MRN: {patientProfile.mrn}</Text>
-            <Text style={[Styles.h6]}>Visit number: {patientProfile.visitNumber}</Text>
+            <Text style={[Styles.h5]}>{patientProfile?.dob}</Text>
+            <Text style={[Styles.h6]}>MRN: {patientProfile?.mrn}</Text>
+            <Text style={[Styles.h6]}>Visit number: {patientProfile?.visitNumber}</Text>
             <View style={{ height: 10 }}></View>
             {/*Navigation buttons for override screen. -dt*/}
             {/*Didn't create more override screens because
