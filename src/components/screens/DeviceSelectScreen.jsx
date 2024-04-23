@@ -71,7 +71,6 @@ function DeviceSelectScreen({ navigation, route }) {
     }, [bluetoothDevices, currSearch]);
 
     useEffect(() => {
-        console.log("[DEBUG] initial load triggered render");
         bluetoothStartScan();
         return () => {
             bluetoothStopScan();
@@ -80,16 +79,10 @@ function DeviceSelectScreen({ navigation, route }) {
 
     // TODO: This block should execute when we back out of the next screen, but this is good enough for now
     useEffect(() => {
-        console.log("[DEBUG] navigation triggered render");
         return navigation.addListener("focus", () => {
             bluetoothDisconnectFromDevice();
         });
     }, [navigation]);
-
-    // DEBUG:
-    useEffect(() => {
-        console.log("[DEBUG] DeviceSelectScreen rendered");
-    });
 
     // const sampleDevice = {
     //     name: "Sample GEHC C+",

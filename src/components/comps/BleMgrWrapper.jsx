@@ -702,34 +702,34 @@ function BleMgrWrapper() {
     // FIXME: This is not working properly when a user leaves the device select screen
     const stopScan = () => {
         const validStates = BLE_MGR_VALID_ENTRY_STATES[BLE_MGR_STATE_STOPPING];
-        if (validStates.includes(getManagerState())) {
-            manager
-                ?.stopScan()
-                .then(() => {
-                    console.log("[BleMgr] Stopping scan");
-                    setManagerState(BLE_MGR_STATE_STOPPING);
+        // if (validStates.includes(getManagerState())) {
+        manager
+            ?.stopScan()
+            .then(() => {
+                console.log("[BleMgr] Stopping scan");
+                setManagerState(BLE_MGR_STATE_STOPPING);
 
-                    const timeout = setTimeout(() => {
-                        console.debug(
-                            `[BleMgr] Manager took more than ${config.SCAN_STOP_TIMEOUT} ms to stop, assuming something is broken and going back to idle state`
-                        );
-                        setManagerState(BLE_MGR_STATE_IDLE);
-                    }, config.SCAN_STOP_TIMEOUT);
+                const timeout = setTimeout(() => {
+                    console.debug(
+                        `[BleMgr] Manager took more than ${config.SCAN_STOP_TIMEOUT} ms to stop, assuming something is broken and going back to idle state`
+                    );
+                    setManagerState(BLE_MGR_STATE_IDLE);
+                }, config.SCAN_STOP_TIMEOUT);
 
-                    console.log(`[BleMgr] [DEBUG] Created new timeout: ${timeout}`);
-                    setStateTimeout(timeout);
-                    // clearStateTimeout();
-                })
-                .catch((error) => {
-                    console.error("[BleMgr] Error thrown while stopping scan:", error);
-                })
-                .finally(() => {
-                    // setIsScanning(false);
-                    // setManagerState(BLE_MGR_STATE_IDLE);
-                });
-        } else if (getManagerState() != BLE_MGR_STATE_IDLE) {
-            console.log(`[BleMgr] Unable to stop scan, current state ${getManagerState()}, expected one of: ${validStates}`);
-        }
+                console.log(`[BleMgr] [DEBUG] Created new timeout: ${timeout}`);
+                setStateTimeout(timeout);
+                // clearStateTimeout();
+            })
+            .catch((error) => {
+                console.error("[BleMgr] Error thrown while stopping scan:", error);
+            })
+            .finally(() => {
+                // setIsScanning(false);
+                // setManagerState(BLE_MGR_STATE_IDLE);
+            });
+        // } else if (getManagerState() != BLE_MGR_STATE_IDLE) {
+        //     console.log(`[BleMgr] Unable to stop scan, current state ${getManagerState()}, expected one of: ${validStates}`);
+        // }
     };
 
     const connectToDevice = async (id) => {
@@ -772,6 +772,11 @@ function BleMgrWrapper() {
             setManagerState(BLE_MGR_STATE_IDLE);
             setConnectedDevice(null);
             setConnectingDevice(null);
+            knownInvalidPeripherals.current.delete(id);
+            setPeripherals((map) => {
+                map.delete(id);
+                return map;
+            });
         } else {
             console.log(`[BleMgr] Tried to disconnect from device, but no connected device found`);
         }
@@ -817,6 +822,14 @@ function BleMgrWrapper() {
         }
     };
 
+    const clearKnownBluetoothDevices = () => {
+        // TODO:
+        // await manager.disconnect();
+        disconnectFromDevice();
+        resetKnownInvalidPeripherals();
+        setPeripherals(() => new Map());
+    };
+
     const publicCollection = {
         // bluetoothGetPeripherals: getPeripherals,
         bluetoothDevices: devices,
@@ -829,7 +842,8 @@ function BleMgrWrapper() {
         bluetoothRemoveListeners: removeListeners,
         bluetoothConnectToDevice: connectToDevice,
         bluetoothDisconnectFromDevice: disconnectFromDevice,
-        bluetoothPerformSyncWithDevice: performSyncWithDevice
+        bluetoothPerformSyncWithDevice: performSyncWithDevice,
+        bluetoothResetSeenDevices: clearKnownBluetoothDevices
     };
 
     return <ConnectPlusApp {...publicCollection} />;

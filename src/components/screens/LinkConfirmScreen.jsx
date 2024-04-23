@@ -18,7 +18,12 @@ function LinkConfirmScreen({ navigation }) {
     const { isUnlinking } = route.params || { isUnlinking: false };
     const [info, setInfo] = useContext(PatientContext);
     // const [deviceInfo, setDeviceInfo] = useContext(DeviceContext);
-    const { bluetoothConnectedDevice, bluetoothPerformSyncWithDevice } = useContext(BluetoothManagerContext);
+    const {
+        bluetoothConnectedDevice,
+        bluetoothPerformSyncWithDevice,
+        bluetoothResetSeenDevices,
+        bluetoothDisconnectFromDevice
+    } = useContext(BluetoothManagerContext);
 
     const [linkStatusText, setLinkStatusText] = useState("");
     const [linkStatusModalVisible, setLinkStatusModalVisible] = useState(false);
@@ -50,7 +55,9 @@ function LinkConfirmScreen({ navigation }) {
             .then((res) => {
                 console.log("res:", res);
                 setLinkStatusModalVisible(false);
+                navigation.popToTop();
                 navigation.push("Link Complete");
+                bluetoothResetSeenDevices();
             })
             .catch((error) => {
                 Alert.alert(error.toString());
@@ -68,7 +75,9 @@ function LinkConfirmScreen({ navigation }) {
             .then((res) => {
                 console.log("res:", res);
                 setLinkStatusModalVisible(false);
+                navigation.popToTop();
                 navigation.push("Link Complete", { isUnlinking });
+                bluetoothResetSeenDevices();
             })
             .catch((error) => {
                 Alert.alert(error.toString());

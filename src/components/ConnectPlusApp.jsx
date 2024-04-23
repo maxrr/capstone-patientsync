@@ -31,7 +31,8 @@ export default function ConnectPlusApp({
     bluetoothManagerState,
     bluetoothConnectToDevice,
     bluetoothDisconnectFromDevice,
-    bluetoothPerformSyncWithDevice
+    bluetoothPerformSyncWithDevice,
+    bluetoothResetSeenDevices
 }) {
     // Context for current patient & device info
     const [info, setInfo] = useState(null);
@@ -58,7 +59,8 @@ export default function ConnectPlusApp({
                     bluetoothManagerState,
                     bluetoothConnectToDevice,
                     bluetoothDisconnectFromDevice,
-                    bluetoothPerformSyncWithDevice
+                    bluetoothPerformSyncWithDevice,
+                    bluetoothResetSeenDevices
                 }}
             >
                 <PatientContext.Provider value={[info, setInfo]}>
