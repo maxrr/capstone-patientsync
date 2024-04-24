@@ -4,10 +4,13 @@ import PatientContext from "../PatientContext";
 import { useContext } from "react";
 import Stepper from "../comps/Stepper";
 import UniformPageWrapper from "../comps/UniformPageWrapper";
+import CurrentFlowSettingsContext from "../CurrentFlowSettingsContext";
 
 function PatientConfirmScreen({ route, navigation }) {
     const [patientInfo, setPatientInfo] = useContext(PatientContext);
-    const { isOverride } = route.params;
+    // const { showOverrides } = route.params;
+    const [getCurrentFlowSettings, setCurrentFlowSettings] = useContext(CurrentFlowSettingsContext);
+    const { showOverrides } = getCurrentFlowSettings();
     const patientProfile = {
         firstName: patientInfo.first,
         lastName: patientInfo.last,
@@ -39,7 +42,7 @@ function PatientConfirmScreen({ route, navigation }) {
                 Visit number: {patientProfile.visitNumber}
             </Text>
             <View style={{ height: 10 }}></View>
-            <Button title="Yes" onPress={() => navigation.push("Confirm Link", { isOverride })} />
+            <Button title="Yes" onPress={() => navigation.push("Confirm Link")} />
             <Button
                 title="No, re-enter patient info"
                 onPress={() => {

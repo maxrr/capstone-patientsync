@@ -12,10 +12,13 @@ import DeviceContext from "../DeviceContext";
 import BluetoothManagerContext from "../BluetoothManagerContext";
 import UniformPageWrapper from "../comps/UniformPageWrapper";
 import StyledModal from "../comps/StyledModal";
+import CurrentFlowSettingsContext from "../CurrentFlowSettingsContext";
 
 function LinkConfirmScreen({ navigation }) {
     const route = useRoute();
-    const { isUnlinking } = route.params || { isUnlinking: false };
+    const [getCurrentFlowSettings, setCurrentFlowSettings] = useContext(CurrentFlowSettingsContext);
+    const { linkingStepper } = getCurrentFlowSettings();
+
     const [info, setInfo] = useContext(PatientContext);
     // const [deviceInfo, setDeviceInfo] = useContext(DeviceContext);
     const {
@@ -29,22 +32,30 @@ function LinkConfirmScreen({ navigation }) {
     const [linkStatusModalVisible, setLinkStatusModalVisible] = useState(false);
 
     //if unlinking, then don't have MRN and just use the patient profile we generated as an example last month
-    const patientProfile = isUnlinking
-        ? {
-              // Hardcoded values for the unlink scenario
-              firstName: "Ron",
-              lastName: "Smith",
-              mrn: "157849",
-              visitNumber: "2163",
-              dob: "03/14/1992"
-          }
-        : {
-              firstName: info.first,
-              lastName: info.last,
-              mrn: info.mrn,
-              visitNumber: info.visit,
-              dob: info.month + "/" + info.day + "/" + info.year
-          };
+    // const patientProfile = linkingStepper
+    //     ? {
+    //           // Hardcoded values for the unlink scenario
+    //           firstName: "Ron",
+    //           lastName: "Smith",
+    //           mrn: "157849",
+    //           visitNumber: "2163",
+    //           dob: "03/14/1992"
+    //       }
+    //     : {
+    //           firstName: info.first,
+    //           lastName: info.last,
+    //           mrn: info.mrn,
+    //           visitNumber: info.visit,
+    //           dob: info.month + "/" + info.day + "/" + info.year
+    //       };
+    const patientProfile = {
+        // Hardcoded values for the unlink scenario
+        firstName: "Ron",
+        lastName: "Smith",
+        mrn: "157849",
+        visitNumber: "2163",
+        dob: "03/14/1992"
+    };
 
     const performLink = () => {
         setLinkStatusText("Starting...");
@@ -76,7 +87,9 @@ function LinkConfirmScreen({ navigation }) {
                 console.log("res:", res);
                 setLinkStatusModalVisible(false);
                 navigation.popToTop();
-                navigation.push("Link Complete", { isUnlinking, lastConnectedDeviceInfo: { ...bluetoothConnectedDevice } });
+                navigation.push("Link Complete", {
+                    lastConnectedDeviceInfo: { ...bluetoothConnectedDevice }
+                });
                 bluetoothResetSeenDevices();
             })
             .catch((error) => {
@@ -90,9 +103,9 @@ function LinkConfirmScreen({ navigation }) {
         <UniformPageWrapper>
             <Stepper step={3} />
             <Text style={[Styles.h4]}>
-                <Text style={{ color: "white", fontWeight: "bold" }}>{isUnlinking ? "Unlink" : "Link"}</Text>
+                <Text style={{ color: "white", fontWeight: "bold" }}>{!linkingStepper ? "Unlink" : "Link"}</Text>
             </Text>
-            <Text style={[Styles.h6]}>{isUnlinking ? "Ready to unlink?" : "Ready to link?"}</Text>
+            <Text style={[Styles.h6]}>{!linkingStepper ? "Ready to unlink?" : "Ready to link?"}</Text>
 
             {/* <Text style={[Styles.h3]}>
                 {patientProfile.lastName}, {patientProfile.firstName}
@@ -181,9 +194,9 @@ function LinkConfirmScreen({ navigation }) {
             </StyledModal>
 
             <Button
-                title={isUnlinking ? "Unlink" : "Link"}
-                onPress={isUnlinking ? performUnlink : performLink}
-                // onPress={() => navigation.push("Link Complete", { isUnlinking })}
+                title={!linkingStepper ? "Unlink" : "Link"}
+                onPress={!linkingStepper ? performUnlink : performLink}
+                // onPress={() => navigation.push("Link Complete", { linkingStepper })}
             />
         </UniformPageWrapper>
     );

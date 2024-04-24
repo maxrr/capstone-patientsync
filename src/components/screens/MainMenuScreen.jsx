@@ -1,12 +1,14 @@
+import { useState, useEffect, useContext } from "react";
 import { Button, Text, View, Pressable, SafeAreaView } from "react-native";
 import Styles from "../../styles/main";
 import SafeAreaViewAndroid from "../comps/SafeAreaViewAndroid";
-import { useState, useEffect, useContext } from "react";
+import CurrentFlowSettingsContext from "../CurrentFlowSettingsContext";
 
 function MainMenuScreen({ navigation }) {
     //Variable to dictate what stepper to show. Either show stepper for linking process, which has the last image as a link,
     //or if this is false then show the stepper for the unlinking process which is an unlink. Set this value to true by default.
-    const [linkingStepper, setLinkingStepper] = useState(true);
+
+    const [getCurrentFlowSettings, setCurrentFlowSettings] = useContext(CurrentFlowSettingsContext);
 
     return (
         <SafeAreaView style={SafeAreaViewAndroid.AndroidSafeArea}>
@@ -20,7 +22,12 @@ function MainMenuScreen({ navigation }) {
                     <Pressable
                         style={Styles.button}
                         onPress={() => {
-                            navigation.push("Device Select", { linkingStepper: true });
+                            setCurrentFlowSettings((a) => {
+                                a.linkingStepper = true;
+                                a.showOverrides = false;
+                                return a;
+                            });
+                            navigation.push("Device Select");
                         }}
                     >
                         <Text style={[Styles.button, Styles.buttonText, { backgroundColor: Styles.colors.GEPurple }]}>
@@ -35,7 +42,12 @@ function MainMenuScreen({ navigation }) {
                     <Pressable
                         style={Styles.button}
                         onPress={() => {
-                            navigation.push("Device Select", { linkingStepper: false, showOverrides: true });
+                            setCurrentFlowSettings((a) => {
+                                a.linkingStepper = false;
+                                a.showOverrides = true;
+                                return a;
+                            });
+                            navigation.push("Device Select");
                         }}
                     >
                         <Text style={[Styles.button, Styles.buttonText, { backgroundColor: Styles.colors.GEPurple }]}>

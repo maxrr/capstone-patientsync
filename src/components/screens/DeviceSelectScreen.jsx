@@ -4,15 +4,15 @@ import { Text, View, Pressable, TextInput, ActivityIndicator, Modal } from "reac
 import Styles from "../../styles/main";
 import Stepper from "../comps/Stepper";
 import UniformPageWrapper from "../comps/UniformPageWrapper";
-import DeviceContext from "../DeviceContext";
 import BluetoothManagerContext from "../BluetoothManagerContext";
+
+import CurrentFlowSettingsContext from "../CurrentFlowSettingsContext";
 import { BLE_MGR_STATE_SEARCHING, ENABLE_BLE_FUNCTIONALITY } from "../comps/BleMgrConfig";
 import DeviceInfoPane from "../comps/DeviceInfoPane";
 import StyledModal from "../comps/StyledModal";
 
 function DeviceSelectScreen({ navigation, route }) {
     // Context to store device info
-    const [deviceInfo, setDeviceInfo] = useContext(DeviceContext);
 
     const {
         bluetoothDevices,
@@ -52,7 +52,9 @@ function DeviceSelectScreen({ navigation, route }) {
     ];
 
     // Test to see if override only (since unlinking case)
-    const showOverrides = route.params?.showOverrides || false;
+    // const showOverrides = route.params?.showOverrides || false;
+    const [getCurrentFlowSettings, setCurrentFlowSettings] = useContext(CurrentFlowSettingsContext);
+    const { showOverrides } = getCurrentFlowSettings();
 
     // Searched devices is a list of devices which have been filtered based on what is typed
     // Casted everything to lowercase so none of this is case sensitive -dt note 3/17/24 change
@@ -170,10 +172,7 @@ function DeviceSelectScreen({ navigation, route }) {
                             bluetoothConnectToDevice(device.id)
                                 .then(() => {
                                     setConnectionModalVisible(false);
-                                    navigation.push("Device Details", {
-                                        isOverride: device.isOverride || false,
-                                        showOverrides: showOverrides
-                                    });
+                                    navigation.push("Device Details");
                                 })
                                 .catch((error) =>
                                     console.error("[BleMgr] Frontend error when trying to connect to device:", error)

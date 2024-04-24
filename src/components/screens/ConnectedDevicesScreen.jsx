@@ -8,6 +8,7 @@ import UniformPageWrapper from "../comps/UniformPageWrapper";
 
 import BluetoothManagerContext from "../BluetoothManagerContext";
 import DeviceInfoPane from "../comps/DeviceInfoPane";
+import CurrentFlowSettingsContext from "../CurrentFlowSettingsContext";
 
 const devices = [
     {
@@ -29,8 +30,10 @@ const devices = [
 
 function ConnectedDevicesScreen({ navigation }) {
     const route = useRoute();
-    const { isOverride } = route.params || { isOverride: false };
-    const { showOverrides } = route.params || { showOverrides: false };
+    const [getCurrentFlowSettings, setCurrentFlowSettings] = useContext(CurrentFlowSettingsContext);
+    const { isOverride, showOverrides } = getCurrentFlowSettings();
+    // const { isOverride } = route.params || { isOverride: false };
+    // const { showOverrides } = route.params || { showOverrides: false };
 
     const {
         bluetoothDevices,
@@ -132,9 +135,9 @@ function ConnectedDevicesScreen({ navigation }) {
                 title="Confirm"
                 onPress={() => {
                     if (isOverride || showOverrides) {
-                        navigation.push("Confirm Override Patient", { isOverride, showOverrides });
+                        navigation.push("Confirm Override Patient");
                     } else {
-                        navigation.push("Enter Patient Info", route.params);
+                        navigation.push("Enter Patient Info");
                     }
                 }}
             />

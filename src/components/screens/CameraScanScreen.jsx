@@ -4,6 +4,7 @@ import { useState, useEffect, useContext } from "react";
 import Styles from "../../styles/main";
 import { CameraView, useCameraPermissions } from "expo-camera/next";
 import PatientContext from "../PatientContext";
+import CurrentFlowSettingsContext from "../CurrentFlowSettingsContext";
 
 const samplePatientDatabase = {
     ["123456789"]: {
@@ -31,7 +32,8 @@ const samplePatientDatabase = {
 
 function CameraScanScreen({ route, navigation }) {
     // variables for manual input
-    const { isOverride } = route.params;
+    // const [getCurrentFlowSettings, setCurrentFlowSettings] = useContext(CurrentFlowSettingsContext);
+    // const { showOverrides } = getCurrentFlowSettings();
     const { manual } = route.params;
     const [text, setText] = React.useState("");
 
@@ -49,7 +51,7 @@ function CameraScanScreen({ route, navigation }) {
     function handleScan(result) {
         // store the info parsed from the barcode
         setInfo(parseData(result));
-        navigation.navigate("Confirm Patient", { isOverride }, { reused: false });
+        navigation.navigate("Confirm Patient", { reused: false });
 
         // NOTE: We want the transition upon scan to be quick and not require any more button presses,
         //       so more like a flash of green with "barcode scanned!" before navigating. Somthing
@@ -121,7 +123,7 @@ function CameraScanScreen({ route, navigation }) {
     function confirmInput() {
         if (text in samplePatientDatabase) {
             setInfo(samplePatientDatabase[text]);
-            navigation.push("Confirm Patient", { isOverride }, { reused: false });
+            navigation.push("Confirm Patient", { reused: false });
             setText("");
         } else {
             Alert.alert("MRN lookup unsuccessful, please try again.");

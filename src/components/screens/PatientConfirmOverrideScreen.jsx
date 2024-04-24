@@ -4,6 +4,7 @@ import { useRoute } from "@react-navigation/native";
 import PatientContext from "../PatientContext";
 import { useContext, useEffect } from "react";
 import Stepper from "../comps/Stepper";
+import CurrentFlowSettingsContext from "../CurrentFlowSettingsContext";
 
 const patientProfile = {
     firstName: "Ron",
@@ -19,7 +20,7 @@ const info = patientProfile;
 //I figured having separate screens would be easier for the override side of the app if we wanted to change things around -dt
 function PatientConfirmOverrideScreen({ navigation }) {
     const route = useRoute();
-    const { isOverride } = route.params || { isOverride: false };
+    // const { isOverride } = route.params || { isOverride: false };
 
     // const [info, setInfo] = useContext(PatientContext);
 
@@ -29,7 +30,9 @@ function PatientConfirmOverrideScreen({ navigation }) {
 
     // *** SHOWOVERRIDES IS THE UNLINK CASE ***
     // *** SHOWOVERRIDES IS THE UNLINK CASE ***
-    const { showOverrides } = route.params || { showOverrides: false };
+    // const { showOverrides } = route.params || { showOverrides: false };
+    const [getCurrentFlowSettings, setCurrentFlowSettings] = useContext(CurrentFlowSettingsContext);
+    const { showOverrides } = getCurrentFlowSettings();
 
     return (
         <View style={[Styles.container]}>
@@ -68,21 +71,11 @@ function PatientConfirmOverrideScreen({ navigation }) {
 
             {/* Need to conditionally render the two buttons for either progressing in override case or progressing 
             in the case of unlinking and just going back to the main menu*/}
-            {!showOverrides && (
-                <Button
-                    title="Override Patient"
-                    onPress={() => navigation.push("Enter Patient Info", { isOverride: true })}
-                />
-            )}
+            {!showOverrides && <Button title="Override Patient" onPress={() => navigation.push("Enter Patient Info")} />}
 
-            {showOverrides && (
-                <Button title="Unlink This Patient" onPress={() => navigation.push("Confirm Link", { isUnlinking: true })} />
-            )}
+            {showOverrides && <Button title="Unlink This Patient" onPress={() => navigation.push("Confirm Link")} />}
 
-            <Button
-                title="Choose Another Device"
-                onPress={() => navigation.push("Device Select", { showOverrides: showOverrides })}
-            />
+            <Button title="Choose Another Device" onPress={() => navigation.push("Device Select")} />
             <View style={{ height: 10 }}></View>
         </View>
     );

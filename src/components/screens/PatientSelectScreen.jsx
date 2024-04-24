@@ -4,9 +4,12 @@ import Styles from "../../styles/main";
 import PatientContext from "../PatientContext";
 import { useContext } from "react";
 import Stepper from "../comps/Stepper";
+import CurrentFlowSettingsContext from "../CurrentFlowSettingsContext";
 
 function PatientSelectScreen({ route, navigation }) {
-    const isOverride = route.params ? route.params.isOverride : false;
+    // const showOverrides = route.params ? route.params.showOverrides : false;
+    const [getCurrentFlowSettings, setCurrentFlowSettings] = useContext(CurrentFlowSettingsContext);
+    const { showOverrides } = getCurrentFlowSettings();
 
     // Context for patient info
     const [info, setInfo] = useContext(PatientContext);
@@ -16,17 +19,14 @@ function PatientSelectScreen({ route, navigation }) {
             <Stepper step={2} />
             <Text style={[Styles.h4]}>
                 <Text style={{ color: "white", fontWeight: "bold" }}>
-                    {isOverride ? "Patient Override" : "Patient Select"}
+                    {showOverrides ? "Patient Override" : "Patient Select"}
                 </Text>
             </Text>
             <Text style={[Styles.h6]}>Choose method to input patient info</Text>
 
             {/*Updating buttons for Patient Select screen -DT */}
             {/**Using Pressable instead of button because then we can customize it w/ stylesheet -DT */}
-            <Pressable
-                style={Styles.button}
-                onPress={() => navigation.push("Scan Barcode", { isOverride }, { manual: false })}
-            >
+            <Pressable style={Styles.button} onPress={() => navigation.push("Scan Barcode", { manual: false })}>
                 <Text style={[Styles.button, Styles.buttonText, { backgroundColor: Styles.colors.GEPurple }]}>
                     Scan Patient Barcode
                 </Text>
@@ -34,7 +34,7 @@ function PatientSelectScreen({ route, navigation }) {
 
             <Text style={[Styles.h5]}>or</Text>
 
-            <Pressable style={Styles.button} onPress={() => navigation.push("Scan Barcode", { isOverride, manual: true })}>
+            <Pressable style={Styles.button} onPress={() => navigation.push("Scan Barcode", { manual: true })}>
                 <Text style={[Styles.button, Styles.buttonText, { backgroundColor: Styles.colors.GEPurple }]}>
                     Manually Enter Patient Info
                 </Text>
