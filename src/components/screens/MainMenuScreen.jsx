@@ -3,6 +3,7 @@ import { Button, Text, View, Pressable, SafeAreaView } from "react-native";
 import Styles from "../../styles/main";
 import SafeAreaViewAndroid from "../comps/SafeAreaViewAndroid";
 import CurrentFlowSettingsContext from "../CurrentFlowSettingsContext";
+import LabeledIconButton from "../comps/LabeledIconButton";
 
 function MainMenuScreen({ navigation }) {
     //Variable to dictate what stepper to show. Either show stepper for linking process, which has the last image as a link,
@@ -66,6 +67,7 @@ function MainMenuScreen({ navigation }) {
                         shadowRadius: 16
                     }}
                 >
+                    {/* <LabeledIconButton text={"test"} icon={"camera-retro"} /> */}
                     <Text style={{ color: "white" }}>GE Connect+ PatientSync (working title) v0.2</Text>
                 </View>
             </View>

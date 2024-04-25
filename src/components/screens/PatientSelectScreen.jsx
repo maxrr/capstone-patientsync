@@ -5,6 +5,8 @@ import PatientContext from "../PatientContext";
 import { useContext } from "react";
 import Stepper from "../comps/Stepper";
 import CurrentFlowSettingsContext from "../CurrentFlowSettingsContext";
+import LayoutSkeleton from "../comps/LayoutSkeleton";
+import UniformPageWrapper from "../comps/UniformPageWrapper";
 
 function PatientSelectScreen({ route, navigation }) {
     // const showOverrides = route.params ? route.params.showOverrides : false;
@@ -15,50 +17,46 @@ function PatientSelectScreen({ route, navigation }) {
     const [info, setInfo] = useContext(PatientContext);
 
     return (
-        <View style={[Styles.container]}>
-            <Stepper step={2} />
-            <Text style={[Styles.h4]}>
-                <Text style={{ color: "white", fontWeight: "bold" }}>
-                    {showOverrides ? "Patient Override" : "Patient Select"}
-                </Text>
-            </Text>
-            <Text style={[Styles.h6]}>Choose method to input patient info</Text>
+        <UniformPageWrapper centerContent={true}>
+            <LayoutSkeleton
+                title={showOverrides ? "Patient Override" : "Patient Select"}
+                subtitle={"Choose method to input patient info"}
+                stepper={2}
+            >
+                {/*Updating buttons for Patient Select screen -DT */}
+                {/**Using Pressable instead of button because then we can customize it w/ stylesheet -DT */}
+                <Pressable style={Styles.button} onPress={() => navigation.push("Scan Barcode", { manual: false })}>
+                    <Text style={[Styles.button, Styles.buttonText, { backgroundColor: Styles.colors.GEPurple }]}>
+                        Scan Patient Barcode
+                    </Text>
+                </Pressable>
 
-            {/*Updating buttons for Patient Select screen -DT */}
-            {/**Using Pressable instead of button because then we can customize it w/ stylesheet -DT */}
-            <Pressable style={Styles.button} onPress={() => navigation.push("Scan Barcode", { manual: false })}>
-                <Text style={[Styles.button, Styles.buttonText, { backgroundColor: Styles.colors.GEPurple }]}>
-                    Scan Patient Barcode
-                </Text>
-            </Pressable>
+                <Text style={[Styles.h5]}>or</Text>
 
-            <Text style={[Styles.h5]}>or</Text>
+                <Pressable style={Styles.button} onPress={() => navigation.push("Scan Barcode", { manual: true })}>
+                    <Text style={[Styles.button, Styles.buttonText, { backgroundColor: Styles.colors.GEPurple }]}>
+                        Manually Enter Patient Info
+                    </Text>
+                </Pressable>
 
-            <Pressable style={Styles.button} onPress={() => navigation.push("Scan Barcode", { manual: true })}>
-                <Text style={[Styles.button, Styles.buttonText, { backgroundColor: Styles.colors.GEPurple }]}>
-                    Manually Enter Patient Info
-                </Text>
-            </Pressable>
-
-            {info != null ? (
-                <View style={{ alignItems: "center" }}>
-                    <Text style={[Styles.h5]}>or</Text>
-                    <Pressable
-                        style={Styles.smallButton}
-                        onPress={() => navigation.push("Confirm Patient", { reused: true })}
-                    >
-                        <Text style={[Styles.smallButton, Styles.buttonText, { backgroundColor: "blue" }]}>
-                            Use Information For {"\n"}
-                            {info.first} {info.last}
-                        </Text>
-                    </Pressable>
-                </View>
-            ) : (
-                <></>
-            )}
-
-            <View style={{ height: 100 }}></View>
-        </View>
+                {info != null ? (
+                    <View style={{ alignItems: "center" }}>
+                        <Text style={[Styles.h5]}>or</Text>
+                        <Pressable
+                            style={Styles.smallButton}
+                            onPress={() => navigation.push("Confirm Patient", { reused: true })}
+                        >
+                            <Text style={[Styles.smallButton, Styles.buttonText, { backgroundColor: "blue" }]}>
+                                Use Information For {"\n"}
+                                {info.first} {info.last}
+                            </Text>
+                        </Pressable>
+                    </View>
+                ) : (
+                    <></>
+                )}
+            </LayoutSkeleton>
+        </UniformPageWrapper>
     );
 }
 

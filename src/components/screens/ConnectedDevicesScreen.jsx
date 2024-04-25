@@ -5,24 +5,26 @@ import { useRoute } from "@react-navigation/native";
 import Styles from "../../styles/main";
 import Stepper from "../comps/Stepper";
 import UniformPageWrapper from "../comps/UniformPageWrapper";
+import ConfirmCancelCombo from "../comps/ConfirmCancelCombo";
 
 import BluetoothManagerContext from "../BluetoothManagerContext";
 import DeviceInfoPane from "../comps/DeviceInfoPane";
 import CurrentFlowSettingsContext from "../CurrentFlowSettingsContext";
+import LayoutSkeleton from "../comps/LayoutSkeleton";
 
 const devices = [
     {
-        name: "Ventilator",
+        name: "Ventilator (Placeholder)",
         manufacturer: "The Ventilator Company",
         id: "00847946024130"
     },
     {
-        name: "Infusion Pump",
+        name: "Infusion Pump (Placeholder)",
         manufacturer: "MTP",
         id: "18500042541107"
     },
     {
-        name: "Pulse Oximeter",
+        name: "Pulse Oximeter (Placeholder)",
         manufacturer: "VIVE",
         id: "00810041981769"
     }
@@ -31,8 +33,7 @@ const devices = [
 function ConnectedDevicesScreen({ navigation }) {
     const route = useRoute();
     const [getCurrentFlowSettings, setCurrentFlowSettings] = useContext(CurrentFlowSettingsContext);
-    const { isOverride, showOverrides } = getCurrentFlowSettings();
-    // const { isOverride } = route.params || { isOverride: false };
+    const { showOverrides } = getCurrentFlowSettings();
     // const { showOverrides } = route.params || { showOverrides: false };
 
     const {
@@ -45,6 +46,9 @@ function ConnectedDevicesScreen({ navigation }) {
         bluetoothDisconnectFromDevice
     } = useContext(BluetoothManagerContext);
 
+    const isOverride = bluetoothConnectedDevice?.isOverride;
+    console.log(isOverride);
+
     useEffect(() => {
         // return () => {
         //     bluetoothDisconnectFromDevice();
@@ -53,24 +57,35 @@ function ConnectedDevicesScreen({ navigation }) {
 
     return (
         <UniformPageWrapper>
-            <Stepper step={1} />
+            <LayoutSkeleton
+                title={"Connected Devices"}
+                subtitle={"Please review the medical devices connected to the ConnectPlus device below"}
+                stepper={1}
+            >
+                {/* <Stepper step={1} />
             <Text style={[Styles.h4]}>
                 <Text style={{ color: "white", fontWeight: "bold" }}>Connected Devices</Text>
             </Text>
             <Text style={[Styles.h6, { textAlign: "center", marginBottom: 8 }]}>
                 Please review the medical devices connected to the ConnectPlus device below:
-            </Text>
-            {/* <View style={{ height: 15 }}></View> */}
-            <DeviceInfoPane device={bluetoothConnectedDevice} showOverrides={showOverrides} detailed={true} />
-            <View
-                style={{
-                    gap: Styles.consts.gapIncrement,
-                    display: "flex",
-                    flexDirection: "column",
-                    width: "100%"
-                }}
-            >
-                {/* <Text
+            </Text> */}
+                {/* <View style={{ height: 15 }}></View> */}
+
+                <DeviceInfoPane
+                    style={{ marginTop: Styles.consts.gapIncrement }}
+                    device={bluetoothConnectedDevice}
+                    showOverrides={showOverrides}
+                    detailed={true}
+                />
+                <View
+                    style={{
+                        gap: Styles.consts.gapIncrement,
+                        display: "flex",
+                        flexDirection: "column",
+                        width: "100%"
+                    }}
+                >
+                    {/* <Text
                     style={[
                         Styles.medDeviceSelectButton,
                         { height: "auto", backgroundColor: Styles.colors.GEPurple, flexWrap: "wrap", flexDirection: "row" }
@@ -101,54 +116,67 @@ function ConnectedDevicesScreen({ navigation }) {
                     </Text>
                 </Text> */}
 
-                {/* <Text style={[Styles.deviceSelectButtonText, { margin: 0 }]}>
+                    {/* <Text style={[Styles.deviceSelectButtonText, { margin: 0 }]}>
                     <Text style={{ fontWeight: "bold", fontSize: 16, margin: 0 }}>Connected devices (placeholder):</Text>
                     {"\n"}
                 </Text> */}
-                <View style={{ borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: "#999" }} />
-                {devices.map((e, index) => (
-                    <Text
-                        key={index}
-                        style={[
-                            Styles.medDeviceSelectButton,
-                            { backgroundColor: Styles.colors.GEPurple, flexWrap: "wrap", flexDirection: "row" }
-                        ]}
-                    >
-                        <Text style={[Styles.deviceSelectButtonText]}>
-                            <Text style={{ fontWeight: "bold", fontSize: 16 }}>{e.name}</Text>
-                            {"\n"}
+                    <View style={{ borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: "#999" }} />
+                    {devices.map((e, index) => (
+                        <Text
+                            key={index}
+                            style={[
+                                Styles.medDeviceSelectButton,
+                                { backgroundColor: Styles.colors.GEPurple, flexWrap: "wrap", flexDirection: "row" }
+                            ]}
+                        >
+                            <Text style={[Styles.deviceSelectButtonText]}>
+                                <Text style={{ fontWeight: "bold", fontSize: 16 }}>{e.name}</Text>
+                                {"\n"}
+                            </Text>
+                            <Text style={[Styles.deviceSelectButtonText]}>
+                                {e.manufacturer}
+                                {"\n"}
+                            </Text>
+                            <Text style={[Styles.deviceSelectButtonText]}>{e.id}</Text>
                         </Text>
-                        <Text style={[Styles.deviceSelectButtonText]}>
-                            {e.manufacturer}
-                            {"\n"}
-                        </Text>
-                        <Text style={[Styles.deviceSelectButtonText]}>{e.id}</Text>
-                    </Text>
-                ))}
-            </View>
+                    ))}
+                </View>
 
-            {/*Have to add back button to connected devices screen to go back to scrollable devices page */}
-            {/* disabling temporarily because the header has a back button already */}
-            {/* <Button title="Go Back" onPress={() => navigation.pop()} /> */}
+                {/*Have to add back button to connected devices screen to go back to scrollable devices page */}
+                {/* disabling temporarily because the header has a back button already */}
+                {/* <Button title="Go Back" onPress={() => navigation.pop()} /> */}
 
-            <Button
-                title="Confirm"
-                onPress={() => {
-                    if (isOverride || showOverrides) {
-                        navigation.push("Confirm Override Patient");
-                    } else {
-                        navigation.push("Enter Patient Info");
-                    }
-                }}
-            />
-            {/*Temp button for override case. Unsure if we want multiple screens for more override screens or just a variable to determine text -dt */}
+                {/* <Button
+                    title="Confirm"
+                    onPress={() => {
+                        if (isOverride || showOverrides) {
+                            navigation.push("Confirm Override Patient");
+                        } else {
+                            navigation.push("Enter Patient Info");
+                        }
+                    }}
+                /> */}
+                <ConfirmCancelCombo
+                    onConfirm={() => {
+                        if (isOverride || showOverrides) {
+                            navigation.push("Confirm Override Patient");
+                        } else {
+                            navigation.push("Enter Patient Info");
+                        }
+                    }}
+                    onCancel={() => {
+                        navigation.pop();
+                    }}
+                />
+                {/*Temp button for override case. Unsure if we want multiple screens for more override screens or just a variable to determine text -dt */}
 
-            {/*Didn't create more override screens because
+                {/*Didn't create more override screens because
             I'm unsure if we want to set the text on other screens with a variable changing with ?
             or if we want separate screens. Separate screens might lead to lots of overlap/content. -dt*/}
 
-            {/*Removed temp override button 3/10/24 */}
-            {/* <Button title="Confirm (override temp)" onPress={() => navigation.push("Confirm Override Patient")} /> */}
+                {/*Removed temp override button 3/10/24 */}
+                {/* <Button title="Confirm (override temp)" onPress={() => navigation.push("Confirm Override Patient")} /> */}
+            </LayoutSkeleton>
         </UniformPageWrapper>
     );
 }

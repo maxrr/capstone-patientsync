@@ -13,6 +13,8 @@ import BluetoothManagerContext from "../BluetoothManagerContext";
 import UniformPageWrapper from "../comps/UniformPageWrapper";
 import StyledModal from "../comps/StyledModal";
 import CurrentFlowSettingsContext from "../CurrentFlowSettingsContext";
+import LayoutSkeleton from "../comps/LayoutSkeleton";
+import ConfirmCancelCombo from "../comps/ConfirmCancelCombo";
 
 function LinkConfirmScreen({ navigation }) {
     const route = useRoute();
@@ -32,30 +34,30 @@ function LinkConfirmScreen({ navigation }) {
     const [linkStatusModalVisible, setLinkStatusModalVisible] = useState(false);
 
     //if unlinking, then don't have MRN and just use the patient profile we generated as an example last month
-    // const patientProfile = linkingStepper
-    //     ? {
-    //           // Hardcoded values for the unlink scenario
-    //           firstName: "Ron",
-    //           lastName: "Smith",
-    //           mrn: "157849",
-    //           visitNumber: "2163",
-    //           dob: "03/14/1992"
-    //       }
-    //     : {
-    //           firstName: info.first,
-    //           lastName: info.last,
-    //           mrn: info.mrn,
-    //           visitNumber: info.visit,
-    //           dob: info.month + "/" + info.day + "/" + info.year
-    //       };
-    const patientProfile = {
-        // Hardcoded values for the unlink scenario
-        firstName: "Ron",
-        lastName: "Smith",
-        mrn: "157849",
-        visitNumber: "2163",
-        dob: "03/14/1992"
-    };
+    const patientProfile = !linkingStepper
+        ? {
+              // Hardcoded values for the unlink scenario
+              firstName: "Ron",
+              lastName: "Smith",
+              mrn: "157849",
+              visitNumber: "2163",
+              dob: "03/14/1992"
+          }
+        : {
+              firstName: info.first,
+              lastName: info.last,
+              mrn: info.mrn,
+              visitNumber: info.visit,
+              dob: info.month + "/" + info.day + "/" + info.year
+          };
+    // const patientProfile = {
+    //     // Hardcoded values for the unlink scenario
+    //     firstName: "Ron",
+    //     lastName: "Smith",
+    //     mrn: "157849",
+    //     visitNumber: "2163",
+    //     dob: "03/14/1992"
+    // };
 
     const performLink = () => {
         setLinkStatusText("Starting...");
@@ -101,103 +103,44 @@ function LinkConfirmScreen({ navigation }) {
 
     return (
         <UniformPageWrapper>
-            <Stepper step={3} />
-            <Text style={[Styles.h4]}>
-                <Text style={{ color: "white", fontWeight: "bold" }}>{!linkingStepper ? "Unlink" : "Link"}</Text>
-            </Text>
-            <Text style={[Styles.h6]}>{!linkingStepper ? "Ready to unlink?" : "Ready to link?"}</Text>
-
-            {/* <Text style={[Styles.h3]}>
-                {patientProfile.lastName}, {patientProfile.firstName}
-            </Text>
-            <Text style={[Styles.h5]}>{patientProfile.dob}</Text>
-            <Text style={[Styles.h6]}>MRN: {patientProfile.mrn}</Text>
-            <Text style={[Styles.h6]}>Visit number: {patientProfile.visitNumber}</Text> */}
-
-            <Text style={{ fontSize: 14, color: "#aaa", textAlign: "center", lineHeight: 16, marginTop: 4 }}>
-                You are about to link the following patient and device, please confirm all details before proceeding.
-            </Text>
-
-            <PatientInfoPane profile={patientProfile} style={{ marginTop: 10 }} />
-
-            {/* <View style={Styles.deviceSelectButton}>
-                <Text
-                    style={[
-                        Styles.deviceSelectButton,
-                        Styles.deviceSelectButtonText,
-                        { backgroundColor: Styles.colors.GEPurple }
-                    ]}
-                >
-                    <Text style={{ fontWeight: "bold", fontSize: 16 }}>
-                        {"Patient:         " + patientProfile.lastName + ", " + patientProfile.firstName}
-                    </Text>
-                    {"\n"}
-                    {"MRN:                        " + patientProfile.mrn}
-                </Text>
-            </View> */}
-
-            <DeviceInfoPane device={bluetoothConnectedDevice} />
-
-            {/* <View style={Styles.deviceSelectButton}>
-                <Text
-                    style={[
-                        Styles.deviceSelectButton,
-                        Styles.deviceSelectButtonText,
-                        { backgroundColor: Styles.colors.GEPurple }
-                    ]}
-                >
-                    <Text style={{ fontWeight: "bold", fontSize: 16 }}>{bluetoothConnectedDevice.name}</Text>
-                    {"\n"}
-                    {bluetoothConnectedDevice.room}
-                </Text>
-            </View> */}
-
-            {/* <Text style={[Styles.h6]}>{"New Patient:"}</Text>
-            <View style={Styles.deviceSelectButton}>
-                <Text
-                    style={[
-                        Styles.deviceSelectButton,
-                        Styles.deviceSelectButtonText,
-                        { backgroundColor: "green" }
-                    ]}
-                >
-                    <Text style={{ fontWeight: "bold", fontSize: 16 }}>{"Patient:         " + patientProfile.lastName + ", " + patientProfile.firstName}</Text>
-                    {"\n"}
-                    {"MRN:                        " + patientProfile.mrn}
-                </Text>
-            </View> */}
-
-            {/* <Text style={[Styles.h6]}>{isOverride ? "Overriden Patient:" : ""}</Text> */}
-            {/*Block of information present if patient is being overriden to make clear -dt*/}
-            {/* {isOverride && (
-                <>
-                    <View style={Styles.deviceSelectButton}>
-                        <Text
-                            style={[
-                                Styles.deviceSelectButton,
-                                Styles.deviceSelectButtonText,
-                                { backgroundColor: "red" }
-                            ]}
-                        >
-                        <Text style={{ fontWeight: "bold", fontSize: 16 }}>{"Patient:         " + overridePatientProfile.lastName + ", " +      overridePatientProfile.firstName}</Text>
-                        {"\n"}
-                        {"MRN:                        " + overridePatientProfile.mrn}
-                    </Text>
-                </View>
-                </>
-            )} */}
-
-            <StyledModal visible={linkStatusModalVisible} innerStyle={{ gap: Styles.consts.gapIncrement }}>
-                <Text style={{ color: "white", fontSize: 20, textAlign: "center" }}>Syncing...</Text>
-                <Text style={{ color: "white", fontSize: 16, textAlign: "center" }}>{linkStatusText}</Text>
-                <ActivityIndicator style={{ marginVertical: Styles.consts.gapIncrement * 2 }} />
-            </StyledModal>
-
-            <Button
+            <LayoutSkeleton
                 title={!linkingStepper ? "Unlink" : "Link"}
-                onPress={!linkingStepper ? performUnlink : performLink}
-                // onPress={() => navigation.push("Link Complete", { linkingStepper })}
-            />
+                subtitle={!linkingStepper ? "Ready to unlink?" : "Ready to link?"}
+                stepper={3}
+            >
+                {/* <Stepper step={3} />
+                <Text style={[Styles.h4]}>
+                    <Text style={{ color: "white", fontWeight: "bold" }}>{}</Text>
+                </Text>
+                <Text style={[Styles.h6]}></Text> */}
+
+                <Text style={{ fontSize: 14, color: "#aaa", textAlign: "center", lineHeight: 16, marginTop: 4 }}>
+                    You are about to link the following patient and device, please confirm all details before proceeding.
+                </Text>
+
+                <PatientInfoPane profile={patientProfile} style={{ marginTop: 10 }} />
+                <DeviceInfoPane device={bluetoothConnectedDevice} />
+
+                <StyledModal visible={linkStatusModalVisible} innerStyle={{ gap: Styles.consts.gapIncrement }}>
+                    <Text style={{ color: "white", fontSize: 20, textAlign: "center" }}>Syncing...</Text>
+                    <Text style={{ color: "white", fontSize: 16, textAlign: "center" }}>{linkStatusText}</Text>
+                    <ActivityIndicator style={{ marginVertical: Styles.consts.gapIncrement * 2 }} />
+                </StyledModal>
+
+                {/* <Button
+                    title={!linkingStepper ? "Unlink" : "Link"}
+                    onPress={!linkingStepper ? performUnlink : performLink}
+                    // onPress={() => navigation.push("Link Complete", { linkingStepper })}
+                /> */}
+                <ConfirmCancelCombo
+                    confirmText={!linkingStepper ? "Unlink" : "Link"}
+                    onCancel={() => {
+                        navigation.pop();
+                    }}
+                    onConfirm={!linkingStepper ? performUnlink : performLink}
+                    confirmIcon={linkingStepper ? "link" : "unlink"}
+                />
+            </LayoutSkeleton>
         </UniformPageWrapper>
     );
 }

@@ -1,15 +1,17 @@
 import { useState, useContext, useEffect } from "react";
-import { Text, View, Pressable, TextInput, ActivityIndicator, Modal } from "react-native";
+import { Text, View, Pressable, ActivityIndicator, FlatList } from "react-native";
 
 import Styles from "../../styles/main";
 import Stepper from "../comps/Stepper";
 import UniformPageWrapper from "../comps/UniformPageWrapper";
+import LayoutSkeleton from "../comps/LayoutSkeleton";
 import BluetoothManagerContext from "../BluetoothManagerContext";
 
 import CurrentFlowSettingsContext from "../CurrentFlowSettingsContext";
 import { BLE_MGR_STATE_SEARCHING, ENABLE_BLE_FUNCTIONALITY } from "../comps/BleMgrConfig";
 import DeviceInfoPane from "../comps/DeviceInfoPane";
 import StyledModal from "../comps/StyledModal";
+import StyledTextInput from "../comps/StyledTextInput";
 
 function DeviceSelectScreen({ navigation, route }) {
     // Context to store device info
@@ -22,7 +24,8 @@ function DeviceSelectScreen({ navigation, route }) {
         bluetoothStopScan,
         bluetoothManagerState,
         bluetoothConnectToDevice,
-        bluetoothDisconnectFromDevice
+        bluetoothDisconnectFromDevice,
+        bluetoothResetSeenDevices
     } = useContext(BluetoothManagerContext);
 
     // Use state variable to keep track of what is being searched
@@ -31,6 +34,14 @@ function DeviceSelectScreen({ navigation, route }) {
     const [searchedDevices, setSearchedDevices] = useState([]);
 
     const [connectionModalVisible, setConnectionModalVisible] = useState(false);
+
+    const [refreshing, setRefreshing] = useState(false);
+
+    useEffect(() => {
+        if (refreshing) {
+            setRefreshing(bluetoothManagerState === BLE_MGR_STATE_SEARCHING);
+        }
+    }, [bluetoothManagerState]);
 
     // Completely changing how this was done, before it was a lot of hardcoded buttons, now going to map
     // and then filter them based on search use state. Could use ? visibility for each button but that seems
@@ -92,20 +103,44 @@ function DeviceSelectScreen({ navigation, route }) {
     //     room: "777B"
     // };
 
-    return (
-        <UniformPageWrapper>
-            <StyledModal visible={connectionModalVisible}>
-                <Text style={{ color: "white", fontSize: 20, textAlign: "center" }}>Connecting to...{"\n"}</Text>
-                <Text style={{ color: "white", fontSize: 16, textAlign: "center" }}>
-                    {bluetoothConnectingDevice?.name} in room {bluetoothConnectingDevice?.room}{" "}
-                    <Text style={{ color: "#999" }}>
-                        ({bluetoothConnectingDevice?.id}){"\n"}
-                    </Text>
-                </Text>
+    const deviceSelect = (device) => {
+        // const deviceStore = {
+        //     name: device.name,
+        //     room: device.room,
+        //     isOverride: device.isOverride
+        // };
 
-                <ActivityIndicator style={{ marginBottom: Styles.consts.gapIncrement * 2 }} />
-                {/* TODO: Add progress bar */}
-                {/* <Pressable onPress={() => setConnectionModalVisible(false)} style={{ width: "100%" }}>
+        if (!connectionModalVisible) setConnectionModalVisible(true);
+
+        // DEBUG:
+        bluetoothConnectToDevice(device.id)
+            .then(() => {
+                setConnectionModalVisible(false);
+                navigation.push("Device Details");
+            })
+            .catch((error) => console.error("[BleMgr] Frontend error when trying to connect to device:", error));
+    };
+
+    const doRefresh = () => {
+        // bluetoothResetSeenDevices();
+        bluetoothStartScan();
+    };
+
+    return (
+        <UniformPageWrapper enableRefresh={true} refreshing={refreshing} onRefresh={doRefresh}>
+            <LayoutSkeleton title={"Device Select"} subtitle={"Select a device to continue"} stepper={1}>
+                <StyledModal visible={connectionModalVisible}>
+                    <Text style={{ color: "white", fontSize: 20, textAlign: "center" }}>Connecting to...{"\n"}</Text>
+                    <Text style={{ color: "white", fontSize: 16, textAlign: "center" }}>
+                        {bluetoothConnectingDevice?.name} in room {bluetoothConnectingDevice?.room}{" "}
+                        <Text style={{ color: "#999" }}>
+                            ({bluetoothConnectingDevice?.id}){"\n"}
+                        </Text>
+                    </Text>
+
+                    <ActivityIndicator style={{ marginBottom: Styles.consts.gapIncrement * 2 }} />
+                    {/* TODO: Add progress bar */}
+                    {/* <Pressable onPress={() => setConnectionModalVisible(false)} style={{ width: "100%" }}>
                     <Text
                         style={{
                             color: "white",
@@ -119,93 +154,97 @@ function DeviceSelectScreen({ navigation, route }) {
                         Cancel
                     </Text>
                 </Pressable> */}
-            </StyledModal>
-            <Stepper step={1} />
-            <Text style={[Styles.h4]}>
-                <Text style={{ color: "white", fontWeight: "bold" }}>Device Select</Text>
-            </Text>
-            <Text style={[Styles.h6]}>Select a device to continue</Text>
-
-            {/* Added searchbar to search through connectplus devices -dt 3/17/2024 change */}
-            <TextInput
-                style={[Styles.input, { color: "#ddd" }]}
-                placeholder="Device room, name or id"
-                placeholderTextColor={"#808080"}
-                onChangeText={setCurrSearch}
-                value={currSearch}
-            />
-
-            {showOverrides ? (
-                <Text
-                    style={{
-                        color: "red",
-                        // fontWeight: "bold",
-                        textAlign: "center"
-                    }}
-                >
-                    ⚠ Warning, you are UNLINKING!
+                </StyledModal>
+                {/* <Stepper step={1} />
+                <Text style={[Styles.h4]}>
+                    <Text style={{ color: "white", fontWeight: "bold" }}>Device Select</Text>
                 </Text>
-            ) : (
-                <></>
-            )}
-            <View
-                style={{
-                    gap: Styles.consts.gapIncrement,
-                    backgroundColor: "292A2B",
-                    width: "100%"
-                }}
-            >
-                {searchedDevices.map((device) => (
-                    <DeviceInfoPane
-                        key={device?.id}
-                        device={device}
-                        onPress={() => {
-                            // const deviceStore = {
-                            //     name: device.name,
-                            //     room: device.room,
-                            //     isOverride: device.isOverride
-                            // };
+                <Text style={[Styles.h6]}>Select a device to continue</Text> */}
 
-                            if (!connectionModalVisible) setConnectionModalVisible(true);
+                {/* Added searchbar to search through connectplus devices -dt 3/17/2024 change */}
+                <StyledTextInput
+                    placeholder="Search by device room, name or id"
+                    onChangeText={setCurrSearch}
+                    value={currSearch}
+                />
 
-                            // DEBUG:
-                            bluetoothConnectToDevice(device.id)
-                                .then(() => {
-                                    setConnectionModalVisible(false);
-                                    navigation.push("Device Details");
-                                })
-                                .catch((error) =>
-                                    console.error("[BleMgr] Frontend error when trying to connect to device:", error)
-                                );
+                {showOverrides ? (
+                    <Text
+                        style={{
+                            color: "red",
+                            // fontWeight: "bold",
+                            textAlign: "center"
                         }}
-                        showOverrides={showOverrides}
-                    />
-                ))}
+                    >
+                        ⚠ Warning, you are UNLINKING!
+                    </Text>
+                ) : (
+                    <></>
+                )}
                 <View
                     style={{
-                        display: "flex",
-                        justifyContent: "center",
-                        alignContent: "center",
-                        flexDirection: "row",
                         gap: Styles.consts.gapIncrement,
-                        marginTop: Styles.consts.gapIncrement
+                        backgroundColor: "292A2B",
+                        width: "100%"
                     }}
                 >
-                    {bluetoothManagerState == BLE_MGR_STATE_SEARCHING ? (
-                        <>
-                            <Text style={{ fontSize: 14, color: "#aaa", textAlign: "center" }}>
-                                Scanning for Connect+ devices...
+                    {/* <FlatList
+                        data={searchedDevices}
+                        renderItem={({ device }) => {
+                            <DeviceInfoPane
+                                device={device}
+                                onPress={() => deviceSelect(device)}
+                                showOverrides={showOverrides}
+                            />;
+                        }}
+                        keyExtractor={(device) => device.id}
+                    /> */}
+                    {searchedDevices.map((device) => (
+                        <DeviceInfoPane
+                            key={device?.id}
+                            device={device}
+                            onPress={() => {
+                                if (!connectionModalVisible) setConnectionModalVisible(true);
+
+                                // DEBUG:
+                                bluetoothConnectToDevice(device.id)
+                                    .then(() => {
+                                        setConnectionModalVisible(false);
+                                        navigation.push("Device Details");
+                                    })
+                                    .catch((error) =>
+                                        console.error("[BleMgr] Frontend error when trying to connect to device:", error)
+                                    );
+                            }}
+                            showOverrides={showOverrides}
+                        />
+                    ))}
+                    <View
+                        style={{
+                            display: "flex",
+                            justifyContent: "center",
+                            alignContent: "center",
+                            flexDirection: "row",
+                            gap: Styles.consts.gapIncrement,
+                            marginTop: Styles.consts.gapIncrement
+                        }}
+                    >
+                        {bluetoothManagerState == BLE_MGR_STATE_SEARCHING ? (
+                            <>
+                                <Text style={{ fontSize: 14, color: "#aaa", textAlign: "center" }}>
+                                    Scanning for Connect+ devices...
+                                </Text>
+                                <ActivityIndicator animating={true} />
+                            </>
+                        ) : (
+                            <Text style={{ fontSize: 14, color: "#aaa", textAlign: "center", lineHeight: 16 }}>
+                                Don't see the device you're looking for? You can refresh this list by pulling down, or by
+                                clicking the refresh button in the top right.
                             </Text>
-                            <ActivityIndicator animating={true} />
-                        </>
-                    ) : (
-                        <Text style={{ fontSize: 14, color: "#aaa", textAlign: "center", lineHeight: 16 }}>
-                            Don't see the device you're looking for? You can refresh this list by pulling down, or by
-                            clicking the refresh button in the top right.
-                        </Text>
-                    )}
+                        )}
+                    </View>
                 </View>
-            </View>
+            </LayoutSkeleton>
         </UniformPageWrapper>
     );
 }

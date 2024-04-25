@@ -5,6 +5,10 @@ import Styles from "../../styles/main";
 import { CameraView, useCameraPermissions } from "expo-camera/next";
 import PatientContext from "../PatientContext";
 import CurrentFlowSettingsContext from "../CurrentFlowSettingsContext";
+import UniformPageWrapper from "../comps/UniformPageWrapper";
+import ConfirmCancelCombo from "../comps/ConfirmCancelCombo";
+import LayoutSkeleton from "../comps/LayoutSkeleton";
+import LabeledIconButton from "../comps/LabeledIconButton";
 
 const samplePatientDatabase = {
     ["123456789"]: {
@@ -163,13 +167,21 @@ function CameraScanScreen({ route, navigation }) {
                                 setCameraState(false);
                             }}
                         >
-                            <Button
+                            {/* <Button
                                 title="Use Manual Input Instead"
                                 color="#5A0CB5"
                                 onPress={() => {
                                     setCameraState(false);
                                 }}
-                            ></Button>
+                            ></Button> */}
+                            <LabeledIconButton
+                                text={"Manually input instead"}
+                                icon={"pencil"}
+                                iconOnRight={false}
+                                onPress={() => {
+                                    setCameraState(false);
+                                }}
+                            />
                         </TouchableOpacity>
                     </View>
                 </CameraView>
@@ -177,38 +189,90 @@ function CameraScanScreen({ route, navigation }) {
         );
     } else {
         return (
-            <View style={[Styles.container]}>
-                <View style={[Styles.container]}>
-                    <Text style={[Styles.h4]}>
-                        <Text style={{ color: "white", fontWeight: "bold" }}>Enter Patient MRN</Text>
-                    </Text>
-                    <TextInput
-                        style={[Styles.MRNinput]}
-                        onChangeText={setText}
-                        value={text}
-                        keyboardType="number-pad"
-                        maxLength={9}
-                        clearButtonMode="always" // ios only :(
-                    ></TextInput>
-                    {text.length < 9 ? <Text style={{ color: "red", fontSize: 20 }}>Must be 9 digits long!</Text> : <></>}
-                    <View style={[Styles.buttonRow]}>
-                        <Button
-                            title="scan instead"
-                            color="#5A0CB5"
-                            onPress={() => {
-                                setCameraState(true);
-                            }}
-                        ></Button>
-                        <View style={{ flex: 0.6 }}></View>
-                        <Button
-                            title="confirm"
-                            color="green"
-                            onPress={() => confirmInput()}
-                            disabled={text.length < 9}
-                        ></Button>
+            <UniformPageWrapper centerContent={true}>
+                <LayoutSkeleton stepper={2} title="Enter MRN" subtitle="Enter the MRN of the target patient">
+                    <View style={{ width: "85%" }}>
+                        <View
+                            style={[
+                                {
+                                    display: "flex",
+                                    flexDirection: "column",
+                                    justifyContent: "center",
+                                    alignItems: "center",
+                                    width: "100%"
+                                }
+                            ]}
+                        >
+                            <TextInput
+                                style={[Styles.MRNinput]}
+                                onChangeText={setText}
+                                value={text}
+                                keyboardType="number-pad"
+                                maxLength={9}
+                                clearButtonMode="always" // ios only :(
+                            ></TextInput>
+                            <Text style={{ color: "red", fontSize: 16, fontWeight: "bold" }}>
+                                {text.length > 0 && text.length != 9 ? "MRN must be 9 digits long!" : ""}
+                            </Text>
+                        </View>
+                        <ConfirmCancelCombo
+                            cancelText="Scan instead"
+                            cancelIcon="camera"
+                            onConfirm={confirmInput}
+                            onCancel={() => setCameraState(true)}
+                            confirmDisabled={text.length < 9}
+                            cancelStyle={{ backgroundColor: Styles.colors.GEPurple }}
+                        />
+                        {/* TODO: Add 'Scan instead' button below, add back button */}
+                        {/* <LabeledIconButton
+                            text="Scan instead"
+                            icon="camera"
+                            onPress={() => setCameraState(true)}
+                            styles={[Styles.btnCancel, { width: "auto" }]}
+                        /> */}
                     </View>
-                </View>
-            </View>
+                </LayoutSkeleton>
+            </UniformPageWrapper>
+            // <View style={[Styles.container]}>
+            //     <View style={[Styles.container]}>
+            //         <Text style={[Styles.h4]}>
+            //             <Text style={{ color: "white", fontWeight: "bold" }}>Enter Patient MRN</Text>
+            //         </Text>
+            //         <View
+            //             style={[
+            //                 { display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center" }
+            //             ]}
+            //         >
+            //             <TextInput
+            //                 style={[Styles.MRNinput]}
+            //                 onChangeText={setText}
+            //                 value={text}
+            //                 keyboardType="number-pad"
+            //                 maxLength={9}
+            //                 clearButtonMode="always" // ios only :(
+            //             ></TextInput>
+            //             <Text style={{ color: "red", fontSize: 16, fontWeight: "bold" }}>
+            //                 {text.length > 0 && text.length != 9 ? "MRN must be 9 digits long!" : ""}
+            //             </Text>
+            //         </View>
+            //         <View style={[Styles.buttonRow]}>
+            //             <Button
+            //                 title="scan instead"
+            //                 color="#5A0CB5"
+            //                 onPress={() => {
+            //                     setCameraState(true);
+            //                 }}
+            //             ></Button>
+            //             <View style={{ flex: 0.6 }}></View>
+            //             <Button
+            //                 title="confirm"
+            //                 color="green"
+            //                 onPress={() => confirmInput()}
+            //                 disabled={text.length < 9}
+            //             ></Button>
+            //         </View>
+            //     </View>
+            // </View>
         );
     }
 }

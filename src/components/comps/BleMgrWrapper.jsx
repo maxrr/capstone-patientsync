@@ -177,7 +177,8 @@ function BleMgrWrapper() {
         for (const [id, peripheral] of peripherals) {
             // console.log("peripheral:", peripheral);
             if (peripheral) {
-                devs.push(transformPeripheralToDevice(peripheral));
+                const temp = transformPeripheralToDevice(peripheral);
+                if (temp.name && temp.room && temp.id && temp.rssi) devs.push(temp);
             }
         }
 
@@ -187,11 +188,11 @@ function BleMgrWrapper() {
 
     const transformPeripheralToDevice = (peripheral, extraData = {}) => {
         return (props = {
-            name: peripheral.name ?? "(no name)",
-            room: peripheral?.customData?.curRoom ?? "(no room)",
+            name: peripheral.name ?? undefined,
+            room: peripheral?.customData?.curRoom ?? undefined,
             isOverride: peripheral?.customData?.isPatientAssociated,
-            id: peripheral?.id ?? "**(no id)**",
-            rssi: peripheral.rssi ?? "??",
+            id: peripheral?.id ?? undefined,
+            rssi: peripheral.rssi ?? undefined,
             ...extraData
         });
     };
@@ -348,15 +349,13 @@ function BleMgrWrapper() {
                     const peripheralData = await manager.retrieveServices(peripheral.id);
                     console.debug(`[BleMgr] [${peripheral.id}] retrieved peripheral services:`, peripheralData);
 
-                    setPeripherals((map) => {
-                        let p = map.get(peripheral.id);
-                        if (p) {
-                            return new Map(map.set(p.id, p));
-                        }
-                        return map;
-                    });
-
-                    console.debug(`[BleMgr] [${peripheral.id}] retrieved current RSSI value: ${rssi}`);
+                    // setPeripherals((map) => {
+                    //     let p = map.get(peripheral.id);
+                    //     if (p) {
+                    //         return new Map(map.set(p.id, p));
+                    //     }
+                    //     return map;
+                    // });
 
                     if (peripheralData.characteristics) {
                         for (let characteristic of peripheralData.characteristics) {
@@ -386,6 +385,7 @@ function BleMgrWrapper() {
 
                     // TODO: Maybe run this during device discovery? Not sure if it is already run.
                     const rssi = await manager.readRSSI(peripheral.id);
+                    console.debug(`[BleMgr] [${peripheral.id}] retrieved current RSSI value: ${rssi}`);
                     setPeripherals((map) => {
                         let p = map.get(peripheral.id);
                         if (p) {
@@ -460,6 +460,18 @@ function BleMgrWrapper() {
             data["device_name"] = peripheral.advertising.localName ?? "ERROR: NO NAME FOUND";
 
             console.log(`\t[!!] >> read from ${peripheral.id}: `, data);
+
+            if (data["cur_room"]) {
+                setPeripherals((map) => {
+                    let p = map.get(peripheral.id);
+                    if (p) {
+                        p.customData = p?.customData ?? { read: false, curRoom: undefined, isPatientAssociated: undefined };
+                        p.customData.curRoom = data["cur_room"];
+                        return new Map(map.set(peripheral.id, p));
+                    }
+                    return map;
+                });
+            }
 
             return data;
         } catch (error) {
@@ -668,7 +680,8 @@ function BleMgrWrapper() {
         if (validStates.includes(getManagerState())) {
             try {
                 setPeripherals(new Map());
-                resetKnownInvalidPeripherals();
+                // resetKnownInvalidPeripherals();
+                clearKnownBluetoothDevices();
                 retrieveConnected();
                 console.debug("[BleMgr] Starting scan");
                 // FIXME: Once a scan's timer is started, you can call stopScan, but this will not stop it from stopping the scan once the timer runs out if another scan is started.
@@ -692,6 +705,16 @@ function BleMgrWrapper() {
             } catch (error) {
                 console.error("[BleMgr] Unexpected error while starting scan:", error);
             }
+        } else if (getManagerState() == BLE_MGR_STATE_SEARCHING) {
+            clearKnownBluetoothDevices();
+        } else if (getManagerState() == BLE_MGR_STATE_CONNECTED) {
+            disconnectFromDevice()
+                .then((a) => {
+                    startScan();
+                })
+                .catch((err) => {
+                    console.error("[BleMgr] Error while disconnecting before scan start", err);
+                });
         } else {
             console.log(
                 `[BleMgr] Unable to start scan, current state ${getManagerState()}, expected one of: ${validStates}`
