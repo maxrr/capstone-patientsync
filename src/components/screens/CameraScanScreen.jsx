@@ -61,6 +61,7 @@ function CameraScanScreen({ route, navigation }) {
         } else { year = parseInt("2" + dataArray[4]) }
 
         // format month
+        // months are encoded from 0-B with 0 being Jan and B being December
         if (dataArray[5] === "A") {
             month = 11
         } else if (dataArray[5] === "B") {
@@ -92,10 +93,42 @@ function CameraScanScreen({ route, navigation }) {
     }, [cameraState])
 
     // confirm manual input
-    // TODO: Implement call to database and setInfo with appropriate info from there
-    function confirmInput() {
-        setInfo(text)
-        navigation.push("Confirm Patient", {isOverride}, { reused: false })
+    async function confirmInput() {
+        try{
+            // fetch to database for provided MRN
+            const resp = await fetch(`http://vpn.rountree.me:6969/getPatientInfo?mrn=${text}`)
+            const fetchedInfo = await resp.json()
+            // if there is a msg field, the patient could not be found
+            if(fetchedInfo.msg){
+                Alert.alert(
+                    "Patient not found",
+                    `there exists no patient with the MRN: ${text}`,
+                    [{ text: "OK" }]
+                )
+            } else {
+                const patient = {
+                    mrn: text,
+                    visit: fetchedInfo.visit.trim(),
+                    first: fetchedInfo.first.trim(),
+                    last: fetchedInfo.last.trim(),
+                    year: fetchedInfo.year,
+                    month: fetchedInfo.month,
+                    day: fetchedInfo.day,
+                    gender: fetchedInfo.gender
+                }
+                setInfo(patient)
+                navigation.navigate("Confirm Patient", { isOverride }, { reused: false })
+            }
+
+        } catch (e) {
+            console.log(e)
+            Alert.alert(
+                "Error",
+                "something went wrong",
+                [{ text: "OK"}],{ cancelable: false } 
+            )
+        }
+        // navigation.push("Confirm Patient", {isOverride}, { reused: false })
         onChangeText('')
     }
 
