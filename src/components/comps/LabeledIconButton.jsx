@@ -21,7 +21,7 @@ function LabeledIconButton({
     }
     finalStyles.push(style);
 
-    console.log(text, disabled ? "(disabled)" : "");
+    // console.log(text, disabled ? "(disabled)" : "");
 
     return (
         <Pressable style={finalStyles} onPress={onPress} disabled={disabled}>

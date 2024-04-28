@@ -47,7 +47,7 @@ function ConnectedDevicesScreen({ navigation }) {
     } = useContext(BluetoothManagerContext);
 
     const isOverride = bluetoothConnectedDevice?.isOverride;
-    console.log(isOverride);
+    // console.log(isOverride);
 
     useEffect(() => {
         // return () => {

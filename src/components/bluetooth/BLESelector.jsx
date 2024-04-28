@@ -102,7 +102,7 @@ function BLESelector({ isScanning, setIsScanning, confirmSelectedDevice }) {
     // }, []);
 
     useEffect(() => {
-        console.log(`isScanning update; now: ${isScanning}`);
+        // console.log(`isScanning update; now: ${isScanning}`);
         if (isScanning) {
             poll();
         } else {

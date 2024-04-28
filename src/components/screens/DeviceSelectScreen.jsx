@@ -1,5 +1,5 @@
 import { useState, useContext, useEffect } from "react";
-import { Text, View, Pressable, ActivityIndicator, FlatList } from "react-native";
+import { Text, View, Pressable, ActivityIndicator, FlatList, Alert } from "react-native";
 
 import Styles from "../../styles/main";
 import Stepper from "../comps/Stepper";
@@ -8,7 +8,7 @@ import LayoutSkeleton from "../comps/LayoutSkeleton";
 import BluetoothManagerContext from "../BluetoothManagerContext";
 
 import CurrentFlowSettingsContext from "../CurrentFlowSettingsContext";
-import { BLE_MGR_STATE_SEARCHING, ENABLE_BLE_FUNCTIONALITY } from "../comps/BleMgrConfig";
+import { BLE_MGR_STATE_CONNECTED, BLE_MGR_STATE_SEARCHING, ENABLE_BLE_FUNCTIONALITY } from "../comps/BleMgrConfig";
 import DeviceInfoPane from "../comps/DeviceInfoPane";
 import StyledModal from "../comps/StyledModal";
 import StyledTextInput from "../comps/StyledTextInput";
@@ -23,6 +23,7 @@ function DeviceSelectScreen({ navigation, route }) {
         bluetoothStartScan,
         bluetoothStopScan,
         bluetoothManagerState,
+        bluetoothManagerGetImmediateState,
         bluetoothConnectToDevice,
         bluetoothDisconnectFromDevice,
         bluetoothResetSeenDevices
@@ -71,7 +72,7 @@ function DeviceSelectScreen({ navigation, route }) {
     // Casted everything to lowercase so none of this is case sensitive -dt note 3/17/24 change
 
     useEffect(() => {
-        console.log("[DEBUG] bluetoothDevices or currSearch triggered render");
+        // console.log("[DEBUG] bluetoothDevices or currSearch triggered render");
         setSearchedDevices(
             (ENABLE_BLE_FUNCTIONALITY ? bluetoothDevices : deviceList).filter(
                 (device) =>
@@ -212,12 +213,20 @@ function DeviceSelectScreen({ navigation, route }) {
                                 // DEBUG:
                                 bluetoothConnectToDevice(device.id)
                                     .then(() => {
-                                        setConnectionModalVisible(false);
-                                        navigation.push("Device Details");
+                                        if (bluetoothManagerGetImmediateState() == BLE_MGR_STATE_CONNECTED) {
+                                            setConnectionModalVisible(false);
+                                            navigation.push("Device Details");
+                                        } else {
+                                            throw new Error("Device didn't actually connect!");
+                                        }
                                     })
-                                    .catch((error) =>
-                                        console.error("[BleMgr] Frontend error when trying to connect to device:", error)
-                                    );
+                                    .catch((error) => {
+                                        setConnectionModalVisible(false);
+                                        Alert.alert(
+                                            "It looks like there was a problem connecting to this device. Please try again."
+                                        );
+                                        console.error("[BleMgr] Frontend error when trying to connect to device:", error);
+                                    });
                             }}
                             showOverrides={showOverrides}
                         />

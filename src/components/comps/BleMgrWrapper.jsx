@@ -377,6 +377,7 @@ function BleMgrWrapper() {
                                             `[BleMgr] [${peripheral.id}] failed to retrieve descriptor ${descriptor?.toString() ?? descriptor} for characteristic ${characteristic?.toString() ?? characteristic}:`,
                                             error
                                         );
+                                        throw error;
                                     }
                                 }
                             }
@@ -433,12 +434,12 @@ function BleMgrWrapper() {
                     // console.log(`\t> characteristic: ${characteristic.characteristic}`);
                     if (VALID_DESCRIPTORS.includes(characteristic?.characteristic?.toLowerCase())) {
                         const key = characteristic.characteristic;
-                        console.log(
-                            key,
-                            key.toUpperCase(),
-                            key.toUpperCase() in config.CHARACTERISTIC_UUID_MAP,
-                            config.CHARACTERISTIC_UUID_MAP[key.toUpperCase()]
-                        );
+                        // console.log(
+                        //     key,
+                        //     key.toUpperCase(),
+                        //     key.toUpperCase() in config.CHARACTERISTIC_UUID_MAP,
+                        //     config.CHARACTERISTIC_UUID_MAP[key.toUpperCase()]
+                        // );
                         // console.log(config.CHARACTERISTIC_UUID_MAP);
                         const prettyName =
                             key.toUpperCase() in config.CHARACTERISTIC_UUID_MAP
@@ -551,7 +552,7 @@ function BleMgrWrapper() {
     const handleDiscoverPeripheral = (peripheral, manager) => {
         // DEBUG:
         if (!getPeripherals().has(peripheral.id)) {
-            console.log(`[DEBUG] New peripheral: ${peripheral.id}`);
+            // console.log(`[DEBUG] New peripheral: ${peripheral.id}`);
         }
 
         // If we've already processed this device, then disregard
@@ -859,6 +860,7 @@ function BleMgrWrapper() {
         bluetoothConnectingDevice: connectingDevice,
         bluetoothConnectedDevice: connectedDevice,
         bluetoothManagerState: hookedManagerState,
+        bluetoothManagerGetImmediateState: getManagerState,
         bluetoothInitialize: initialize,
         bluetoothStartScan: startScan,
         bluetoothStopScan: stopScan,

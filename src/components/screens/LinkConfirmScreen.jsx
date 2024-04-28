@@ -33,23 +33,31 @@ function LinkConfirmScreen({ navigation }) {
     const [linkStatusText, setLinkStatusText] = useState("");
     const [linkStatusModalVisible, setLinkStatusModalVisible] = useState(false);
 
+    console.log(info);
+
     //if unlinking, then don't have MRN and just use the patient profile we generated as an example last month
-    const patientProfile = !linkingStepper
-        ? {
-              // Hardcoded values for the unlink scenario
-              firstName: "Ron",
-              lastName: "Smith",
-              mrn: "157849",
-              visitNumber: "2163",
-              dob: "03/14/1992"
-          }
-        : {
-              firstName: info.first,
-              lastName: info.last,
-              mrn: info.mrn,
-              visitNumber: info.visit,
-              dob: info.month + "/" + info.day + "/" + info.year
-          };
+    // const patientProfile = !linkingStepper
+    //     ? {
+    //           // Hardcoded values for the unlink scenario
+    //           first: "Ron",
+    //           lastName: "Smith",
+    //           mrn: "157849",
+    //           visitNumber: "2163",
+    //           dob: "03/14/1992"
+    //       }
+    //     : {
+    //           first: info.first,
+    //           lastName: info.last,
+    //           mrn: info.mrn,
+    //           visitNumber: info.visit,
+    //           dob: info.month + "/" + info.day + "/" + info.year
+    //       };
+
+    const patientProfile = {
+        ...info,
+        dob: info.month + "/" + info.day + "/" + info.year
+    };
+
     // const patientProfile = {
     //     // Hardcoded values for the unlink scenario
     //     firstName: "Ron",
@@ -66,7 +74,7 @@ function LinkConfirmScreen({ navigation }) {
             setLinkStatusText(progress);
         })
             .then((res) => {
-                console.log("res:", res);
+                // console.log("res:", res);
                 setLinkStatusModalVisible(false);
                 navigation.popToTop();
                 navigation.push("Link Complete", { lastConnectedDeviceInfo: { ...bluetoothConnectedDevice } });
@@ -86,7 +94,7 @@ function LinkConfirmScreen({ navigation }) {
             setLinkStatusText(progress);
         })
             .then((res) => {
-                console.log("res:", res);
+                // console.log("res:", res);
                 setLinkStatusModalVisible(false);
                 navigation.popToTop();
                 navigation.push("Link Complete", {

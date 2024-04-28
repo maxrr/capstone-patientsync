@@ -2,21 +2,14 @@ import { Button, Text, View, Alert } from "react-native";
 import Styles from "../../styles/main";
 import { useRoute } from "@react-navigation/native";
 import PatientContext from "../PatientContext";
-import { useContext, useEffect } from "react";
+import { useContext, useEffect, useState } from "react";
 import Stepper from "../comps/Stepper";
 import CurrentFlowSettingsContext from "../CurrentFlowSettingsContext";
 import UniformPageWrapper from "../comps/UniformPageWrapper";
 import ConfirmCancelCombo from "../comps/ConfirmCancelCombo";
 import LayoutSkeleton from "../comps/LayoutSkeleton";
 import PatientInfoPane from "../comps/PatientInfoPane";
-
-const patientProfile = {
-    firstName: "Not found",
-    lastName: "Not found",
-    mrn: "Not found",
-    visitNumber: "Not found",
-    dob: "Not found"
-};
+import BluetoothManagerContext from "../BluetoothManagerContext";
 
 // fetch the info of the patient from the MRN associated with the C+ device
 async function fetchPatient(mrn) {
@@ -28,24 +21,36 @@ async function fetchPatient(mrn) {
         if (fetchedInfo.msg) {
             Alert.alert(
                 "Patient not found",
-                `there exists no patient with the MRN (${mrn}) already associated with this device`,
+                `There exists no patient with the MRN (${mrn}) already associated with this device.`,
                 [{ text: "OK" }]
             );
         } else {
-            patientProfile = {
-                mrn: mrn,
-                visit: fetchedInfo.visit.trim(),
-                first: fetchedInfo.first.trim(),
-                last: fetchedInfo.last.trim(),
-                year: fetchedInfo.year,
-                month: fetchedInfo.month,
-                day: fetchedInfo.day,
-                gender: fetchedInfo.gender
-            };
+            if (
+                fetchedInfo.visit &&
+                fetchedInfo.first &&
+                fetchedInfo.last &&
+                fetchedInfo.month &&
+                fetchedInfo.day &&
+                fetchedInfo.year
+            ) {
+                return {
+                    mrn: mrn,
+                    visit: fetchedInfo.visit.trim(),
+                    first: fetchedInfo.first.trim(),
+                    last: fetchedInfo.last.trim(),
+                    dob: `${fetchedInfo.month}/${fetchedInfo.day}/${fetchedInfo.year}`
+                    // year: fetchedInfo.year,
+                    // month: fetchedInfo.month,
+                    // day: fetchedInfo.day,
+                    // gender: fetchedInfo.gender
+                };
+            } else {
+                throw new Error("Did not receive all expected patient profile fields!");
+            }
         }
-    } catch (e) {
-        console.log(e);
-        Alert.alert("Error", "something went wrong", [{ text: "OK" }], { cancelable: false });
+    } catch (error) {
+        console.log(error);
+        Alert.alert("Error", "Something went wrong", [{ text: "OK" }], { cancelable: false });
     }
 }
 
@@ -58,8 +63,27 @@ function PatientConfirmOverrideScreen({ navigation }) {
     const route = useRoute();
     const { isOverride } = route.params || { isOverride: false };
 
+    const [localPatientProfile, setLocalPatientProfile] = useState({
+        first: "Not found",
+        last: "Not found",
+        mrn: "Not found",
+        visit: "Not found",
+        dob: "Not found"
+    });
+
     const [info, setInfo] = useContext(PatientContext);
     // setInfo(patientProfile);
+
+    const { bluetoothConnectedDevice } = useContext(BluetoothManagerContext);
+
+    const [loadingPatientInfo, setLoadingPatientInfo] = useState(true);
+
+    useEffect(() => {
+        fetchPatient(bluetoothConnectedDevice.cur_patient_mrn).then((pp) => {
+            setLocalPatientProfile(pp);
+            setLoadingPatientInfo(false);
+        });
+    }, []);
 
     // *** SHOWOVERRIDES IS THE UNLINK CASE ***
     // *** SHOWOVERRIDES IS THE UNLINK CASE ***
@@ -121,7 +145,7 @@ function PatientConfirmOverrideScreen({ navigation }) {
                 }
                 stepper={showOverrides ? 2 : 1}
             >
-                <PatientInfoPane profile={patientProfile} />
+                <PatientInfoPane profile={localPatientProfile} loading={loadingPatientInfo} />
                 <ConfirmCancelCombo
                     cancelText="Cancel"
                     confirmText={!showOverrides ? "Confirm override" : "Unlink this patient"}

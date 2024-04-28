@@ -8,18 +8,20 @@ import CurrentFlowSettingsContext from "../CurrentFlowSettingsContext";
 import ConfirmCancelCombo from "../comps/ConfirmCancelCombo";
 import PatientInfoPane from "../comps/PatientInfoPane";
 import LayoutSkeleton from "../comps/LayoutSkeleton";
+import BluetoothManagerContext from "../BluetoothManagerContext";
 
 function PatientConfirmScreen({ route, navigation }) {
+    const { bluetoothConnectedDevice } = useContext(BluetoothManagerContext);
     const [patientInfo, setPatientInfo] = useContext(PatientContext);
     // const { showOverrides } = route.params;
     const [getCurrentFlowSettings, setCurrentFlowSettings] = useContext(CurrentFlowSettingsContext);
     const { showOverrides } = getCurrentFlowSettings();
     const patientProfile = {
-        first: info.first,
-        last: info.last,
-        mrn: info.mrn,
-        visit: info.visit,
-        dob: info.month + "/" + info.day + "/" + info.year
+        first: patientInfo.first,
+        last: patientInfo.last,
+        mrn: patientInfo.mrn,
+        visit: patientInfo.visit,
+        dob: patientInfo.month + "/" + patientInfo.day + "/" + patientInfo.year
     };
     const devicePatient = {
         first: "",
@@ -38,9 +40,9 @@ function PatientConfirmScreen({ route, navigation }) {
 
     // check if patient being overriden and patient being linked have exact same information
     let match = false;
-    if (isOverride) {
+    if (showOverrides) {
         // TODO: input MRN from connected C+ device
-        fetchPatient("placeholder");
+        fetchPatient(bluetoothConnectedDevice.cur_patient_mrn);
         match = true;
         for (const [key, value] of Object.entries(patientProfile)) {
             if (devicePatient[key] != value) {

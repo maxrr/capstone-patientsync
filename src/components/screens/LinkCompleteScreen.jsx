@@ -31,13 +31,17 @@ function LinkCompleteScreen({ navigation }) {
 
     //Must have hardcoded patient information when we are unlinking to display properly. We don't have the database set up to do
     //this otherwise, and obviously no info comes from scanning in this case so must be hardcoded for unlinking -DT
+    // const patientProfile = {
+    //     // Hardcoded values for the unlink scenario
+    //     firstName: "Ron",
+    //     lastName: "Smith",
+    //     mrn: "157849",
+    //     visitNumber: "2163",
+    //     dob: "03/14/1992"
+    // };
     const patientProfile = {
-        // Hardcoded values for the unlink scenario
-        firstName: "Ron",
-        lastName: "Smith",
-        mrn: "157849",
-        visitNumber: "2163",
-        dob: "03/14/1992"
+        ...info,
+        dob: info.month + "/" + info.day + "/" + info.year
     };
 
     return (
@@ -89,7 +93,11 @@ function LinkCompleteScreen({ navigation }) {
                 subtitle={!linkingStepper ? "Unlinking Complete!" : "Link Complete!"}
                 stepper={4}
             >
+                <Text style={{ color: Styles.colors.TextColor }}>
+                    You have {linkingStepper ? "" : "un"}linked the following patient:
+                </Text>
                 <PatientInfoPane profile={patientProfile} />
+                <Text style={{ color: Styles.colors.TextColor }}>to the following Connect+ device:</Text>
                 <DeviceInfoPane device={lastConnectedDeviceInfo} showOverrides={!showOverrides} />
                 <LabeledIconButton
                     text="Return home"

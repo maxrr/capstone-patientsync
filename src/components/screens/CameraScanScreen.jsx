@@ -10,30 +10,6 @@ import ConfirmCancelCombo from "../comps/ConfirmCancelCombo";
 import LayoutSkeleton from "../comps/LayoutSkeleton";
 import LabeledIconButton from "../comps/LabeledIconButton";
 
-const samplePatientDatabase = {
-    ["123456789"]: {
-        mrn: "123456789",
-        visit: "48217862",
-        first: "John",
-        last: "Doe",
-        month: 4,
-        day: 14,
-        year: 2000,
-        gender: "M"
-    },
-
-    ["000000000"]: {
-        mrn: "000000000",
-        visit: "21096012",
-        first: "Sally",
-        last: "Carter",
-        month: 8,
-        day: 22,
-        year: 1995,
-        gender: "F"
-    }
-};
-
 function CameraScanScreen({ route, navigation }) {
     // variables for manual input
     // const [getCurrentFlowSettings, setCurrentFlowSettings] = useContext(CurrentFlowSettingsContext);
@@ -133,7 +109,7 @@ function CameraScanScreen({ route, navigation }) {
             const fetchedInfo = await resp.json();
             // if there is a msg field, the patient could not be found
             if (fetchedInfo.msg) {
-                Alert.alert("Patient not found", `there exists no patient with the MRN: ${text}`, [{ text: "OK" }]);
+                Alert.alert("Patient not found", `There exists no patient with the MRN: ${text}`, [{ text: "OK" }]);
             } else {
                 const patient = {
                     mrn: text,
@@ -146,13 +122,15 @@ function CameraScanScreen({ route, navigation }) {
                     gender: fetchedInfo.gender
                 };
                 setInfo(patient);
-                navigation.navigate("Confirm Patient", { isOverride }, { reused: false });
+                navigation.navigate("Confirm Patient", { reused: false });
             }
         } catch (e) {
             console.log(e);
-            Alert.alert("Error", "something went wrong", [{ text: "OK" }], { cancelable: false });
+            Alert.alert("Something went wrong, please try again later. (ERR_FETCH_MRN_01)", [{ text: "OK" }], {
+                cancelable: false
+            });
         }
-        onChangeText("");
+        setText("");
     }
 
     // if camera is on and permission is granted, scan for barcode
@@ -228,12 +206,13 @@ function CameraScanScreen({ route, navigation }) {
                         >
                             <TextInput
                                 style={[Styles.MRNinput]}
+                                // onChange={setText}
                                 onChangeText={setText}
                                 value={text}
                                 keyboardType="number-pad"
                                 maxLength={9}
                                 clearButtonMode="always" // ios only :(
-                            ></TextInput>
+                            />
                             <Text style={{ color: "red", fontSize: 16, fontWeight: "bold" }}>
                                 {text.length > 0 && text.length != 9 ? "MRN must be 9 digits long!" : ""}
                             </Text>

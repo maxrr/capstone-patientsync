@@ -1,10 +1,11 @@
-import { Text, View, Pressable } from "react-native";
-import React from "react";
-import Styles from "../../styles/main";
-import PatientContext from "../PatientContext";
 import { useContext } from "react";
-import Stepper from "../comps/Stepper";
+import { Text, View, Pressable } from "react-native";
+
+import PatientContext from "../PatientContext";
 import CurrentFlowSettingsContext from "../CurrentFlowSettingsContext";
+
+import Styles from "../../styles/main";
+import Stepper from "../comps/Stepper";
 import LayoutSkeleton from "../comps/LayoutSkeleton";
 import UniformPageWrapper from "../comps/UniformPageWrapper";
 
