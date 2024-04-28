@@ -77,7 +77,10 @@ const Styles = StyleSheet.create({
             display: "flex",
             justifyContent: "center"
             // paddingBottom: 100
-        }
+        },
+        // headerTitle: "",
+        headerBackTitle: "Back",
+        headerTitleAlign: "center"
     },
     MRNinput: {
         height: 50,

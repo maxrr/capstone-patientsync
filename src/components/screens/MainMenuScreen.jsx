@@ -1,9 +1,10 @@
 import { useState, useEffect, useContext } from "react";
-import { Button, Text, View, Pressable, SafeAreaView } from "react-native";
+import { Button, Text, View, Pressable, SafeAreaView, Settings } from "react-native";
 import Styles from "../../styles/main";
 import SafeAreaViewAndroid from "../comps/SafeAreaViewAndroid";
 import CurrentFlowSettingsContext from "../CurrentFlowSettingsContext";
 import LabeledIconButton from "../comps/LabeledIconButton";
+import { SettingsButtonHome } from "../comps/SettingsButtons";
 
 function MainMenuScreen({ navigation }) {
     //Variable to dictate what stepper to show. Either show stepper for linking process, which has the last image as a link,
@@ -11,11 +12,17 @@ function MainMenuScreen({ navigation }) {
 
     const [getCurrentFlowSettings, setCurrentFlowSettings] = useContext(CurrentFlowSettingsContext);
 
+    useEffect(() => {
+        navigation.setOptions({
+            headerRight: () => <SettingsButtonHome navigation={navigation} />
+        });
+    });
+
     return (
         <SafeAreaView style={SafeAreaViewAndroid.AndroidSafeArea}>
             <View style={[Styles.container, { justifyContent: "space-between" }]}>
                 <Text></Text>
-                <View style={[Styles.container, { height: "auto" }]}>
+                <View style={[Styles.container, { height: "auto", marginBottom: 120 }]}>
                     <Text style={[Styles.hero, { color: "white", fontWeight: "bold" }]}>Welcome</Text>
                     <Text style={[Styles.h6]}>To begin, select an action</Text>
 

@@ -12,14 +12,15 @@ import PatientConfirmScreen from "./screens/PatientConfirmScreen";
 import LinkConfirmScreen from "./screens/LinkConfirmScreen";
 import LinkCompleteScreen from "./screens/LinkCompleteScreen";
 import LoadingScreen from "./screens/LoadingScreen";
-
 import PatientConfirmOverrideScreen from "./screens/PatientConfirmOverrideScreen";
 
 import PatientContext from "./PatientContext";
 import DeviceContext from "./DeviceContext";
 import BluetoothManagerContext from "./BluetoothManagerContext";
 import CurrentFlowSettingsContext from "./CurrentFlowSettingsContext";
+
 import { BLE_MGR_STATE_SEARCHING, BLE_MGR_STATE_OFFLINE } from "./comps/BleMgrConfig";
+import SettingsScreen from "./screens/SettingsScreen";
 
 const Stack = createNativeStackNavigator();
 export default function ConnectPlusApp({
@@ -103,10 +104,19 @@ export default function ConnectPlusApp({
                     <PatientContext.Provider value={[info, setInfo]}>
                         <DeviceContext.Provider value={[deviceInfo, setDeviceInfo]}>
                             {/* <Stack.Navigator screenOptions={{ headerStyle: { backgroundColor: "#eee" }, headerTitle: "" }}> */}
-                            <Stack.Navigator screenOptions={{ headerStyle: { backgroundColor: "#eee" } }}>
+                            <Stack.Navigator id="mainNavigator" screenOptions={{ headerStyle: { backgroundColor: "#eee" } }}>
                                 {/* `name`d these screens below with their corresponding Figma screen name, feel free to change ~mr */}
                                 {/* Also, feel free to change order AND feel free to consolidate these screens into one each (ie. one per "step") ~mr */}
-                                <Stack.Screen name="Home" options={{ headerShown: false }} component={MainMenuScreen} />
+                                <Stack.Screen
+                                    name="Home"
+                                    options={{
+                                        headerShown: true,
+                                        headerStyle: { backgroundColor: Styles.colors.Background },
+                                        headerTitle: "",
+                                        headerShadowVisible: false
+                                    }}
+                                    component={MainMenuScreen}
+                                />
                                 <Stack.Screen
                                     name="Device Select"
                                     options={Styles.screenSkeleton}
@@ -150,6 +160,12 @@ export default function ConnectPlusApp({
                                     name="Confirm Override Patient"
                                     options={Styles.screenSkeleton}
                                     component={PatientConfirmOverrideScreen}
+                                />
+
+                                <Stack.Screen
+                                    name="Settings"
+                                    options={{ headerBackTitle: "Back", headerTitleAlign: "center" }}
+                                    component={SettingsScreen}
                                 />
                             </Stack.Navigator>
                         </DeviceContext.Provider>
