@@ -3,7 +3,6 @@ import Styles from "../../styles/main";
 import { useRoute } from "@react-navigation/native";
 import PatientContext from "../PatientContext";
 import { useContext, useEffect, useState } from "react";
-import Stepper from "../comps/Stepper";
 import CurrentFlowSettingsContext from "../CurrentFlowSettingsContext";
 import UniformPageWrapper from "../comps/UniformPageWrapper";
 import ConfirmCancelCombo from "../comps/ConfirmCancelCombo";
@@ -26,6 +25,7 @@ async function fetchPatient(mrn) {
             );
         } else {
             if (
+                fetchedInfo &&
                 fetchedInfo.visit &&
                 fetchedInfo.first &&
                 fetchedInfo.last &&
@@ -82,59 +82,16 @@ function PatientConfirmOverrideScreen({ navigation }) {
         fetchPatient(bluetoothConnectedDevice.cur_patient_mrn).then((pp) => {
             setLocalPatientProfile(pp);
             setLoadingPatientInfo(false);
+            setInfo(pp);
         });
     }, []);
 
     // *** SHOWOVERRIDES IS THE UNLINK CASE ***
     // *** SHOWOVERRIDES IS THE UNLINK CASE ***
-    // const { showOverrides } = route.params || { showOverrides: false };
     const [getCurrentFlowSettings, setCurrentFlowSettings] = useContext(CurrentFlowSettingsContext);
     const { showOverrides } = getCurrentFlowSettings();
 
     return (
-        // <View style={[Styles.container]}>
-        //     <Stepper step={2} />
-        //     <Text style={[Styles.h4]}>
-        //         <Text style={{ color: "white", fontWeight: "bold" }}>
-        //             {showOverrides ? "Patient Unlink" : "Patient Override"}
-        //         </Text>
-        //     </Text>
-
-        //     <Text style={[Styles.h6]}>
-        //         {showOverrides
-        //             ? "Confirm that this is the correct patient to unlink from the device"
-        //             : "This device is already linked to a patient, please confirm to continue."}
-        //     </Text>
-        //     <View style={{ height: 10 }}></View>
-
-        //     {/* <View style={[Styles.container, { width: 250, height: 250, backgroundColor: Styles.colors.GEPurple }]}>
-        //         <Text style={{ color: "white", textAlign: "center", padding: 50 }}>(patient picture)</Text>
-        //     </View> */}
-
-        //     <View style={{ height: 10 }}></View>
-        //     <Text style={[Styles.h5]}>
-        //         {patientProfile?.lastName}, {patientProfile?.firstName}
-        //     </Text>
-
-        //     <Text style={[Styles.h5]}>{patientProfile?.dob}</Text>
-        //     <Text style={[Styles.h6]}>MRN: {patientProfile?.mrn}</Text>
-        //     <Text style={[Styles.h6]}>Visit number: {patientProfile?.visitNumber}</Text>
-        //     <View style={{ height: 10 }}></View>
-        //     {/*Navigation buttons for override screen. -dt*/}
-        //     {/*Didn't create more override screens because
-
-        //     I'm unsure if we want to set the text on other screens with a variable changing with ?
-        //     or if we want separate screens. Separate screens might lead to lots of overlap/content. -dt*/}
-
-        //     {/* Need to conditionally render the two buttons for either progressing in override case or progressing
-        //     in the case of unlinking and just going back to the main menu*/}
-        //     {!showOverrides && <Button title="Override Patient" onPress={() => navigation.push("Enter Patient Info")} />}
-
-        //     {showOverrides && <Button title="Unlink This Patient" onPress={() => navigation.push("Confirm Link")} />}
-
-        //     <Button title="Choose Another Device" onPress={() => navigation.push("Device Select")} />
-        //     <View style={{ height: 10 }}></View>
-        // </View>
         <UniformPageWrapper>
             <LayoutSkeleton
                 title={showOverrides ? "Patient Unlink" : "Patient Override"}

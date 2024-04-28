@@ -28,15 +28,15 @@ function PatientSelectScreen({ route, navigation }) {
                 {/**Using Pressable instead of button because then we can customize it w/ stylesheet -DT */}
                 <Pressable style={Styles.button} onPress={() => navigation.push("Scan Barcode", { manual: false })}>
                     <Text style={[Styles.button, Styles.buttonText, { backgroundColor: Styles.colors.GEPurple }]}>
-                        Scan Patient Barcode
+                        Scan patient barcode
                     </Text>
                 </Pressable>
 
-                <Text style={[Styles.h5]}>or</Text>
+                <Text style={[Styles.h5, { textAlign: "center" }]}>or</Text>
 
                 <Pressable style={Styles.button} onPress={() => navigation.push("Scan Barcode", { manual: true })}>
                     <Text style={[Styles.button, Styles.buttonText, { backgroundColor: Styles.colors.GEPurple }]}>
-                        Manually Enter Patient Info
+                        Manually enter patient info
                     </Text>
                 </Pressable>
 
@@ -56,6 +56,7 @@ function PatientSelectScreen({ route, navigation }) {
                 ) : (
                     <></>
                 )}
+                {/* </View> */}
             </LayoutSkeleton>
         </UniformPageWrapper>
     );

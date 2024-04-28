@@ -107,6 +107,7 @@ function CameraScanScreen({ route, navigation }) {
             // fetch to database for provided MRN
             const resp = await fetch(`http://vpn.rountree.me:6969/getPatientInfo?mrn=${text}`);
             const fetchedInfo = await resp.json();
+
             // if there is a msg field, the patient could not be found
             if (fetchedInfo.msg) {
                 Alert.alert("Patient not found", `There exists no patient with the MRN: ${text}`, [{ text: "OK" }]);
@@ -116,17 +117,18 @@ function CameraScanScreen({ route, navigation }) {
                     visit: fetchedInfo.visit.trim(),
                     first: fetchedInfo.first.trim(),
                     last: fetchedInfo.last.trim(),
-                    year: fetchedInfo.year,
-                    month: fetchedInfo.month,
-                    day: fetchedInfo.day,
-                    gender: fetchedInfo.gender
+                    dob: fetchedInfo.month + "/" + fetchedInfo.day + "/" + fetchedInfo.year
+                    // year: fetchedInfo.year,
+                    // month: fetchedInfo.month,
+                    // day: fetchedInfo.day,
+                    // gender: fetchedInfo.gender
                 };
                 setInfo(patient);
                 navigation.navigate("Confirm Patient", { reused: false });
             }
         } catch (e) {
             console.log(e);
-            Alert.alert("Something went wrong, please try again later. (ERR_FETCH_MRN_01)", [{ text: "OK" }], {
+            Alert.alert("Something went wrong. (ERR_FETCH_MRN_01)", [{ text: "OK" }], {
                 cancelable: false
             });
         }

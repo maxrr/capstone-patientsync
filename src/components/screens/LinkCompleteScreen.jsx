@@ -41,7 +41,7 @@ function LinkCompleteScreen({ navigation }) {
     // };
     const patientProfile = {
         ...info,
-        dob: info.month + "/" + info.day + "/" + info.year
+        dob: info.dob ?? info.month + "/" + info.day + "/" + info.year
     };
 
     return (

@@ -35,6 +35,7 @@ const Styles = StyleSheet.create({
         flexDirection: "column",
         padding: consts.gapIncrement * 4,
         // minHeight: "100%",
+        overflow: "visible",
         gap: consts.gapIncrement,
         justifyContent: "flex-start",
         alignItems: "center",

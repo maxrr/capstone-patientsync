@@ -14,7 +14,7 @@ import LinkCompleteScreen from "./screens/LinkCompleteScreen";
 import LoadingScreen from "./screens/LoadingScreen";
 import PatientConfirmOverrideScreen from "./screens/PatientConfirmOverrideScreen";
 
-import PatientContext from "./PatientContext";
+import PatientContext, { CONTEXT_PATIENT_DEFAULT_VALUE } from "./PatientContext";
 import DeviceContext from "./DeviceContext";
 import BluetoothManagerContext from "./BluetoothManagerContext";
 import CurrentFlowSettingsContext from "./CurrentFlowSettingsContext";
@@ -39,7 +39,7 @@ export default function ConnectPlusApp({
     bluetoothResetSeenDevices
 }) {
     // Context for current patient & device info
-    const [info, setInfo] = useState(null);
+    const [patientInfo, setPatientInfo] = useState(CONTEXT_PATIENT_DEFAULT_VALUE);
     const [deviceInfo, setDeviceInfo] = useState(null);
 
     useEffect(() => {
@@ -103,7 +103,7 @@ export default function ConnectPlusApp({
         <NavigationContainer>
             <BluetoothManagerContext.Provider value={BleContextProviderVal}>
                 <CurrentFlowSettingsContext.Provider value={[getCurrentFlowSettings, setCurrentFlowSettings]}>
-                    <PatientContext.Provider value={[info, setInfo]}>
+                    <PatientContext.Provider value={[patientInfo, setPatientInfo]}>
                         <DeviceContext.Provider value={[deviceInfo, setDeviceInfo]}>
                             {/* <Stack.Navigator screenOptions={{ headerStyle: { backgroundColor: "#eee" }, headerTitle: "" }}> */}
                             <Stack.Navigator id="mainNavigator" screenOptions={{ headerStyle: { backgroundColor: "#eee" } }}>

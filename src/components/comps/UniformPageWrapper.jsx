@@ -4,7 +4,7 @@ import Styles from "../../styles/main";
 function UniformPageWrapper({ enableRefresh = false, refreshing, onRefresh = () => {}, children, centerContent = false }) {
     const centerContentStyles = centerContent
         ? { display: "flex", flexDirection: "column", justifyContent: "center", height: "100%" }
-        : {};
+        : { height: "100%" };
     return (
         <SafeAreaView style={[{ backgroundColor: Styles.colors.Background, height: "100%" }, centerContentStyles]}>
             <KeyboardAvoidingView
@@ -13,7 +13,7 @@ function UniformPageWrapper({ enableRefresh = false, refreshing, onRefresh = () 
             >
                 {enableRefresh ? (
                     <ScrollView
-                        contentContainerStyle={[Styles.scrollContainer]}
+                        contentContainerStyle={[Styles.scrollContainer, { height: "100%" }]}
                         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
                     >
                         {children}

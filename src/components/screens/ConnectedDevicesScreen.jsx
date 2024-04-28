@@ -1,9 +1,7 @@
-import { useContext, useEffect } from "react";
-import { ScrollView, Text, View, Button, Pressable, StyleSheet } from "react-native";
-import { useRoute } from "@react-navigation/native";
+import { useContext, useEffect, useState } from "react";
+import { Text, View, StyleSheet, Alert } from "react-native";
 
 import Styles from "../../styles/main";
-import Stepper from "../comps/Stepper";
 import UniformPageWrapper from "../comps/UniformPageWrapper";
 import ConfirmCancelCombo from "../comps/ConfirmCancelCombo";
 
@@ -11,6 +9,8 @@ import BluetoothManagerContext from "../BluetoothManagerContext";
 import DeviceInfoPane from "../comps/DeviceInfoPane";
 import CurrentFlowSettingsContext from "../CurrentFlowSettingsContext";
 import LayoutSkeleton from "../comps/LayoutSkeleton";
+
+import { fetchPatient } from "../bluetooth/FetchPatient";
 
 const devices = [
     {
@@ -31,29 +31,31 @@ const devices = [
 ];
 
 function ConnectedDevicesScreen({ navigation }) {
-    const route = useRoute();
     const [getCurrentFlowSettings, setCurrentFlowSettings] = useContext(CurrentFlowSettingsContext);
-    const { showOverrides } = getCurrentFlowSettings();
-    // const { showOverrides } = route.params || { showOverrides: false };
+    const [devicePatientProfile, setDevicePatientProfile] = useState(null);
 
-    const {
-        bluetoothDevices,
-        bluetoothConnectingDevice,
-        bluetoothConnectedDevice,
-        bluetoothStartScan,
-        bluetoothStopScan,
-        bluetoothManagerState,
-        bluetoothDisconnectFromDevice
-    } = useContext(BluetoothManagerContext);
+    const { showOverrides } = getCurrentFlowSettings();
+
+    const { bluetoothConnectedDevice } = useContext(BluetoothManagerContext);
 
     const isOverride = bluetoothConnectedDevice?.isOverride;
-    // console.log(isOverride);
 
     useEffect(() => {
-        // return () => {
-        //     bluetoothDisconnectFromDevice();
-        // };
-    });
+        if (bluetoothConnectedDevice.cur_patient_mrn != "-1") {
+            fetchPatient(bluetoothConnectedDevice.cur_patient_mrn)
+                .then((a) => {
+                    setDevicePatientProfile(a);
+                })
+                .catch((err) => {
+                    console.error(err);
+                    Alert.alert(
+                        "Something went wrong.",
+                        "Retrieving the patient connected to this device returned an error. Please try again."
+                    );
+                    navigation.pop();
+                });
+        }
+    }, []);
 
     return (
         <UniformPageWrapper>
@@ -62,20 +64,13 @@ function ConnectedDevicesScreen({ navigation }) {
                 subtitle={"Please review the medical devices connected to the ConnectPlus device below"}
                 stepper={1}
             >
-                {/* <Stepper step={1} />
-            <Text style={[Styles.h4]}>
-                <Text style={{ color: "white", fontWeight: "bold" }}>Connected Devices</Text>
-            </Text>
-            <Text style={[Styles.h6, { textAlign: "center", marginBottom: 8 }]}>
-                Please review the medical devices connected to the ConnectPlus device below:
-            </Text> */}
-                {/* <View style={{ height: 15 }}></View> */}
-
                 <DeviceInfoPane
                     style={{ marginTop: Styles.consts.gapIncrement }}
                     device={bluetoothConnectedDevice}
                     showOverrides={showOverrides}
                     detailed={true}
+                    loading={bluetoothConnectedDevice.cur_patient_mrn != "-1" && devicePatientProfile == null}
+                    profile={devicePatientProfile}
                 />
                 <View
                     style={{
@@ -85,41 +80,6 @@ function ConnectedDevicesScreen({ navigation }) {
                         width: "100%"
                     }}
                 >
-                    {/* <Text
-                    style={[
-                        Styles.medDeviceSelectButton,
-                        { height: "auto", backgroundColor: Styles.colors.GEPurple, flexWrap: "wrap", flexDirection: "row" }
-                    ]}
-                >
-                    <Text style={[Styles.deviceSelectButtonText]}>
-                        <Text style={{ fontWeight: "bold", fontSize: 16 }}>Raw device information</Text>
-                        {"\n"}
-                    </Text>
-                    <Text style={[Styles.deviceSelectButtonText]}>
-                        device_name: {bluetoothConnectedDevice?.device_name ?? "(name)"}
-                        {"\n"}
-                    </Text>
-                    <Text style={[Styles.deviceSelectButtonText]}>
-                        cur_room: {bluetoothConnectedDevice?.cur_room ?? "(room)"}
-                        {"\n"}
-                    </Text>
-                    <Text style={[Styles.deviceSelectButtonText]}>
-                        cur_patient_mrn: {bluetoothConnectedDevice?.cur_patient_mrn ?? "(mrn)"}
-                        {"\n"}
-                    </Text>
-                    <Text style={[Styles.deviceSelectButtonText]}>
-                        last_edit_time: {bluetoothConnectedDevice?.last_edit_time ?? "%last_edit_time%"}
-                        {"\n"}
-                    </Text>
-                    <Text style={[Styles.deviceSelectButtonText]}>
-                        last_edit_user_id: {bluetoothConnectedDevice?.last_edit_user_id ?? "%last_edit_user_id%"}
-                    </Text>
-                </Text> */}
-
-                    {/* <Text style={[Styles.deviceSelectButtonText, { margin: 0 }]}>
-                    <Text style={{ fontWeight: "bold", fontSize: 16, margin: 0 }}>Connected devices (placeholder):</Text>
-                    {"\n"}
-                </Text> */}
                     <View style={{ borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: "#999" }} />
                     {devices.map((e, index) => (
                         <Text
@@ -141,21 +101,6 @@ function ConnectedDevicesScreen({ navigation }) {
                         </Text>
                     ))}
                 </View>
-
-                {/*Have to add back button to connected devices screen to go back to scrollable devices page */}
-                {/* disabling temporarily because the header has a back button already */}
-                {/* <Button title="Go Back" onPress={() => navigation.pop()} /> */}
-
-                {/* <Button
-                    title="Confirm"
-                    onPress={() => {
-                        if (isOverride || showOverrides) {
-                            navigation.push("Confirm Override Patient");
-                        } else {
-                            navigation.push("Enter Patient Info");
-                        }
-                    }}
-                /> */}
                 <ConfirmCancelCombo
                     onConfirm={() => {
                         if (isOverride || showOverrides) {
@@ -168,14 +113,6 @@ function ConnectedDevicesScreen({ navigation }) {
                         navigation.pop();
                     }}
                 />
-                {/*Temp button for override case. Unsure if we want multiple screens for more override screens or just a variable to determine text -dt */}
-
-                {/*Didn't create more override screens because
-            I'm unsure if we want to set the text on other screens with a variable changing with ?
-            or if we want separate screens. Separate screens might lead to lots of overlap/content. -dt*/}
-
-                {/*Removed temp override button 3/10/24 */}
-                {/* <Button title="Confirm (override temp)" onPress={() => navigation.push("Confirm Override Patient")} /> */}
             </LayoutSkeleton>
         </UniformPageWrapper>
     );

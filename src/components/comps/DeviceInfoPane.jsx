@@ -1,8 +1,27 @@
-import { Pressable, Text } from "react-native";
+import { ActivityIndicator, Pressable, Text } from "react-native";
 import Styles from "../../styles/main";
 
-function DeviceInfoPane({ device, onPress = () => {}, showOverrides, detailed = false, style = {} }) {
-    return (
+function DeviceInfoPane({
+    device,
+    onPress = () => {},
+    showOverrides,
+    detailed = false,
+    style = {},
+    loading = false,
+    profile = null
+}) {
+    if (device == null) {
+        device = {
+            name: "No device connected",
+            room: "None",
+            id: "NONE",
+            isOverride: false,
+            rssi: 0
+        };
+    }
+    return loading ? (
+        <ActivityIndicator />
+    ) : (
         <Pressable key={device?.id} style={[Styles.deviceSelectButton, style]} onPress={onPress}>
             <Text
                 style={[
@@ -26,7 +45,7 @@ function DeviceInfoPane({ device, onPress = () => {}, showOverrides, detailed = 
                         " " +
                         (device?.isOverride
                             ? detailed
-                                ? `Currently associated to ${device?.cur_patient_mrn}`
+                                ? `Currently associated to ${(profile?.first ?? "Unknown") + " " + (profile?.last ?? "Unknown")}`
                                 : "Has existing patient association"
                             : "No patient associated")}
                 </Text>
