@@ -128,7 +128,6 @@ function CameraScanScreen({ route, navigation }) {
                 [{ text: "OK"}],{ cancelable: false } 
             )
         }
-        // navigation.push("Confirm Patient", {isOverride}, { reused: false })
         onChangeText('')
     }
 
