@@ -7,16 +7,53 @@ import Stepper from "../comps/Stepper";
 
 
 const patientProfile = {
-    firstName: "Ron",
-    lastName: "Smith",
-    mrn: "157849",
-    visitNumber: "2163",
-    dob: "03/14/1992"
+    firstName: "Not found",
+    lastName: "Not found",
+    mrn: "Not found",
+    visitNumber: "Not found",
+    dob: "Not found"
 };
 
+// fetch the info of the patient from the MRN associated with the C+ device
+async function fetchPatient(mrn) {
+    try {
+        // fetch to database for provided MRN
+        const resp = await fetch(`http://vpn.rountree.me:6969/getPatientInfo?mrn=${mrn}`)
+        const fetchedInfo = await resp.json()
+        // if there is a msg field, the patient could not be found
+        if (fetchedInfo.msg) {
+            Alert.alert(
+                "Patient not found",
+                `there exists no patient with the MRN (${mrn}) already associated with this device`,
+                [{ text: "OK" }]
+            )
+        } else {
+            patientProfile = {
+                mrn: mrn,
+                visit: fetchedInfo.visit.trim(),
+                first: fetchedInfo.first.trim(),
+                last: fetchedInfo.last.trim(),
+                year: fetchedInfo.year,
+                month: fetchedInfo.month,
+                day: fetchedInfo.day,
+                gender: fetchedInfo.gender
+            }
+        }
+    } catch (e) {
+        console.log(e)
+        Alert.alert(
+            "Error",
+            "something went wrong",
+            [{ text: "OK" }], { cancelable: false }
+        )
+    }
+}
 
-//Very similar to PatientConfirmScreen, but doing this with the override section instead.
-//I figured having separate screens would be easier for the override side of the app if we wanted to change things around -dt
+// TODO: add call to fetchPatient using MRN from bluetooth device in order to fetch the patient's info
+// and update patientProfile so that it displays properly
+
+// Very similar to PatientConfirmScreen, but doing this with the override section instead.
+// I figured having separate screens would be easier for the override side of the app if we wanted to change things around -dt
 function PatientConfirmOverrideScreen({ navigation }) {
     const route = useRoute();
     const { isOverride } = route.params || { isOverride: false };
