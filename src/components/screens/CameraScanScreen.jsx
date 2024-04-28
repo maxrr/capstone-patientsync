@@ -51,6 +51,8 @@ function CameraScanScreen({ route, navigation }) {
     // text to assess barcode viability
     const [scanningText, setScanningText] = useState("");
 
+    const [scanBool, setScanBool] = useState(false);
+
     // function to handle barcode scan
     function handleScan(result) {
         // store the info parsed from the barcode
@@ -92,6 +94,7 @@ function CameraScanScreen({ route, navigation }) {
         }
 
         // format month
+        // months are encoded from 0-B with 0 being Jan and B being December
         if (dataArray[5] === "A") {
             month = 11;
         } else if (dataArray[5] === "B") {
@@ -123,15 +126,33 @@ function CameraScanScreen({ route, navigation }) {
     }, [cameraState]);
 
     // confirm manual input
-    // TODO: Implement call to database and setInfo with appropriate info from there
-    function confirmInput() {
-        if (text in samplePatientDatabase) {
-            setInfo(samplePatientDatabase[text]);
-            navigation.push("Confirm Patient", { reused: false });
-            setText("");
-        } else {
-            Alert.alert("MRN lookup unsuccessful, please try again.");
+    async function confirmInput() {
+        try {
+            // fetch to database for provided MRN
+            const resp = await fetch(`http://vpn.rountree.me:6969/getPatientInfo?mrn=${text}`);
+            const fetchedInfo = await resp.json();
+            // if there is a msg field, the patient could not be found
+            if (fetchedInfo.msg) {
+                Alert.alert("Patient not found", `there exists no patient with the MRN: ${text}`, [{ text: "OK" }]);
+            } else {
+                const patient = {
+                    mrn: text,
+                    visit: fetchedInfo.visit.trim(),
+                    first: fetchedInfo.first.trim(),
+                    last: fetchedInfo.last.trim(),
+                    year: fetchedInfo.year,
+                    month: fetchedInfo.month,
+                    day: fetchedInfo.day,
+                    gender: fetchedInfo.gender
+                };
+                setInfo(patient);
+                navigation.navigate("Confirm Patient", { isOverride }, { reused: false });
+            }
+        } catch (e) {
+            console.log(e);
+            Alert.alert("Error", "something went wrong", [{ text: "OK" }], { cancelable: false });
         }
+        onChangeText("");
     }
 
     // if camera is on and permission is granted, scan for barcode
@@ -148,7 +169,9 @@ function CameraScanScreen({ route, navigation }) {
                         // if barcode is expected length, parse the information
                         if (scanningResult.data.length === 53) {
                             setScanningText("");
-                            handleScan(scanningResult.data);
+                            if (!scanBool) {
+                                handleScan(scanningResult.data);
+                            }
                         } else if (scanningResult.data.length < 53) {
                             setScanningText("Barcode is too short!");
                         } else {
