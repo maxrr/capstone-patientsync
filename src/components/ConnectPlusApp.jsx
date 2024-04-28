@@ -11,6 +11,7 @@ import PatientSelectScreen from "./screens/PatientSelectScreen";
 import PatientConfirmScreen from "./screens/PatientConfirmScreen";
 import LinkConfirmScreen from "./screens/LinkConfirmScreen";
 import LinkCompleteScreen from "./screens/LinkCompleteScreen";
+import LoadingScreen from "./screens/LoadingScreen";
 
 import PatientConfirmOverrideScreen from "./screens/PatientConfirmOverrideScreen";
 
@@ -18,7 +19,7 @@ import PatientContext from "./PatientContext";
 import DeviceContext from "./DeviceContext";
 import BluetoothManagerContext from "./BluetoothManagerContext";
 import CurrentFlowSettingsContext from "./CurrentFlowSettingsContext";
-import { BLE_MGR_STATE_SEARCHING } from "./comps/BleMgrConfig";
+import { BLE_MGR_STATE_SEARCHING, BLE_MGR_STATE_OFFLINE } from "./comps/BleMgrConfig";
 
 const Stack = createNativeStackNavigator();
 export default function ConnectPlusApp({
@@ -61,36 +62,43 @@ export default function ConnectPlusApp({
     };
 
     const setCurrentFlowSettings = (n) => {
-        console.debug("[DEBUG] setCurrentFlowSettings:", n);
+        // console.debug("[DEBUG] setCurrentFlowSettings:", n);
         if (n == null) {
             setCurrentFlowSettings(currentFlowSettingsDefault);
         } else if (typeof n == "function") {
             const ret = n(currentFlowSettings.current);
             currentFlowSettings.current = ret;
-            console.log("[DEBUG] setCurrentFlowSettings func ret:", ret);
+            // console.log("[DEBUG] setCurrentFlowSettings func ret:", ret);
         } else {
             currentFlowSettings.current = n;
         }
         setDummyState((a) => !a);
     };
 
+    const BleContextProviderVal = {
+        bluetoothDevices,
+        bluetoothConnectingDevice,
+        bluetoothConnectedDevice,
+        bluetoothStartScan,
+        bluetoothStopScan,
+        bluetoothManagerState,
+        bluetoothConnectToDevice,
+        bluetoothDisconnectFromDevice,
+        bluetoothPerformSyncWithDevice,
+        bluetoothResetSeenDevices
+    };
+
+    if (bluetoothManagerState == BLE_MGR_STATE_OFFLINE) {
+        return (
+            <BluetoothManagerContext.Provider value={BleContextProviderVal}>
+                <LoadingScreen />
+            </BluetoothManagerContext.Provider>
+        );
+    }
+
     return (
-        // Maybe we could use context stores to keep track of the selected patient and device, instead of having to do prop tunneling? ~mr
         <NavigationContainer>
-            <BluetoothManagerContext.Provider
-                value={{
-                    bluetoothDevices,
-                    bluetoothConnectingDevice,
-                    bluetoothConnectedDevice,
-                    bluetoothStartScan,
-                    bluetoothStopScan,
-                    bluetoothManagerState,
-                    bluetoothConnectToDevice,
-                    bluetoothDisconnectFromDevice,
-                    bluetoothPerformSyncWithDevice,
-                    bluetoothResetSeenDevices
-                }}
-            >
+            <BluetoothManagerContext.Provider value={BleContextProviderVal}>
                 <CurrentFlowSettingsContext.Provider value={[getCurrentFlowSettings, setCurrentFlowSettings]}>
                     <PatientContext.Provider value={[info, setInfo]}>
                         <DeviceContext.Provider value={[deviceInfo, setDeviceInfo]}>

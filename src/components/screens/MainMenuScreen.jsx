@@ -68,7 +68,7 @@ function MainMenuScreen({ navigation }) {
                     }}
                 >
                     {/* <LabeledIconButton text={"test"} icon={"camera-retro"} /> */}
-                    <Text style={{ color: "white" }}>GE Connect+ PatientSync (working title) v0.2</Text>
+                    <Text style={{ color: "white" }}>GE Connect+ PatientSync (working title) v0.3</Text>
                 </View>
             </View>
         </SafeAreaView>

@@ -121,7 +121,7 @@ function BleMgrWrapper() {
     };
     const setManagerState = (newState) => {
         if (BLE_MGR_ALL_STATES.includes(newState)) {
-            console.log(`[BleMgr] Manager state updated to: ${newState} (${BLE_MGR_STATES_STRS[newState]})`);
+            console.log(`[BleMgr] Manager state now: ${newState} (${BLE_MGR_STATES_STRS[newState]})`);
             managerState.current = newState;
             clearStateTimeout();
             setHookedManagerState(newState);
@@ -147,13 +147,13 @@ function BleMgrWrapper() {
     };
     const setStateTimeout = (newTimeout) => {
         clearStateTimeout();
-        console.log(`[BleMgr] New timeout registered: ${newTimeout}`);
+        // console.log(`[BleMgr] New timeout registered: ${newTimeout}`);
         stateTimeout.current = newTimeout;
     };
     const clearStateTimeout = () => {
         const cur = getStateTimeout();
         if (cur) {
-            console.log(`[BleMgr] Destroying old state timeout: ${cur}`);
+            // console.log(`[BleMgr] Destroying old state timeout: ${cur}`);
             clearTimeout(cur);
         }
         stateTimeout.current = null;
@@ -729,7 +729,7 @@ function BleMgrWrapper() {
         manager
             ?.stopScan()
             .then(() => {
-                console.log("[BleMgr] Stopping scan");
+                console.log("[BleMgr] Stopping scan...");
                 setManagerState(BLE_MGR_STATE_STOPPING);
 
                 const timeout = setTimeout(() => {
@@ -739,7 +739,7 @@ function BleMgrWrapper() {
                     setManagerState(BLE_MGR_STATE_IDLE);
                 }, config.SCAN_STOP_TIMEOUT);
 
-                console.log(`[BleMgr] [DEBUG] Created new timeout: ${timeout}`);
+                // console.log(`[BleMgr] [DEBUG] Created new timeout: ${timeout}`);
                 setStateTimeout(timeout);
                 // clearStateTimeout();
             })

@@ -170,11 +170,14 @@ function DeviceSelectScreen({ navigation, route }) {
 
                 {showOverrides ? (
                     <Text
-                        style={{
-                            color: "red",
-                            // fontWeight: "bold",
-                            textAlign: "center"
-                        }}
+                        style={[
+                            Styles.h6,
+                            {
+                                color: "red",
+                                fontWeight: "bold",
+                                textAlign: "center"
+                            }
+                        ]}
                     >
                         ⚠ Warning, you are UNLINKING!
                     </Text>
