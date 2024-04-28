@@ -22,11 +22,16 @@ function CameraScanScreen({ route, navigation }) {
     // text to assess barcode viability
     const [scanningText, setScanningText] = useState("");
 
+    const [scanBool, setScanBool] = useState(false)
+
     // function to handle barcode scan
     function handleScan(result) {
         // store the info parsed from the barcode
+        if(scanBool){return}
         setInfo(parseData(result))
+        setScanBool(true)
         navigation.navigate("Confirm Patient", {isOverride}, { reused: false })
+        console.log("navigating")
 
         // NOTE: We want the transition upon scan to be quick and not require any more button presses,
         //       so more like a flash of green with "barcode scanned!" before navigating. Somthing
@@ -145,7 +150,9 @@ function CameraScanScreen({ route, navigation }) {
                         // if barcode is expected length, parse the information
                         if (scanningResult.data.length === 53) {
                             setScanningText("")
-                            handleScan(scanningResult.data)
+                            if(!scanBool){
+                                handleScan(scanningResult.data)
+                            }
                         } else if (scanningResult.data.length < 53){
                             setScanningText("Barcode is too short!")
                         } else {setScanningText("Barcode is too long!")}

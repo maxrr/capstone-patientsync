@@ -20,7 +20,7 @@ function PatientSelectScreen({ route, navigation }) {
 
             {/*Updating buttons for Patient Select screen -DT */}
             {/**Using Pressable instead of button because then we can customize it w/ stylesheet -DT */}
-            <Pressable style={Styles.button} onPress={() => navigation.push("Scan Barcode", {isOverride}, {manual: false})}>
+            <Pressable style={Styles.button} onPress={() => navigation.push("Scan Barcode", {isOverride, manual: false})}>
                 <Text style={[Styles.button, Styles.buttonText, { backgroundColor: Styles.colors.GEPurple}]}>Scan Patient Barcode</Text>
             </Pressable>
 
@@ -33,7 +33,7 @@ function PatientSelectScreen({ route, navigation }) {
 
             {info != null ? <View style={{ alignItems: "center"}}>
                 <Text style={[Styles.h5]}>or</Text>
-                <Pressable style={Styles.smallButton} onPress={() => navigation.push("Confirm Patient", { reused: true })}>
+                <Pressable style={Styles.smallButton} onPress={() => navigation.push("Confirm Patient", { reused: true, isOverride})}>
 
                 <Text style={[Styles.smallButton, Styles.buttonText, { backgroundColor: "blue" }]}>
                     Use Information For {'\n'}

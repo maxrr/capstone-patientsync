@@ -17,8 +17,6 @@ function LinkCompleteScreen({ navigation }) {
         setDeviceInfo(null);
     }
 
-
-
     const route = useRoute();
     const { isUnlinking } = route.params || { isUnlinking: false };
 

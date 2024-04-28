@@ -1,4 +1,4 @@
-import { Button, Text, View } from "react-native";
+import { Button, Text, View, Alert } from "react-native";
 import Styles from "../../styles/main";
 import { useRoute } from "@react-navigation/native";
 import PatientContext from "../PatientContext";
@@ -59,7 +59,7 @@ function PatientConfirmOverrideScreen({ navigation }) {
     const { isOverride } = route.params || { isOverride: false };
     
     const [info, setInfo] = useContext(PatientContext);
-    setInfo(patientProfile);
+    // setInfo(patientProfile);
 
     // *** SHOWOVERRIDES IS THE UNLINK CASE ***
     // *** SHOWOVERRIDES IS THE UNLINK CASE ***
