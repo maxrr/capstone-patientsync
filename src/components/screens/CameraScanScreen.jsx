@@ -170,13 +170,6 @@ function CameraScanScreen({ route, navigation }) {
                                 setCameraState(false);
                             }}
                         >
-                            {/* <Button
-                                title="Use Manual Input Instead"
-                                color="#5A0CB5"
-                                onPress={() => {
-                                    setCameraState(false);
-                                }}
-                            ></Button> */}
                             <LabeledIconButton
                                 text={"Manually input instead"}
                                 icon={"pencil"}
@@ -237,46 +230,6 @@ function CameraScanScreen({ route, navigation }) {
                     </View>
                 </LayoutSkeleton>
             </UniformPageWrapper>
-            // <View style={[Styles.container]}>
-            //     <View style={[Styles.container]}>
-            //         <Text style={[Styles.h4]}>
-            //             <Text style={{ color: "white", fontWeight: "bold" }}>Enter Patient MRN</Text>
-            //         </Text>
-            //         <View
-            //             style={[
-            //                 { display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center" }
-            //             ]}
-            //         >
-            //             <TextInput
-            //                 style={[Styles.MRNinput]}
-            //                 onChangeText={setText}
-            //                 value={text}
-            //                 keyboardType="number-pad"
-            //                 maxLength={9}
-            //                 clearButtonMode="always" // ios only :(
-            //             ></TextInput>
-            //             <Text style={{ color: "red", fontSize: 16, fontWeight: "bold" }}>
-            //                 {text.length > 0 && text.length != 9 ? "MRN must be 9 digits long!" : ""}
-            //             </Text>
-            //         </View>
-            //         <View style={[Styles.buttonRow]}>
-            //             <Button
-            //                 title="scan instead"
-            //                 color="#5A0CB5"
-            //                 onPress={() => {
-            //                     setCameraState(true);
-            //                 }}
-            //             ></Button>
-            //             <View style={{ flex: 0.6 }}></View>
-            //             <Button
-            //                 title="confirm"
-            //                 color="green"
-            //                 onPress={() => confirmInput()}
-            //                 disabled={text.length < 9}
-            //             ></Button>
-            //         </View>
-            //     </View>
-            // </View>
         );
     }
 }

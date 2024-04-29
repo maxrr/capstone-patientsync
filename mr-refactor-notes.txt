@@ -1,0 +1,27 @@
+Notes
+
+Patient context:
+    - Current device profile
+
+
+CameraScanScreen:
+
+ConnectedDevicesScreen:
+
+DeviceSelectScreen:
+
+LinkCompleteScreen:
+
+LinkConfirmScreen:
+
+LoadingScreen:
+
+MainMenuScreen:
+
+PatientConfirmOverrideScreen:
+
+PatientConfirmScreen:
+
+PatientSelectScreen:
+
+SettingsScreen:
