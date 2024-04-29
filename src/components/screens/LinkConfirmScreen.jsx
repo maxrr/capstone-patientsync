@@ -1,14 +1,12 @@
 import { useContext, useState } from "react";
-import { ActivityIndicator, Alert, Button, Text, View } from "react-native";
+import { ActivityIndicator, Alert, Text } from "react-native";
 import { useRoute } from "@react-navigation/native";
 
 import Styles from "../../styles/main";
-import Stepper from "../comps/Stepper";
 import DeviceInfoPane from "../comps/DeviceInfoPane";
 import PatientInfoPane from "../comps/PatientInfoPane";
 
 import PatientContext from "../PatientContext";
-import DeviceContext from "../DeviceContext";
 import BluetoothManagerContext from "../BluetoothManagerContext";
 import UniformPageWrapper from "../comps/UniformPageWrapper";
 import StyledModal from "../comps/StyledModal";
@@ -22,7 +20,6 @@ function LinkConfirmScreen({ navigation }) {
     const { linkingStepper } = getCurrentFlowSettings();
 
     const [info, setInfo] = useContext(PatientContext);
-    // const [deviceInfo, setDeviceInfo] = useContext(DeviceContext);
     const {
         bluetoothConnectedDevice,
         bluetoothPerformSyncWithDevice,

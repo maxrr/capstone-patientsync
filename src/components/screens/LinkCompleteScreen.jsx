@@ -1,11 +1,8 @@
-import { Button, Text, View } from "react-native";
+import { Text } from "react-native";
 import Styles from "../../styles/main";
 import PatientContext from "../PatientContext";
-import DeviceContext from "../DeviceContext";
 import { useContext } from "react";
 import { useRoute } from "@react-navigation/native";
-import Stepper from "../comps/Stepper";
-import BluetoothManagerContext from "../BluetoothManagerContext";
 import CurrentFlowSettingsContext from "../CurrentFlowSettingsContext";
 import UniformPageWrapper from "../comps/UniformPageWrapper";
 import LayoutSkeleton from "../comps/LayoutSkeleton";

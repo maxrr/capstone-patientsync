@@ -15,7 +15,6 @@ import LoadingScreen from "./screens/LoadingScreen";
 import PatientConfirmOverrideScreen from "./screens/PatientConfirmOverrideScreen";
 
 import PatientContext, { CONTEXT_PATIENT_DEFAULT_VALUE } from "./PatientContext";
-import DeviceContext from "./DeviceContext";
 import BluetoothManagerContext from "./BluetoothManagerContext";
 import CurrentFlowSettingsContext from "./CurrentFlowSettingsContext";
 
@@ -104,73 +103,67 @@ export default function ConnectPlusApp({
             <BluetoothManagerContext.Provider value={BleContextProviderVal}>
                 <CurrentFlowSettingsContext.Provider value={[getCurrentFlowSettings, setCurrentFlowSettings]}>
                     <PatientContext.Provider value={[patientInfo, setPatientInfo]}>
-                        <DeviceContext.Provider value={[deviceInfo, setDeviceInfo]}>
-                            {/* <Stack.Navigator screenOptions={{ headerStyle: { backgroundColor: "#eee" }, headerTitle: "" }}> */}
-                            <Stack.Navigator id="mainNavigator" screenOptions={{ headerStyle: { backgroundColor: "#eee" } }}>
-                                {/* `name`d these screens below with their corresponding Figma screen name, feel free to change ~mr */}
-                                {/* Also, feel free to change order AND feel free to consolidate these screens into one each (ie. one per "step") ~mr */}
-                                <Stack.Screen
-                                    name="Home"
-                                    options={{
-                                        headerShown: true,
-                                        headerStyle: { backgroundColor: Styles.colors.Background },
-                                        headerTitle: "",
-                                        headerShadowVisible: false
-                                    }}
-                                    component={MainMenuScreen}
-                                />
-                                <Stack.Screen
-                                    name="Device Select"
-                                    options={Styles.screenSkeleton}
-                                    component={DeviceSelectScreen}
-                                />
-                                <Stack.Screen
-                                    name="Device Details"
-                                    options={Styles.screenSkeleton}
-                                    component={ConnectedDevicesScreen}
-                                />
-                                <Stack.Screen
-                                    name="Enter Patient Info"
-                                    options={Styles.screenSkeleton}
-                                    component={PatientSelectScreen}
-                                />
-                                <Stack.Screen
-                                    name="Scan Barcode"
-                                    options={Styles.screenSkeleton}
-                                    component={CameraScanScreen}
-                                />
-                                <Stack.Screen
-                                    name="Confirm Patient"
-                                    options={Styles.screenSkeleton}
-                                    component={PatientConfirmScreen}
-                                />
-                                <Stack.Screen
-                                    name="Confirm Link"
-                                    options={Styles.screenSkeleton}
-                                    component={LinkConfirmScreen}
-                                />
+                        {/* <Stack.Navigator screenOptions={{ headerStyle: { backgroundColor: "#eee" }, headerTitle: "" }}> */}
+                        <Stack.Navigator id="mainNavigator" screenOptions={{ headerStyle: { backgroundColor: "#eee" } }}>
+                            {/* `name`d these screens below with their corresponding Figma screen name, feel free to change ~mr */}
+                            {/* Also, feel free to change order AND feel free to consolidate these screens into one each (ie. one per "step") ~mr */}
+                            <Stack.Screen
+                                name="Home"
+                                options={{
+                                    headerShown: true,
+                                    headerStyle: { backgroundColor: Styles.colors.Background },
+                                    headerTitle: "",
+                                    headerShadowVisible: false
+                                }}
+                                component={MainMenuScreen}
+                            />
+                            <Stack.Screen
+                                name="Device Select"
+                                options={Styles.screenSkeleton}
+                                component={DeviceSelectScreen}
+                            />
+                            <Stack.Screen
+                                name="Device Details"
+                                options={Styles.screenSkeleton}
+                                component={ConnectedDevicesScreen}
+                            />
+                            <Stack.Screen
+                                name="Enter Patient Info"
+                                options={Styles.screenSkeleton}
+                                component={PatientSelectScreen}
+                            />
+                            <Stack.Screen name="Scan Barcode" options={Styles.screenSkeleton} component={CameraScanScreen} />
+                            <Stack.Screen
+                                name="Confirm Patient"
+                                options={Styles.screenSkeleton}
+                                component={PatientConfirmScreen}
+                            />
+                            <Stack.Screen
+                                name="Confirm Link"
+                                options={Styles.screenSkeleton}
+                                component={LinkConfirmScreen}
+                            />
 
-                                {/* I renamed this page from "Link Successsful" to "Link Complete", because it may not be a success */}
-                                <Stack.Screen
-                                    name="Link Complete"
-                                    options={Styles.screenSkeleton}
-                                    component={LinkCompleteScreen}
-                                />
+                            {/* I renamed this page from "Link Successsful" to "Link Complete", because it may not be a success */}
+                            <Stack.Screen
+                                name="Link Complete"
+                                options={Styles.screenSkeleton}
+                                component={LinkCompleteScreen}
+                            />
 
-                                {/*Override Screens */}
-                                <Stack.Screen
-                                    name="Confirm Override Patient"
-                                    options={Styles.screenSkeleton}
-                                    component={PatientConfirmOverrideScreen}
-                                />
+                            {/*Override Screens */}
+                            <Stack.Screen
+                                name="Confirm Override Patient"
+                                options={Styles.screenSkeleton}
+                                component={PatientConfirmOverrideScreen}
+                            />
 
-                                <Stack.Screen
-                                    name="Settings"
-                                    options={{ headerBackTitle: "Back", headerTitleAlign: "center" }}
-                                    component={SettingsScreen}
-                                />
-                            </Stack.Navigator>
-                        </DeviceContext.Provider>
+                            <Stack.Screen
+                                name="Settings"
+                                options={{ headerBackTitle: "Back", headerTitleAlign: "center" }}
+                                component={SettingsScreen}
+                            />
+                        </Stack.Navigator>
                     </PatientContext.Provider>
                 </CurrentFlowSettingsContext.Provider>
             </BluetoothManagerContext.Provider>
