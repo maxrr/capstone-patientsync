@@ -9,62 +9,43 @@ import ConfirmCancelCombo from "../comps/ConfirmCancelCombo";
 import PatientInfoPane from "../comps/PatientInfoPane";
 import LayoutSkeleton from "../comps/LayoutSkeleton";
 import BluetoothManagerContext from "../BluetoothManagerContext";
-import { fetchPatient } from "../bluetooth/FetchPatient";
+import { fetchPatient } from "../utils/FetchPatient";
 
 function PatientConfirmScreen({ route, navigation }) {
-    const { bluetoothConnectedDevice } = useContext(BluetoothManagerContext);
-    const [patientInfo, setPatientInfo] = useContext(PatientContext);
+    // const { bluetoothConnectedDevice } = useContext(BluetoothManagerContext);
+    const [getPatientProfiles, setPatientProfiles] = useContext(PatientContext);
+    const { newPatient } = getPatientProfiles();
     // const { showOverrides } = route.params;
     const [getCurrentFlowSettings, setCurrentFlowSettings] = useContext(CurrentFlowSettingsContext);
-    const { showOverrides } = getCurrentFlowSettings();
-    // const patientProfile = {
-    //     first: patientInfo.first,
-    //     last: patientInfo.last,
-    //     mrn: patientInfo.mrn,
-    //     visit: patientInfo.visit,
-    //     dob: patientInfo.month + "/" + patientInfo.day + "/" + patientInfo.year
-    // };
-    const devicePatient = {
-        first: "",
-        last: "",
-        mrn: "",
-        visit: "",
-        dob: ""
-    };
+    const { flowType, areOverridingPatient } = getCurrentFlowSettings();
     const { reused } = route.params;
 
-    function returnHome() {
-        navigation.popToTop();
-        setInfo(null);
-        setDeviceInfo(null);
-    }
-
     // check if patient being overriden and patient being linked have exact same information
-    let match = false;
-    if (showOverrides) {
-        // TODO: input MRN from connected C+ device
-        fetchPatient(bluetoothConnectedDevice.cur_patient_mrn).then((ret) => {
-            match = true;
-            for (const [key, value] of Object.entries(ret)) {
-                if (patientInfo[key] != value) {
-                    match = false;
-                }
-            }
-            if (match) {
-                Alert.alert(
-                    "Patient already linked",
-                    "The patient whose info you have input is already linked to this device.",
-                    [{ text: "OK" }, { text: "Return to home screen", onPress: () => returnHome() }]
-                );
-            } else {
-                // devicePatient = patientProfile;
-                setPatientInfo({
-                    ...ret,
-                    dob: ret.month + "/" + ret.day + "/" + ret.year
-                });
-            }
-        });
-    }
+    // let match = false;
+    // if (showOverrides) {
+    //     // TODO: input MRN from connected C+ device
+    //     fetchPatient(bluetoothConnectedDevice.cur_patient_mrn).then((ret) => {
+    //         match = true;
+    //         for (const [key, value] of Object.entries(ret)) {
+    //             if (patientInfo[key] != value) {
+    //                 match = false;
+    //             }
+    //         }
+    //         if (match) {
+    //             Alert.alert(
+    //                 "Patient already linked",
+    //                 "The patient whose info you have input is already linked to this device.",
+    //                 [{ text: "OK" }, { text: "Return to home screen", onPress: () => returnHome() }]
+    //             );
+    //         } else {
+    //             // devicePatient = patientProfile;
+    //             setPatientInfo({
+    //                 ...ret,
+    //                 dob: ret.month + "/" + ret.day + "/" + ret.year
+    //             });
+    //         }
+    //     });
+    // }
 
     // NOTE: Functionality moved to src/components/bluetooth/FetchPatient.js ~mr
     // fetch the info of the patient from the MRN associated with the C+ device
@@ -86,7 +67,7 @@ function PatientConfirmScreen({ route, navigation }) {
         <UniformPageWrapper>
             <LayoutSkeleton title={"Patient Select"} subtitle={"Is this the right patient?"} stepper={2}>
                 {/* <PatientInfoPane profile={patientProfile} /> */}
-                <PatientInfoPane profile={patientInfo} />
+                <PatientInfoPane profile={newPatient} />
                 <ConfirmCancelCombo
                     confirmText="Yes"
                     cancelText="No"

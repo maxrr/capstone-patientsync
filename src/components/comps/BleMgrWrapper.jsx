@@ -31,7 +31,7 @@ const config = {
         [CHAR_LAST_EDIT_USER_ID_UUID]: "last_edit_user_id"
     },
     SECONDS_TO_SCAN_FOR: 45,
-    // NOTE: Filtering is done in handleDiscoverPeripheral
+    // NOTE: Filtering is also done in handleDiscoverPeripheral
     SERVICE_UUIDS: [SERVICE_PATIENTSYNC_UUID.toLocaleLowerCase()],
     ALLOW_DUPLICATES: true,
     SCAN_STOP_TIMEOUT: 5000
@@ -78,8 +78,8 @@ function BleMgrWrapper() {
         }
 
         if (!Object.is(Array.from(temp.keys()), Array.from(cur.keys()))) {
-            console.log({ temp, cur, same: Object.is(temp, cur) });
-            console.log(`[BleMgr] Committing changes to \`devices\``);
+            // console.log({ temp, cur, same: Object.is(temp, cur) });
+            // console.log(`[BleMgr] Committing changes to \`devices\``);
             setDevices(transformPeripheralsToDevices(temp));
         }
 
@@ -102,6 +102,9 @@ function BleMgrWrapper() {
 
     // Device that is in the process of connecting
     const [connectingDevice, setConnectingDevice] = useState(null);
+
+    // Band-aid for weird module stuff
+    const [isManagerScanning, setIsManagerScanning] = useState(false);
 
     // Current state of the bluetooth manager
     // const [managerState, setManagerState] = useState(BLE_MGR_STATE_OFFLINE);
@@ -286,20 +289,29 @@ function BleMgrWrapper() {
 
                 // console.debug("[BleMgr] Found these connected peripherals:", connectedPeripherals);
 
-                pendingChange = getPeripherals();
+                // pendingChange = getPeripherals();
 
                 for (var i = 0; i < connectedPeripherals.length; i++) {
                     const peripheral = connectedPeripherals[i];
-                    const p = pendingChange.get(peripheral.id) ?? peripheral;
-                    pendingChange.set(p.id, p);
+                    // const p = pendingChange.get(peripheral.id) ?? peripheral;
+                    // pendingChange.set(p.id, p);
                     // setPeripherals((map) => {
                     //     let p = map.get(peripheral.id) ?? peripheral;
                     //     p.connected = true;
                     //     return new Map(map.set(p.id, p));
                     // });
+                    console.log(`[BleMgr] Found connected peripheral with id ${peripheral.id}, disconnecting...`);
+                    try {
+                        await manager.disconnect(peripheral.id);
+                    } catch (error) {
+                        console.error(
+                            `[BleMgr] Error occurred while trying to disconnect from previously-connected device with id ${peripheral.id}:`,
+                            error
+                        );
+                    }
                 }
 
-                setPeripherals(pendingChange);
+                // setPeripherals(pendingChange);
             } catch (error) {
                 console.error("[BleMgr] Unable to retrieve connected peripherals:", error);
             }
@@ -316,10 +328,11 @@ function BleMgrWrapper() {
         if (validStates.includes(getManagerState())) {
             try {
                 if (peripheral) {
+                    if (managerState == BLE_MGR_STATE_SEARCHING) {
+                        stopScan();
+                    }
+
                     console.log(`[BleMgr] Attempting connection with: ${peripheral ?? "(none)"}`);
-
-                    setConnectingDevice(transformPeripheralToDevice(peripheral));
-
                     setPeripherals((map) => {
                         let p = map.get(peripheral.id);
                         if (p) {
@@ -328,6 +341,11 @@ function BleMgrWrapper() {
                         }
                         return map;
                     });
+
+                    setConnectingDevice(transformPeripheralToDevice(peripheral));
+
+                    // NOTE: Sleep for a short period, hopefully help states update and should stabilize connection
+                    await sleep(750);
 
                     await manager.connect(peripheral.id);
                     console.debug(`[BleMgr] [${peripheral.id}] connected`);
@@ -347,7 +365,7 @@ function BleMgrWrapper() {
 
                     /* Test read current RSSI value, retrieve services first */
                     const peripheralData = await manager.retrieveServices(peripheral.id);
-                    console.debug(`[BleMgr] [${peripheral.id}] retrieved peripheral services:`, peripheralData);
+                    // console.debug(`[BleMgr] [${peripheral.id}] retrieved peripheral services:`, peripheralData);
 
                     // setPeripherals((map) => {
                     //     let p = map.get(peripheral.id);
@@ -357,32 +375,33 @@ function BleMgrWrapper() {
                     //     return map;
                     // });
 
-                    if (peripheralData.characteristics) {
-                        for (let characteristic of peripheralData.characteristics) {
-                            if (characteristic.descriptors) {
-                                for (let descriptor of characteristic.descriptors) {
-                                    try {
-                                        let data = await manager.readDescriptor(
-                                            peripheral.id,
-                                            characteristic.service,
-                                            characteristic.characteristic,
-                                            descriptor.uuid
-                                        );
-                                        console.debug(
-                                            `[BleMgr] [${peripheral.id}] ${characteristic.service} ${characteristic.characteristic} ${descriptor.uuid} descriptor read as:`,
-                                            data
-                                        );
-                                    } catch (error) {
-                                        console.error(
-                                            `[BleMgr] [${peripheral.id}] failed to retrieve descriptor ${descriptor?.toString() ?? descriptor} for characteristic ${characteristic?.toString() ?? characteristic}:`,
-                                            error
-                                        );
-                                        throw error;
-                                    }
-                                }
-                            }
-                        }
-                    }
+                    // NOTE: Not sure if we need this
+                    // if (peripheralData.characteristics) {
+                    //     for (let characteristic of peripheralData.characteristics) {
+                    //         if (characteristic.descriptors) {
+                    //             for (let descriptor of characteristic.descriptors) {
+                    //                 try {
+                    //                     let data = await manager.readDescriptor(
+                    //                         peripheral.id,
+                    //                         characteristic.service,
+                    //                         characteristic.characteristic,
+                    //                         descriptor.uuid
+                    //                     );
+                    //                     // console.debug(
+                    //                     //     `[BleMgr] [${peripheral.id}] ${characteristic.service} ${characteristic.characteristic} ${descriptor.uuid} descriptor read as:`,
+                    //                     //     data
+                    //                     // );
+                    //                 } catch (error) {
+                    //                     console.error(
+                    //                         `[BleMgr] [${peripheral.id}] failed to retrieve descriptor ${descriptor?.toString() ?? descriptor} for characteristic ${characteristic?.toString() ?? characteristic}:`,
+                    //                         error
+                    //                     );
+                    //                     throw error;
+                    //                 }
+                    //             }
+                    //         }
+                    //     }
+                    // }
 
                     // TODO: Maybe run this during device discovery? Not sure if it is already run.
                     const rssi = await manager.readRSSI(peripheral.id);
@@ -397,8 +416,9 @@ function BleMgrWrapper() {
                     });
 
                     const queryData = await queryConnectedPeripheral(peripheral);
-                    setConnectedDevice(transformPeripheralToDevice(peripheral, queryData));
-                    return queryData;
+                    const transformed = transformPeripheralToDevice(peripheral, queryData);
+                    setConnectedDevice(transformed);
+                    return transformed;
 
                     // navigation.navigate("PeripheralDetails", { peripheralData: peripheralData });
                 } else {
@@ -407,7 +427,10 @@ function BleMgrWrapper() {
             } catch (error) {
                 console.error(`[BleMgr] [${peripheral.id}] connectPeripheral error:`, error);
             } finally {
-                setConnectingDevice(null);
+                // Give us 500ms of time to allow screens to continue properly
+                setTimeout(() => {
+                    setConnectingDevice(null);
+                }, 500);
             }
         } else {
             console.log(
@@ -517,10 +540,21 @@ function BleMgrWrapper() {
     };
 
     // Event handlers
-    const handleStopScan = () => {
-        // TODO: Figure out if this is the right place to set manager state
-        setManagerState(BLE_MGR_STATE_IDLE);
-        console.debug("[BleMgr] Scan is stopped.");
+    const handleStopScan = (ec) => {
+        // https://developer.android.com/reference/android/bluetooth/le/ScanCallback#constants_1
+        if (ec == null) {
+            ec = { status: 0xff }; // Placeholder in case things get funky
+        }
+        const { status } = ec;
+        if (status != 1) {
+            // TODO: Figure out if this is the right place to set manager state
+            console.debug(`[BleMgr] Scan has been stopped (status ${status})`);
+            setIsManagerScanning(false);
+            setManagerState(BLE_MGR_STATE_IDLE);
+        } else {
+            console.debug(`[BleMgr] Scan start attempted, but scan is ongoing`);
+            setManagerState(BLE_MGR_STATE_SEARCHING);
+        }
     };
 
     const handleConnectPeripheral = (event) => {
@@ -531,8 +565,12 @@ function BleMgrWrapper() {
 
     const handleDisconnectedPeripheral = (event) => {
         // TODO: Figure out if this is the right place to set manager state
-        setManagerState(BLE_MGR_STATE_IDLE);
-        console.debug(`[BleMgr] [${event.peripheral}] has disconnected`);
+        if (getManagerState() == BLE_MGR_STATE_DISCONNECTING) {
+            console.debug(`[BleMgr] [${event.peripheral}] confirmed disconnection`);
+            setManagerState(BLE_MGR_STATE_IDLE);
+        } else {
+            console.debug(`[BleMgr] [${event.peripheral}] has unexpectedly disconnected`);
+        }
         setPeripherals((map) => {
             let p = map.get(event.peripheral);
             if (p) {
@@ -579,26 +617,28 @@ function BleMgrWrapper() {
 
                 // TODO: Maybe run this during device discovery? Not sure if it is already run. (that's what we're trying to do, thanks past max!)
                 // FIXME: This does not work and I have no idea why ~mr
-                if (false && manager?.readRSSI && !rssiPending.includes(peripheral.id)) {
-                    setRssiPending((a) => {
-                        a.push(peripheral.id);
-                        return a;
-                    });
+                // console.log(manager.readRSSI, rssiPending.includes(peripheral.id));
+                // if (manager?.readRSSI != null && !rssiPending.includes(peripheral.id)) {
+                //     console.log("RSSI pass");
+                //     setRssiPending((a) => {
+                //         a.push(peripheral.id);
+                //         return a;
+                //     });
 
-                    manager
-                        ?.readRSSI(peripheral.id)
-                        .then((rssi) => {
-                            console.debug(`[BleMgr] RSSI for ${peripheral.id}: ${rssi}`);
-                            peripheral = peripherals.get(peripheral.id) ?? peripheral;
-                            peripheral.rssi = rssi;
-                            setPeripherals((map) => {
-                                return new Map(map.set(peripheral.id, peripheral));
-                            });
-                        })
-                        .catch((error) => {
-                            console.log(`[BleMgr] Error while retrieving peripheral ${peripheral.id} RSSI:`, error);
-                        });
-                }
+                //     manager
+                //         ?.readRSSI(peripheral.id)
+                //         .then((rssi) => {
+                //             console.debug(`[BleMgr] RSSI for ${peripheral.id}: ${rssi}`);
+                //             peripheral = peripherals.get(peripheral.id) ?? peripheral;
+                //             peripheral.rssi = rssi;
+                //             setPeripherals((map) => {
+                //                 return new Map(map.set(peripheral.id, peripheral));
+                //             });
+                //         })
+                //         .catch((error) => {
+                //             console.log(`[BleMgr] Error while retrieving peripheral ${peripheral.id} RSSI:`, error);
+                //         });
+                // }
             }
         } else {
             // console.log(`[BleMgr] Peripheral ${peripheral.id} does not include service UUID: ${SERVICE_PATIENTSYNC_UUID}`);
@@ -615,6 +655,7 @@ function BleMgrWrapper() {
 
     // Main functions
     const initialize = () => {
+        console.log(`[BleMgr] !!!!!!!!!!!!!!!! initialize() firing, this should only happen once!`);
         if (ENABLE_BLE_FUNCTIONALITY) {
             const validStates = BLE_MGR_VALID_ENTRY_STATES[BLE_MGR_STATE_IDLE];
             if (validStates.includes(getManagerState())) {
@@ -680,38 +721,68 @@ function BleMgrWrapper() {
         const validStates = BLE_MGR_VALID_ENTRY_STATES[BLE_MGR_STATE_SEARCHING];
         if (validStates.includes(getManagerState())) {
             try {
+                setIsManagerScanning(true);
+                console.debug("[BleMgr] Resetting before scan");
                 setPeripherals(new Map());
                 // resetKnownInvalidPeripherals();
-                clearKnownBluetoothDevices();
-                retrieveConnected();
-                console.debug("[BleMgr] Starting scan");
-                // FIXME: Once a scan's timer is started, you can call stopScan, but this will not stop it from stopping the scan once the timer runs out if another scan is started.
-                manager
-                    .scan(config.SERVICE_UUIDS, config.SECONDS_TO_SCAN_FOR, config.ALLOW_DUPLICATES, {
-                        matchMode: BleScanMatchMode.Sticky,
-                        scanMode: BleScanMode.LowLatency,
-                        callbackType: BleScanCallbackType.AllMatches,
-                        legacy: false
-                    })
+                clearKnownBluetoothDevices()
                     .then(() => {
-                        console.debug("[BleMgr] Scan started");
-                        setManagerState(BLE_MGR_STATE_SEARCHING);
+                        retrieveConnected()
+                            .then(() => {
+                                // FIXME: Once a scan's timer is started, you can call stopScan, but this will not stop it from stopping the scan once the timer runs out if another scan is started.
+                                setManagerState(BLE_MGR_STATE_SEARCHING);
+
+                                sleep(750)
+                                    .then(() => {
+                                        console.debug("[BleMgr] Starting scan");
+
+                                        manager
+                                            .scan(
+                                                config.SERVICE_UUIDS,
+                                                config.SECONDS_TO_SCAN_FOR,
+                                                config.ALLOW_DUPLICATES,
+                                                {
+                                                    matchMode: BleScanMatchMode.Sticky,
+                                                    scanMode: BleScanMode.LowLatency,
+                                                    callbackType: BleScanCallbackType.AllMatches,
+                                                    legacy: false
+                                                }
+                                            )
+                                            .then(() => {
+                                                console.debug("[BleMgr] Scan started");
+                                            })
+                                            .catch((error) => {
+                                                console.error("[BleMgr] Scan was not able to start:", error);
+                                                setManagerState(BLE_MGR_STATE_IDLE);
+                                            });
+                                    })
+                                    .catch((error) => {
+                                        console.error("[BleMgr] sleep() returned an error:", error);
+                                    });
+                            })
+                            .catch((error) => {
+                                console.error(`[BleMgr] Error while retrieving connected devices:`, error);
+                            });
                     })
                     .catch((error) => {
-                        console.error("[BleMgr] Scan was not able to start:", error);
+                        console.error(`[BleMgr] Error while clearing known devices:`, error);
                     });
-                // .finally(() => {
-                //     setManagerState(BLE_MGR_STATE_IDLE);
-                // });
             } catch (error) {
                 console.error("[BleMgr] Unexpected error while starting scan:", error);
             }
         } else if (getManagerState() == BLE_MGR_STATE_SEARCHING) {
             clearKnownBluetoothDevices();
         } else if (getManagerState() == BLE_MGR_STATE_CONNECTED) {
+            // console.debug("[startScan] firing...");
             disconnectFromDevice()
-                .then((a) => {
-                    startScan();
+                .then(() => {
+                    sleep(5000)
+                        .then(() => {
+                            startScan();
+                        })
+                        .catch((error) => {
+                            console.error("[BleMgr] sleep() returned an error:", error);
+                        });
                 })
                 .catch((err) => {
                     console.error("[BleMgr] Error while disconnecting before scan start", err);
@@ -726,34 +797,34 @@ function BleMgrWrapper() {
     // FIXME: This is not working properly when a user leaves the device select screen
     const stopScan = () => {
         const validStates = BLE_MGR_VALID_ENTRY_STATES[BLE_MGR_STATE_STOPPING];
-        // if (validStates.includes(getManagerState())) {
-        manager
-            ?.stopScan()
-            .then(() => {
-                console.log("[BleMgr] Stopping scan...");
-                setManagerState(BLE_MGR_STATE_STOPPING);
+        if (validStates.includes(getManagerState())) {
+            manager
+                ?.stopScan()
+                .then(() => {
+                    console.log("[BleMgr] Stopping scan...");
+                    setManagerState(BLE_MGR_STATE_STOPPING);
 
-                const timeout = setTimeout(() => {
-                    console.debug(
-                        `[BleMgr] Manager took more than ${config.SCAN_STOP_TIMEOUT} ms to stop, assuming something is broken and going back to idle state`
-                    );
-                    setManagerState(BLE_MGR_STATE_IDLE);
-                }, config.SCAN_STOP_TIMEOUT);
+                    const timeout = setTimeout(() => {
+                        console.debug(
+                            `[BleMgr] Manager took more than ${config.SCAN_STOP_TIMEOUT} ms to stop, assuming something is broken and going back to idle state`
+                        );
+                        setManagerState(BLE_MGR_STATE_IDLE);
+                    }, config.SCAN_STOP_TIMEOUT);
 
-                // console.log(`[BleMgr] [DEBUG] Created new timeout: ${timeout}`);
-                setStateTimeout(timeout);
-                // clearStateTimeout();
-            })
-            .catch((error) => {
-                console.error("[BleMgr] Error thrown while stopping scan:", error);
-            })
-            .finally(() => {
-                // setIsScanning(false);
-                // setManagerState(BLE_MGR_STATE_IDLE);
-            });
-        // } else if (getManagerState() != BLE_MGR_STATE_IDLE) {
-        //     console.log(`[BleMgr] Unable to stop scan, current state ${getManagerState()}, expected one of: ${validStates}`);
-        // }
+                    // console.log(`[BleMgr] [DEBUG] Created new timeout: ${timeout}`);
+                    setStateTimeout(timeout);
+                    // clearStateTimeout();
+                })
+                .catch((error) => {
+                    console.error("[BleMgr] Error thrown while stopping scan:", error);
+                })
+                .finally(() => {
+                    // setIsScanning(false);
+                    // setManagerState(BLE_MGR_STATE_IDLE);
+                });
+        } else if (getManagerState() != BLE_MGR_STATE_IDLE) {
+            console.log(`[BleMgr] Unable to stop scan, current state ${getManagerState()}, expected one of: ${validStates}`);
+        }
     };
 
     const connectToDevice = async (id) => {
@@ -763,11 +834,13 @@ function BleMgrWrapper() {
                 console.debug(
                     `[BleMgr] User tried to select peripheral ${id}, but already connecting/connected to ${connectingDevice?.id ?? connectedDevice.id}, disconnecting from there...`
                 );
+                // console.debug("[connectToDevice] firing...");
                 await disconnectFromDevice();
             }
 
+            await manager.stopScan();
             const deviceData = await connectPeripheral(peripheral);
-            console.debug("[BleMgr] (debug) device data:", deviceData);
+            // console.debug("[BleMgr] (debug) device data:", deviceData);
 
             // await sleep(1000);
 
@@ -786,21 +859,30 @@ function BleMgrWrapper() {
 
         const id = connectingDevice?.id ?? connectedDevice?.id;
         if (id) {
+            // if (getPeripherals().get(id)?.connected) {
             console.log(`[BleMgr] Disconnecting from ${id}`);
             setManagerState(BLE_MGR_STATE_DISCONNECTING);
 
-            const peripheral = getPeripherals().get(id);
-            await manager.disconnect(id);
-
-            console.log(`[BleMgr] Disconnected from ${id}`);
-            setManagerState(BLE_MGR_STATE_IDLE);
-            setConnectedDevice(null);
-            setConnectingDevice(null);
-            knownInvalidPeripherals.current.delete(id);
-            setPeripherals((map) => {
-                map.delete(id);
-                return map;
-            });
+            // const peripheral = getPeripherals().get(id);
+            try {
+                await manager.disconnect(id);
+                console.log(`[BleMgr] Disconnected from ${id}`);
+                setManagerState(isManagerScanning ? BLE_MGR_STATE_SEARCHING : BLE_MGR_STATE_IDLE);
+                knownInvalidPeripherals.current.delete(id);
+                setPeripherals((map) => {
+                    map.delete(id);
+                    return map;
+                });
+            } catch (error) {
+                console.error(`[BleMgr] Error occurred while trying to disconnect from peripheral:`, error);
+            } finally {
+                // setManagerState(BLE_MGR_STATE_IDLE);
+                setConnectedDevice(null);
+                setConnectingDevice(null);
+            }
+            // } else {
+            //     console.log(`[BleMgr] Tried to disconnect from ${id}, but this device is not marked as connected.`);
+            // }
         } else {
             console.log(`[BleMgr] Tried to disconnect from device, but no connected device found`);
         }
@@ -846,11 +928,17 @@ function BleMgrWrapper() {
         }
     };
 
-    const clearKnownBluetoothDevices = () => {
+    const clearKnownBluetoothDevices = async () => {
         // TODO:
         // await manager.disconnect();
-        disconnectFromDevice();
+        // console.debug("[clearKnownBluetoothDevices] firing...");
+        await disconnectFromDevice();
         resetKnownInvalidPeripherals();
+        // try {
+        //     manager.refreshCache();
+        // } catch (error) {
+        //     console.error(`[BleMgr] Error while trying to refresh manager cache:`, error);
+        // }
         setPeripherals(() => new Map());
     };
 
@@ -860,6 +948,7 @@ function BleMgrWrapper() {
         bluetoothConnectingDevice: connectingDevice,
         bluetoothConnectedDevice: connectedDevice,
         bluetoothManagerState: hookedManagerState,
+        bluetoothManagerIsScanning: isManagerScanning,
         bluetoothManagerGetImmediateState: getManagerState,
         bluetoothInitialize: initialize,
         bluetoothStartScan: startScan,

@@ -1,5 +1,5 @@
-import { useContext, useEffect, useState } from "react";
-import { Text, View, StyleSheet, Alert } from "react-native";
+import { useContext } from "react";
+import { Text, View, StyleSheet } from "react-native";
 
 import Styles from "../../styles/main";
 import UniformPageWrapper from "../comps/UniformPageWrapper";
@@ -7,12 +7,12 @@ import ConfirmCancelCombo from "../comps/ConfirmCancelCombo";
 
 import BluetoothManagerContext from "../BluetoothManagerContext";
 import DeviceInfoPane from "../comps/DeviceInfoPane";
-import CurrentFlowSettingsContext from "../CurrentFlowSettingsContext";
+import CurrentFlowSettingsContext, { CONTEXT_CURRENTFLOWSETTINGS_UNLINKING } from "../CurrentFlowSettingsContext";
 import LayoutSkeleton from "../comps/LayoutSkeleton";
 
-import { fetchPatient } from "../bluetooth/FetchPatient";
+import PatientContext from "../PatientContext";
 
-const devices = [
+const placeholderDevices = [
     {
         name: "Ventilator (Placeholder)",
         manufacturer: "The Ventilator Company",
@@ -32,30 +32,29 @@ const devices = [
 
 function ConnectedDevicesScreen({ navigation }) {
     const [getCurrentFlowSettings, setCurrentFlowSettings] = useContext(CurrentFlowSettingsContext);
-    const [devicePatientProfile, setDevicePatientProfile] = useState(null);
-
-    const { showOverrides } = getCurrentFlowSettings();
-
+    const [getPatientProfiles, setPatientProfiles] = useContext(PatientContext);
+    const { existingPatient } = getPatientProfiles();
+    // const [devicePatientProfile, setDevicePatientProfile] = useState(null);
+    const { areOverridingPatient, flowType } = getCurrentFlowSettings();
     const { bluetoothConnectedDevice } = useContext(BluetoothManagerContext);
 
-    const isOverride = bluetoothConnectedDevice?.isOverride;
-
-    useEffect(() => {
-        if (bluetoothConnectedDevice.cur_patient_mrn != "-1") {
-            fetchPatient(bluetoothConnectedDevice.cur_patient_mrn)
-                .then((a) => {
-                    setDevicePatientProfile(a);
-                })
-                .catch((err) => {
-                    console.error(err);
-                    Alert.alert(
-                        "Something went wrong.",
-                        "Retrieving the patient connected to this device returned an error. Please try again."
-                    );
-                    navigation.pop();
-                });
-        }
-    }, []);
+    // NOTE: This was used to fetch patient info, but this is now done during device connection
+    // useEffect(() => {
+    //     if (bluetoothConnectedDevice.cur_patient_mrn != "-1") {
+    //         fetchPatient(bluetoothConnectedDevice.cur_patient_mrn)
+    //             .then((a) => {
+    //                 setDevicePatientProfile(a);
+    //             })
+    //             .catch((err) => {
+    //                 console.error(err);
+    //                 Alert.alert(
+    //                     "Something went wrong.",
+    //                     "Retrieving the patient connected to this device returned an error. Please try again."
+    //                 );
+    //                 navigation.pop();
+    //             });
+    //     }
+    // }, []);
 
     return (
         <UniformPageWrapper>
@@ -67,10 +66,10 @@ function ConnectedDevicesScreen({ navigation }) {
                 <DeviceInfoPane
                     style={{ marginTop: Styles.consts.gapIncrement }}
                     device={bluetoothConnectedDevice}
-                    showOverrides={showOverrides}
+                    showOverrides={flowType == CONTEXT_CURRENTFLOWSETTINGS_UNLINKING}
                     detailed={true}
-                    loading={bluetoothConnectedDevice.cur_patient_mrn != "-1" && devicePatientProfile == null}
-                    profile={devicePatientProfile}
+                    loading={areOverridingPatient && existingPatient == null}
+                    profile={existingPatient}
                 />
                 <View
                     style={{
@@ -81,7 +80,7 @@ function ConnectedDevicesScreen({ navigation }) {
                     }}
                 >
                     <View style={{ borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: "#999" }} />
-                    {devices.map((e, index) => (
+                    {placeholderDevices.map((e, index) => (
                         <Text
                             key={index}
                             style={[
@@ -103,7 +102,7 @@ function ConnectedDevicesScreen({ navigation }) {
                 </View>
                 <ConfirmCancelCombo
                     onConfirm={() => {
-                        if (isOverride || showOverrides) {
+                        if (areOverridingPatient) {
                             navigation.push("Confirm Override Patient");
                         } else {
                             navigation.push("Enter Patient Info");

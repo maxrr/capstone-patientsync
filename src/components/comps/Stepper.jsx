@@ -2,7 +2,7 @@ import { View } from "react-native";
 import { FontAwesome } from "@expo/vector-icons";
 import { useRoute } from "@react-navigation/native";
 import { useContext, useEffect } from "react";
-import CurrentFlowSettingsContext from "../CurrentFlowSettingsContext";
+import CurrentFlowSettingsContext, { CONTEXT_CURRENTFLOWSETTINGS_LINKING } from "../CurrentFlowSettingsContext";
 
 //<FontAwesome name="unlink" size={24} color="black" />
 
@@ -11,7 +11,7 @@ export default function Stepper({ step }) {
     // const route = useRoute();
     // const { linkingStepper } = route.params || { linkingStepper: true };
     const [getCurrentFlowSettings, setCurrentFlowSettings] = useContext(CurrentFlowSettingsContext);
-    const { linkingStepper } = getCurrentFlowSettings();
+    const { flowType } = getCurrentFlowSettings();
 
     return (
         <>
@@ -116,7 +116,11 @@ export default function Stepper({ step }) {
                         alignItems: "center"
                     }}
                 >
-                    <FontAwesome name={linkingStepper ? "link" : "unlink"} size={24} color={step > 3 ? "white" : "black"} />
+                    <FontAwesome
+                        name={flowType == CONTEXT_CURRENTFLOWSETTINGS_LINKING ? "link" : "unlink"}
+                        size={24}
+                        color={step > 3 ? "white" : "black"}
+                    />
                 </View>
             </View>
         </>

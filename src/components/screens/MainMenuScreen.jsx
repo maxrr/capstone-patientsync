@@ -1,22 +1,28 @@
-import { useState, useEffect, useContext } from "react";
-import { Button, Text, View, Pressable, SafeAreaView, Settings } from "react-native";
+import { useContext, useEffect } from "react";
+import { Text, View, Pressable, SafeAreaView } from "react-native";
 import Styles from "../../styles/main";
+
 import SafeAreaViewAndroid from "../comps/SafeAreaViewAndroid";
-import CurrentFlowSettingsContext from "../CurrentFlowSettingsContext";
-import LabeledIconButton from "../comps/LabeledIconButton";
-import { SettingsButtonHome } from "../comps/SettingsButtons";
+import CurrentFlowSettingsContext, {
+    CONTEXT_CURRENTFLOWSETTINGS_LINKING,
+    CONTEXT_CURRENTFLOWSETTINGS_UNLINKING
+} from "../CurrentFlowSettingsContext";
+import PatientContext from "../PatientContext";
 
 function MainMenuScreen({ navigation }) {
-    //Variable to dictate what stepper to show. Either show stepper for linking process, which has the last image as a link,
-    //or if this is false then show the stepper for the unlinking process which is an unlink. Set this value to true by default.
-
     const [getCurrentFlowSettings, setCurrentFlowSettings] = useContext(CurrentFlowSettingsContext);
+    const [_, setPatientProfiles] = useContext(PatientContext);
+
+    // Uncomment to show settings button in top right
+    // useEffect(() => {
+    //     navigation.setOptions({
+    //         headerRight: () => <SettingsButtonHome navigation={navigation} />
+    //     });
+    // });
 
     useEffect(() => {
-        navigation.setOptions({
-            headerRight: () => <SettingsButtonHome navigation={navigation} />
-        });
-    });
+        setPatientProfiles(null);
+    }, []);
 
     return (
         <SafeAreaView style={SafeAreaViewAndroid.AndroidSafeArea}>
@@ -31,8 +37,7 @@ function MainMenuScreen({ navigation }) {
                         style={Styles.button}
                         onPress={() => {
                             setCurrentFlowSettings((a) => {
-                                a.linkingStepper = true;
-                                a.showOverrides = false;
+                                a.flowType = CONTEXT_CURRENTFLOWSETTINGS_LINKING;
                                 return a;
                             });
                             navigation.push("Device Select");
@@ -50,9 +55,9 @@ function MainMenuScreen({ navigation }) {
                     <Pressable
                         style={Styles.button}
                         onPress={() => {
+                            // Set flow type to unlinking
                             setCurrentFlowSettings((a) => {
-                                a.linkingStepper = false;
-                                a.showOverrides = true;
+                                a.flowType = CONTEXT_CURRENTFLOWSETTINGS_UNLINKING;
                                 return a;
                             });
                             navigation.push("Device Select");
@@ -74,8 +79,7 @@ function MainMenuScreen({ navigation }) {
                         shadowRadius: 16
                     }}
                 >
-                    {/* <LabeledIconButton text={"test"} icon={"camera-retro"} /> */}
-                    <Text style={{ color: "white" }}>GE Connect+ PatientSync (working title) v0.3</Text>
+                    <Text style={{ color: "white" }}>GE Connect+ PatientLink v0.4</Text>
                 </View>
             </View>
         </SafeAreaView>

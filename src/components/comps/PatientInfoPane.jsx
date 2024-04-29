@@ -1,7 +1,16 @@
 import { Pressable, Text, ActivityIndicator } from "react-native";
 import Styles from "../../styles/main";
 
-function PatientInfoPane({ profile, onPress = () => {}, style = {}, loading = false }) {
+const placeholderProfile = {
+    first: "FIRST",
+    last: "LAST",
+    mrn: "500000005",
+    visit: "10001",
+    dob: "01/01/0000"
+};
+
+function PatientInfoPane({ profile = placeholderProfile, onPress = () => {}, style = {}, loading = false }) {
+    if (profile == null) profile = placeholderProfile;
     const { first, last, mrn, visit, dob } = profile;
     return loading ? (
         <ActivityIndicator />
@@ -15,7 +24,7 @@ function PatientInfoPane({ profile, onPress = () => {}, style = {}, loading = fa
                 ]}
             >
                 <Text style={{ fontWeight: "bold", fontSize: 20 }}>
-                    {first} {last}
+                    {last}, {first}
                 </Text>
                 {"\n"}
                 <Text>

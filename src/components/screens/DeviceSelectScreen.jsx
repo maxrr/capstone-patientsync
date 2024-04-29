@@ -1,46 +1,56 @@
 import { useState, useContext, useEffect } from "react";
-import { Text, View, Pressable, ActivityIndicator, FlatList, Alert } from "react-native";
+import { Text, View, ActivityIndicator, Alert, Pressable } from "react-native";
+import { FontAwesome } from "@expo/vector-icons";
 
 import Styles from "../../styles/main";
-import Stepper from "../comps/Stepper";
 import UniformPageWrapper from "../comps/UniformPageWrapper";
 import LayoutSkeleton from "../comps/LayoutSkeleton";
 import BluetoothManagerContext from "../BluetoothManagerContext";
 
-import CurrentFlowSettingsContext from "../CurrentFlowSettingsContext";
+import CurrentFlowSettingsContext, {
+    CONTEXT_CURRENTFLOWSETTINGS_LINKING,
+    CONTEXT_CURRENTFLOWSETTINGS_UNLINKING
+} from "../CurrentFlowSettingsContext";
 import { BLE_MGR_STATE_CONNECTED, BLE_MGR_STATE_SEARCHING, ENABLE_BLE_FUNCTIONALITY } from "../comps/BleMgrConfig";
 import DeviceInfoPane from "../comps/DeviceInfoPane";
 import StyledModal from "../comps/StyledModal";
 import StyledTextInput from "../comps/StyledTextInput";
+import PatientContext from "../PatientContext";
+import { fetchPatient } from "../utils/FetchPatient";
+import LabeledIconButton from "../comps/LabeledIconButton";
 
-function DeviceSelectScreen({ navigation, route }) {
+function StartStopScanButton({ icon, onPress }) {
+    return (
+        <Pressable onPress={onPress}>
+            <FontAwesome name={icon} size={20} color={Styles.colors.Background} />
+        </Pressable>
+    );
+}
+
+function DeviceSelectScreen({ navigation }) {
     // Context to store device info
 
     const {
         bluetoothDevices,
         bluetoothConnectingDevice,
-        bluetoothConnectedDevice,
+        bluetoothManagerIsScanning,
         bluetoothStartScan,
         bluetoothStopScan,
         bluetoothManagerState,
         bluetoothManagerGetImmediateState,
         bluetoothConnectToDevice,
-        bluetoothDisconnectFromDevice,
-        bluetoothResetSeenDevices
+        bluetoothDisconnectFromDevice
     } = useContext(BluetoothManagerContext);
 
     // Use state variable to keep track of what is being searched
     const [currSearch, setCurrSearch] = useState("");
-
     const [searchedDevices, setSearchedDevices] = useState([]);
-
     const [connectionModalVisible, setConnectionModalVisible] = useState(false);
-
     const [refreshing, setRefreshing] = useState(false);
 
     useEffect(() => {
         if (refreshing) {
-            setRefreshing(bluetoothManagerState === BLE_MGR_STATE_SEARCHING);
+            setRefreshing(bluetoothManagerIsScanning);
         }
     }, [bluetoothManagerState]);
 
@@ -48,25 +58,27 @@ function DeviceSelectScreen({ navigation, route }) {
     // and then filter them based on search use state. Could use ? visibility for each button but that seems
     // a lot worse than this imo -dt
     // All hardcoded as of right now.
-    const deviceList = [
-        { name: "GECP2427170", room: "412A", isOverride: false, id: "00:00:00:00:00:01", rssi: 20 },
-        { name: "GECP4167318", room: "413B", isOverride: false, id: "00:00:00:00:00:02", rssi: 20 },
-        { name: "GECP9834313(patient connected)", room: "311C", isOverride: true, id: "00:00:00:00:00:03", rssi: 20 },
-        { name: "GECP4934123(patient connected)", room: "214A", isOverride: true, id: "00:00:00:00:00:04", rssi: 20 },
-        { name: "GECP3018493(patient connected)", room: "104D", isOverride: true, id: "00:00:00:00:00:05", rssi: 20 },
-        { name: "GECP5813938(patient connected)", room: "503C", isOverride: true, id: "00:00:00:00:00:06", rssi: 20 },
-        { name: "GECP6847242(patient connected)", room: "204E", isOverride: true, id: "00:00:00:00:00:07", rssi: 20 },
-        { name: "GECP7892324(patient connected)", room: "513B", isOverride: true, id: "00:00:00:00:00:08", rssi: 20 },
-        { name: "GECP9342422(patient connected)", room: "321A", isOverride: true, id: "00:00:00:00:00:09", rssi: 20 },
-        { name: "GECP8432742(patient connected)", room: "102F", isOverride: true, id: "00:00:00:00:00:0A", rssi: 20 },
-        { name: "GECP1032338(patient connected)", room: "401C", isOverride: true, id: "00:00:00:00:00:0B", rssi: 20 },
-        { name: "GECP1238549(patient connected)", room: "201A", isOverride: true, id: "00:00:00:00:00:0C", rssi: 20 }
-    ];
+    // const placeholderDeviceList = [
+    //     { name: "GECP2427170", room: "412A", isOverride: false, id: "00:00:00:00:00:01", rssi: 20 },
+    //     { name: "GECP4167318", room: "413B", isOverride: false, id: "00:00:00:00:00:02", rssi: 20 },
+    //     { name: "GECP9834313(patient connected)", room: "311C", isOverride: true, id: "00:00:00:00:00:03", rssi: 20 },
+    //     { name: "GECP4934123(patient connected)", room: "214A", isOverride: true, id: "00:00:00:00:00:04", rssi: 20 },
+    //     { name: "GECP3018493(patient connected)", room: "104D", isOverride: true, id: "00:00:00:00:00:05", rssi: 20 },
+    //     { name: "GECP5813938(patient connected)", room: "503C", isOverride: true, id: "00:00:00:00:00:06", rssi: 20 },
+    //     { name: "GECP6847242(patient connected)", room: "204E", isOverride: true, id: "00:00:00:00:00:07", rssi: 20 },
+    //     { name: "GECP7892324(patient connected)", room: "513B", isOverride: true, id: "00:00:00:00:00:08", rssi: 20 },
+    //     { name: "GECP9342422(patient connected)", room: "321A", isOverride: true, id: "00:00:00:00:00:09", rssi: 20 },
+    //     { name: "GECP8432742(patient connected)", room: "102F", isOverride: true, id: "00:00:00:00:00:0A", rssi: 20 },
+    //     { name: "GECP1032338(patient connected)", room: "401C", isOverride: true, id: "00:00:00:00:00:0B", rssi: 20 },
+    //     { name: "GECP1238549(patient connected)", room: "201A", isOverride: true, id: "00:00:00:00:00:0C", rssi: 20 }
+    // ];
 
     // Test to see if override only (since unlinking case)
     // const showOverrides = route.params?.showOverrides || false;
     const [getCurrentFlowSettings, setCurrentFlowSettings] = useContext(CurrentFlowSettingsContext);
-    const { showOverrides } = getCurrentFlowSettings();
+    const { flowType } = getCurrentFlowSettings();
+
+    const [_, setPatientProfiles] = useContext(PatientContext);
 
     // Searched devices is a list of devices which have been filtered based on what is typed
     // Casted everything to lowercase so none of this is case sensitive -dt note 3/17/24 change
@@ -74,18 +86,21 @@ function DeviceSelectScreen({ navigation, route }) {
     useEffect(() => {
         // console.log("[DEBUG] bluetoothDevices or currSearch triggered render");
         setSearchedDevices(
-            (ENABLE_BLE_FUNCTIONALITY ? bluetoothDevices : deviceList).filter(
+            bluetoothDevices.filter(
                 (device) =>
+                    // Devices pass this filter if their name, room, or id matches the filter AND we are either linking (and therefore want to show all devices), or are unlinking and are associated with a patient (since it would not make sense to try to unlink a device that does not have an associated patient)
                     (device.name.toLocaleLowerCase().includes(currSearch.toLocaleLowerCase()) ||
                         device.room.toLocaleLowerCase().includes(currSearch.toLocaleLowerCase()) ||
                         device.id.toLocaleLowerCase().includes(currSearch.toLocaleLowerCase())) &&
-                    (!showOverrides || device.isOverride)
+                    (flowType == CONTEXT_CURRENTFLOWSETTINGS_LINKING ||
+                        (flowType == CONTEXT_CURRENTFLOWSETTINGS_UNLINKING && device.isOverride))
             )
         );
     }, [bluetoothDevices, currSearch]);
 
+    // Start a scan when this page is navigated to,
     useEffect(() => {
-        bluetoothStartScan();
+        // bluetoothStartScan();
         return () => {
             bluetoothStopScan();
         };
@@ -94,37 +109,68 @@ function DeviceSelectScreen({ navigation, route }) {
     // TODO: This block should execute when we back out of the next screen, but this is good enough for now
     useEffect(() => {
         return navigation.addListener("focus", () => {
-            bluetoothDisconnectFromDevice();
+            console.debug("[DeviceSelectScreen focus] firing...");
+            setPatientProfiles(null);
+            bluetoothDisconnectFromDevice()
+                .then(() => {
+                    bluetoothStartScan();
+                })
+                .catch((error) => {
+                    console.error(`[DeviceSelectScreen] Error while disconnecting from device:`, error);
+                });
         });
     }, [navigation]);
 
-    // const sampleDevice = {
-    //     name: "Sample GEHC C+",
-    //     id: "SA:MP:LE:DE:VI:CE",
-    //     room: "777B"
-    // };
-
-    const deviceSelect = (device) => {
-        // const deviceStore = {
-        //     name: device.name,
-        //     room: device.room,
-        //     isOverride: device.isOverride
-        // };
-
-        if (!connectionModalVisible) setConnectionModalVisible(true);
-
-        // DEBUG:
-        bluetoothConnectToDevice(device.id)
-            .then(() => {
-                setConnectionModalVisible(false);
-                navigation.push("Device Details");
-            })
-            .catch((error) => console.error("[BleMgr] Frontend error when trying to connect to device:", error));
-    };
+    useEffect(() => {
+        navigation.setOptions({
+            headerRight: () => (
+                <StartStopScanButton
+                    icon={bluetoothManagerIsScanning ? "stop" : "play"}
+                    onPress={() => {
+                        if (bluetoothManagerIsScanning) {
+                            bluetoothStopScan();
+                        } else {
+                            bluetoothStartScan();
+                        }
+                    }}
+                />
+            )
+        });
+    });
 
     const doRefresh = () => {
         // bluetoothResetSeenDevices();
         bluetoothStartScan();
+    };
+
+    const selectDevice = async (device) => {
+        if (!connectionModalVisible) setConnectionModalVisible(true);
+
+        try {
+            const deviceInfo = await bluetoothConnectToDevice(device.id);
+            if (bluetoothManagerGetImmediateState() == BLE_MGR_STATE_CONNECTED) {
+                setCurrentFlowSettings((a) => {
+                    if ((deviceInfo && deviceInfo.isOverride == null) || deviceInfo.isOverride == undefined) {
+                        throw new Error(`Expected deviceInfo to define \`.isOverride\`, is: ${deviceInfo?.isOverride}`);
+                    }
+
+                    if (flowType == CONTEXT_CURRENTFLOWSETTINGS_LINKING) a.areOverridingPatient = deviceInfo.isOverride;
+                    return a;
+                });
+
+                if (deviceInfo.cur_patient_mrn != "-1") {
+                    const patientProfile = await fetchPatient(deviceInfo.cur_patient_mrn, true);
+                    setPatientProfiles({
+                        existingPatient: patientProfile
+                    });
+                }
+            } else {
+                throw new Error("Device didn't actually connect!");
+            }
+        } catch (error) {
+            console.error(`[DeviceSelectScreen] Error while trying to connect to device:`, error);
+            throw error;
+        }
     };
 
     return (
@@ -140,27 +186,7 @@ function DeviceSelectScreen({ navigation, route }) {
                     </Text>
 
                     <ActivityIndicator style={{ marginBottom: Styles.consts.gapIncrement * 2 }} />
-                    {/* TODO: Add progress bar */}
-                    {/* <Pressable onPress={() => setConnectionModalVisible(false)} style={{ width: "100%" }}>
-                    <Text
-                        style={{
-                            color: "white",
-                            backgroundColor: Styles.colors.GEPurple,
-                            width: "100%",
-                            textAlign: "center",
-                            padding: Styles.consts.gapIncrement,
-                            borderRadius: Styles.consts.gapIncrement
-                        }}
-                    >
-                        Cancel
-                    </Text>
-                </Pressable> */}
                 </StyledModal>
-                {/* <Stepper step={1} />
-                <Text style={[Styles.h4]}>
-                    <Text style={{ color: "white", fontWeight: "bold" }}>Device Select</Text>
-                </Text>
-                <Text style={[Styles.h6]}>Select a device to continue</Text> */}
 
                 {/* Added searchbar to search through connectplus devices -dt 3/17/2024 change */}
                 <StyledTextInput
@@ -169,7 +195,7 @@ function DeviceSelectScreen({ navigation, route }) {
                     value={currSearch}
                 />
 
-                {showOverrides ? (
+                {flowType == CONTEXT_CURRENTFLOWSETTINGS_UNLINKING ? (
                     <Text
                         style={[
                             Styles.h6,
@@ -208,27 +234,25 @@ function DeviceSelectScreen({ navigation, route }) {
                             key={device?.id}
                             device={device}
                             onPress={() => {
-                                if (!connectionModalVisible) setConnectionModalVisible(true);
-
-                                // DEBUG:
-                                bluetoothConnectToDevice(device.id)
+                                selectDevice(device)
                                     .then(() => {
-                                        if (bluetoothManagerGetImmediateState() == BLE_MGR_STATE_CONNECTED) {
-                                            setConnectionModalVisible(false);
+                                        setConnectionModalVisible(false);
+                                        if (flowType == CONTEXT_CURRENTFLOWSETTINGS_LINKING) {
                                             navigation.push("Device Details");
                                         } else {
-                                            throw new Error("Device didn't actually connect!");
+                                            navigation.push("Confirm Link");
                                         }
                                     })
                                     .catch((error) => {
                                         setConnectionModalVisible(false);
                                         Alert.alert(
-                                            "It looks like there was a problem connecting to this device. Please try again."
+                                            "A problem occurred while connecting to this device.",
+                                            "Please try again."
                                         );
                                         console.error("[BleMgr] Frontend error when trying to connect to device:", error);
                                     });
                             }}
-                            showOverrides={showOverrides}
+                            showOverrides={flowType == CONTEXT_CURRENTFLOWSETTINGS_UNLINKING}
                         />
                     ))}
                     <View
@@ -241,7 +265,7 @@ function DeviceSelectScreen({ navigation, route }) {
                             marginTop: Styles.consts.gapIncrement
                         }}
                     >
-                        {bluetoothManagerState == BLE_MGR_STATE_SEARCHING ? (
+                        {bluetoothManagerIsScanning ? (
                             <>
                                 <Text style={{ fontSize: 14, color: "#aaa", textAlign: "center" }}>
                                     Scanning for Connect+ devices...
@@ -250,8 +274,8 @@ function DeviceSelectScreen({ navigation, route }) {
                             </>
                         ) : (
                             <Text style={{ fontSize: 14, color: "#aaa", textAlign: "center", lineHeight: 16 }}>
-                                Don't see the device you're looking for? You can refresh this list by pulling down, or by
-                                clicking the refresh button in the top right.
+                                Don't see the device you're looking for? Refresh by pulling down or with the refresh button
+                                in the top right.
                             </Text>
                         )}
                     </View>

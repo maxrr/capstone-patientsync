@@ -1,6 +1,5 @@
 import { useContext, useState } from "react";
 import { ActivityIndicator, Alert, Text } from "react-native";
-import { useRoute } from "@react-navigation/native";
 
 import Styles from "../../styles/main";
 import DeviceInfoPane from "../comps/DeviceInfoPane";
@@ -10,16 +9,20 @@ import PatientContext from "../PatientContext";
 import BluetoothManagerContext from "../BluetoothManagerContext";
 import UniformPageWrapper from "../comps/UniformPageWrapper";
 import StyledModal from "../comps/StyledModal";
-import CurrentFlowSettingsContext from "../CurrentFlowSettingsContext";
+import CurrentFlowSettingsContext, {
+    CONTEXT_CURRENTFLOWSETTINGS_LINKING,
+    CONTEXT_CURRENTFLOWSETTINGS_UNLINKING
+} from "../CurrentFlowSettingsContext";
 import LayoutSkeleton from "../comps/LayoutSkeleton";
 import ConfirmCancelCombo from "../comps/ConfirmCancelCombo";
 
 function LinkConfirmScreen({ navigation }) {
-    const route = useRoute();
     const [getCurrentFlowSettings, setCurrentFlowSettings] = useContext(CurrentFlowSettingsContext);
-    const { linkingStepper } = getCurrentFlowSettings();
+    const { flowType, areOverridingPatient } = getCurrentFlowSettings();
 
-    const [info, setInfo] = useContext(PatientContext);
+    const [getPatientProfiles, setPatientProfiles] = useContext(PatientContext);
+    const { newPatient, existingPatient } = getPatientProfiles();
+
     const {
         bluetoothConnectedDevice,
         bluetoothPerformSyncWithDevice,
@@ -30,51 +33,19 @@ function LinkConfirmScreen({ navigation }) {
     const [linkStatusText, setLinkStatusText] = useState("");
     const [linkStatusModalVisible, setLinkStatusModalVisible] = useState(false);
 
-    console.log(info);
-
-    //if unlinking, then don't have MRN and just use the patient profile we generated as an example last month
-    // const patientProfile = !linkingStepper
-    //     ? {
-    //           // Hardcoded values for the unlink scenario
-    //           first: "Ron",
-    //           lastName: "Smith",
-    //           mrn: "157849",
-    //           visitNumber: "2163",
-    //           dob: "03/14/1992"
-    //       }
-    //     : {
-    //           first: info.first,
-    //           lastName: info.last,
-    //           mrn: info.mrn,
-    //           visitNumber: info.visit,
-    //           dob: info.month + "/" + info.day + "/" + info.year
-    //       };
-
-    const patientProfile = {
-        ...info,
-        dob: info.dob ?? info.month + "/" + info.day + "/" + info.year
-    };
-
-    // const patientProfile = {
-    //     // Hardcoded values for the unlink scenario
-    //     firstName: "Ron",
-    //     lastName: "Smith",
-    //     mrn: "157849",
-    //     visitNumber: "2163",
-    //     dob: "03/14/1992"
-    // };
-
     const performLink = () => {
         setLinkStatusText("Starting...");
         setLinkStatusModalVisible(true);
-        bluetoothPerformSyncWithDevice(bluetoothConnectedDevice?.id, patientProfile.mrn, "SAMPLEUSERID", (progress) => {
+        bluetoothPerformSyncWithDevice(bluetoothConnectedDevice?.id, newPatient.mrn, "SAMPLEUSERID", (progress) => {
             setLinkStatusText(progress);
         })
             .then((res) => {
                 // console.log("res:", res);
                 setLinkStatusModalVisible(false);
                 navigation.popToTop();
-                navigation.push("Link Complete", { lastConnectedDeviceInfo: { ...bluetoothConnectedDevice } });
+                navigation.push("Link Complete", {
+                    lastConnectedDeviceInfo: { ...bluetoothConnectedDevice, isOverride: true }
+                });
                 bluetoothResetSeenDevices();
             })
             .catch((error) => {
@@ -95,7 +66,7 @@ function LinkConfirmScreen({ navigation }) {
                 setLinkStatusModalVisible(false);
                 navigation.popToTop();
                 navigation.push("Link Complete", {
-                    lastConnectedDeviceInfo: { ...bluetoothConnectedDevice }
+                    lastConnectedDeviceInfo: { ...bluetoothConnectedDevice, isOverride: false }
                 });
                 bluetoothResetSeenDevices();
             })
@@ -109,8 +80,8 @@ function LinkConfirmScreen({ navigation }) {
     return (
         <UniformPageWrapper>
             <LayoutSkeleton
-                title={!linkingStepper ? "Unlink" : "Link"}
-                subtitle={!linkingStepper ? "Ready to unlink?" : "Ready to link?"}
+                title={flowType == CONTEXT_CURRENTFLOWSETTINGS_UNLINKING ? "Unlink" : "Link"}
+                subtitle={flowType == CONTEXT_CURRENTFLOWSETTINGS_UNLINKING ? "Ready to unlink?" : "Ready to link?"}
                 stepper={3}
             >
                 {/* <Stepper step={3} />
@@ -120,11 +91,33 @@ function LinkConfirmScreen({ navigation }) {
                 <Text style={[Styles.h6]}></Text> */}
 
                 <Text style={{ fontSize: 14, color: "#aaa", textAlign: "center", lineHeight: 16, marginTop: 4 }}>
-                    You are about to link the following patient and device, please confirm all details before proceeding.
+                    You are about to {flowType == CONTEXT_CURRENTFLOWSETTINGS_UNLINKING ? "un" : ""}link the following
+                    patient and device, please confirm all details before proceeding.
                 </Text>
 
-                <PatientInfoPane profile={patientProfile} style={{ marginTop: 10 }} />
-                <DeviceInfoPane device={bluetoothConnectedDevice} />
+                {flowType == CONTEXT_CURRENTFLOWSETTINGS_UNLINKING ? (
+                    <Text
+                        style={[
+                            Styles.h6,
+                            {
+                                color: "red",
+                                fontWeight: "bold",
+                                textAlign: "center",
+                                marginTop: 4
+                            }
+                        ]}
+                    >
+                        ⚠ Warning, you are UNLINKING!
+                    </Text>
+                ) : (
+                    <></>
+                )}
+
+                <PatientInfoPane
+                    profile={flowType == CONTEXT_CURRENTFLOWSETTINGS_UNLINKING ? existingPatient : newPatient}
+                    style={{ marginTop: 10 }}
+                />
+                <DeviceInfoPane device={bluetoothConnectedDevice} showOverrides={areOverridingPatient} />
 
                 <StyledModal visible={linkStatusModalVisible} innerStyle={{ gap: Styles.consts.gapIncrement }}>
                     <Text style={{ color: "white", fontSize: 20, textAlign: "center" }}>Syncing...</Text>
@@ -132,18 +125,29 @@ function LinkConfirmScreen({ navigation }) {
                     <ActivityIndicator style={{ marginVertical: Styles.consts.gapIncrement * 2 }} />
                 </StyledModal>
 
+                {flowType == CONTEXT_CURRENTFLOWSETTINGS_LINKING && areOverridingPatient ? (
+                    <>
+                        <Text style={{ color: "#aaa", textAlign: "center", marginVertical: 4 }}>
+                            By performing this action, you will remove the following user from this device:
+                        </Text>
+                        <PatientInfoPane profile={existingPatient} />
+                    </>
+                ) : (
+                    <></>
+                )}
+
                 {/* <Button
                     title={!linkingStepper ? "Unlink" : "Link"}
                     onPress={!linkingStepper ? performUnlink : performLink}
                     // onPress={() => navigation.push("Link Complete", { linkingStepper })}
                 /> */}
                 <ConfirmCancelCombo
-                    confirmText={!linkingStepper ? "Unlink" : "Link"}
+                    confirmText={flowType == CONTEXT_CURRENTFLOWSETTINGS_UNLINKING ? "Unlink" : "Link"}
                     onCancel={() => {
                         navigation.pop();
                     }}
-                    onConfirm={!linkingStepper ? performUnlink : performLink}
-                    confirmIcon={linkingStepper ? "link" : "unlink"}
+                    onConfirm={flowType == CONTEXT_CURRENTFLOWSETTINGS_UNLINKING ? performUnlink : performLink}
+                    confirmIcon={flowType == CONTEXT_CURRENTFLOWSETTINGS_UNLINKING ? "unlink" : "link"}
                 />
             </LayoutSkeleton>
         </UniformPageWrapper>

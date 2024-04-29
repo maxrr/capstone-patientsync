@@ -1,7 +1,16 @@
 Notes
 
-Patient context:
-    - Current device profile
+PatientContext:
+    - Patient profile for the patient currently associated with the device
+    - Patient profile for the newly-input patient
+
+BluetoothManagerContext:
+    - Complicated but currently working
+
+CurrentFlowSettingsContext:
+    - Keep track of what settings are being used for current flow:
+        - How the flow started (unlink / link)
+        - If we are overriding a patient on the connected device (could look up manually from BLEContext)
 
 
 CameraScanScreen:

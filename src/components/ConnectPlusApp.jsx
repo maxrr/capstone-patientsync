@@ -3,6 +3,7 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { NavigationContainer } from "@react-navigation/native";
 
 import Styles from "../styles/main";
+
 import MainMenuScreen from "./screens/MainMenuScreen";
 import DeviceSelectScreen from "./screens/DeviceSelectScreen";
 import CameraScanScreen from "./screens/CameraScanScreen";
@@ -16,16 +17,16 @@ import PatientConfirmOverrideScreen from "./screens/PatientConfirmOverrideScreen
 
 import PatientContext, { CONTEXT_PATIENT_DEFAULT_VALUE } from "./PatientContext";
 import BluetoothManagerContext from "./BluetoothManagerContext";
-import CurrentFlowSettingsContext from "./CurrentFlowSettingsContext";
+import CurrentFlowSettingsContext, { CONTEXT_CURRENTFLOWSETTINGS_DEFAULT_VALUE } from "./CurrentFlowSettingsContext";
 
 import { BLE_MGR_STATE_SEARCHING, BLE_MGR_STATE_OFFLINE } from "./comps/BleMgrConfig";
-import SettingsScreen from "./screens/SettingsScreen";
 
 const Stack = createNativeStackNavigator();
 export default function ConnectPlusApp({
     bluetoothDevices,
     bluetoothConnectingDevice,
     bluetoothConnectedDevice,
+    bluetoothManagerIsScanning,
     bluetoothInitialize,
     bluetoothStartScan,
     bluetoothStopScan,
@@ -38,48 +39,67 @@ export default function ConnectPlusApp({
     bluetoothResetSeenDevices
 }) {
     // Context for current patient & device info
-    const [patientInfo, setPatientInfo] = useState(CONTEXT_PATIENT_DEFAULT_VALUE);
-    const [deviceInfo, setDeviceInfo] = useState(null);
+    // const [patientInfo, setPatientInfo] = useState(CONTEXT_PATIENT_DEFAULT_VALUE);
+    const patientProfiles = useRef(CONTEXT_PATIENT_DEFAULT_VALUE);
 
-    useEffect(() => {
-        bluetoothInitialize();
-        return () => {
-            if (bluetoothManagerState == BLE_MGR_STATE_SEARCHING) bluetoothStopScan();
-            bluetoothRemoveListeners();
-        };
-    }, []);
+    const getPatientProfiles = () => {
+        return patientProfiles.current;
+    };
 
-    const currentFlowSettingsDefault = {
-        linkingStepper: false,
-        showOverrides: false
+    const setPatientProfiles = (n) => {
+        if (n == null) {
+            patientProfiles.current = CONTEXT_PATIENT_DEFAULT_VALUE;
+        } else if (typeof n == "function") {
+            const ret = n(getPatientProfiles());
+            patientProfiles.current = {
+                newPatient: ret?.newPatient ?? getPatientProfiles().newPatient,
+                existingPatient: ret?.existingPatient ?? getPatientProfiles().existingPatient
+            };
+        } else {
+            patientProfiles.current = {
+                newPatient: n?.newPatient ?? getPatientProfiles().newPatient,
+                existingPatient: n?.existingPatient ?? getPatientProfiles().existingPatient
+            };
+        }
+        console.debug(`[setPatientProfiles] updated to:`, getPatientProfiles());
     };
 
     // Context for current flow settings
-    const currentFlowSettings = useRef(currentFlowSettingsDefault);
-    const [dummyState, setDummyState] = useState(false);
+    const currentFlowSettings = useRef(CONTEXT_CURRENTFLOWSETTINGS_DEFAULT_VALUE);
 
+    // Dummy state to trigger re-renders when currentFlowSettings changes (unsure if needed)
+    // const [_, setDummyState] = useState(false);
+
+    // Getter for currentFlowSettings
     const getCurrentFlowSettings = () => {
         return currentFlowSettings.current;
     };
 
+    // Wrapper to upadte currentFlowSettings; only allows setting attributes defined in `CONTEXT_CURRENTFLOWSETTINGS_DEFAULT_VALUE`
     const setCurrentFlowSettings = (n) => {
-        // console.debug("[DEBUG] setCurrentFlowSettings:", n);
         if (n == null) {
-            setCurrentFlowSettings(currentFlowSettingsDefault);
+            currentFlowSettings.current = CONTEXT_CURRENTFLOWSETTINGS_DEFAULT_VALUE;
         } else if (typeof n == "function") {
-            const ret = n(currentFlowSettings.current);
-            currentFlowSettings.current = ret;
-            // console.log("[DEBUG] setCurrentFlowSettings func ret:", ret);
+            const ret = n(getCurrentFlowSettings());
+            currentFlowSettings.current = {
+                flowType: ret?.flowType ?? getCurrentFlowSettings().flowType,
+                areOverridingPatient: ret?.areOverridingPatient ?? getCurrentFlowSettings().areOverridingPatient
+            };
         } else {
-            currentFlowSettings.current = n;
+            currentFlowSettings.current = {
+                flowType: n?.flowType ?? getCurrentFlowSettings().flowType,
+                areOverridingPatient: n?.areOverridingPatient ?? getCurrentFlowSettings().areOverridingPatient
+            };
         }
-        setDummyState((a) => !a);
+        console.debug(`[setCurrentFlowSettings] updated to:`, getCurrentFlowSettings());
+        // setDummyState((a) => !a);
     };
 
     const BleContextProviderVal = {
         bluetoothDevices,
         bluetoothConnectingDevice,
         bluetoothConnectedDevice,
+        bluetoothManagerIsScanning,
         bluetoothStartScan,
         bluetoothStopScan,
         bluetoothManagerState,
@@ -90,6 +110,17 @@ export default function ConnectPlusApp({
         bluetoothResetSeenDevices
     };
 
+    // Stop scanning and remove listeners when app is unmounted
+    useEffect(() => {
+        // Initialize our Bluetooth manager on launch
+        bluetoothInitialize();
+        return () => {
+            if (bluetoothManagerState == BLE_MGR_STATE_SEARCHING) bluetoothStopScan();
+            bluetoothRemoveListeners();
+        };
+    }, []);
+
+    // Render loading screen if the Bluetooth Manager hasn't yet initialized
     if (bluetoothManagerState == BLE_MGR_STATE_OFFLINE) {
         return (
             <BluetoothManagerContext.Provider value={BleContextProviderVal}>
@@ -102,9 +133,9 @@ export default function ConnectPlusApp({
         <NavigationContainer>
             <BluetoothManagerContext.Provider value={BleContextProviderVal}>
                 <CurrentFlowSettingsContext.Provider value={[getCurrentFlowSettings, setCurrentFlowSettings]}>
-                    <PatientContext.Provider value={[patientInfo, setPatientInfo]}>
+                    <PatientContext.Provider value={[getPatientProfiles, setPatientProfiles]}>
                         {/* <Stack.Navigator screenOptions={{ headerStyle: { backgroundColor: "#eee" }, headerTitle: "" }}> */}
-                        <Stack.Navigator id="mainNavigator" screenOptions={{ headerStyle: { backgroundColor: "#eee" } }}>
+                        <Stack.Navigator screenOptions={{ headerStyle: { backgroundColor: "#eee" } }}>
                             {/* `name`d these screens below with their corresponding Figma screen name, feel free to change ~mr */}
                             {/* Also, feel free to change order AND feel free to consolidate these screens into one each (ie. one per "step") ~mr */}
                             <Stack.Screen
@@ -158,11 +189,11 @@ export default function ConnectPlusApp({
                                 component={PatientConfirmOverrideScreen}
                             />
 
-                            <Stack.Screen
+                            {/* <Stack.Screen
                                 name="Settings"
                                 options={{ headerBackTitle: "Back", headerTitleAlign: "center" }}
                                 component={SettingsScreen}
-                            />
+                            /> */}
                         </Stack.Navigator>
                     </PatientContext.Provider>
                 </CurrentFlowSettingsContext.Provider>

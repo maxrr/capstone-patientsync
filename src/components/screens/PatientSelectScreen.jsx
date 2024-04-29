@@ -1,26 +1,40 @@
-import { useContext } from "react";
+import { useContext, useEffect, useState } from "react";
 import { Text, View, Pressable } from "react-native";
 
 import PatientContext from "../PatientContext";
 import CurrentFlowSettingsContext from "../CurrentFlowSettingsContext";
 
 import Styles from "../../styles/main";
-import Stepper from "../comps/Stepper";
 import LayoutSkeleton from "../comps/LayoutSkeleton";
 import UniformPageWrapper from "../comps/UniformPageWrapper";
 
-function PatientSelectScreen({ route, navigation }) {
-    // const showOverrides = route.params ? route.params.showOverrides : false;
+function PatientSelectScreen({ navigation }) {
     const [getCurrentFlowSettings, setCurrentFlowSettings] = useContext(CurrentFlowSettingsContext);
-    const { showOverrides } = getCurrentFlowSettings();
+    const { areOverridingPatient } = getCurrentFlowSettings();
 
     // Context for patient info
-    const [info, setInfo] = useContext(PatientContext);
+    const [getPatientProfiles, setPatientProfiles] = useContext(PatientContext);
+    const [{ newPatient }, setPatientProfilesState] = useState(getPatientProfiles());
+    // let { newPatient } = getPatientProfiles();
+
+    // useEffect(() => {
+    //     const { newPatient: tempNewPatient } = getPatientProfiles();
+    //     newPatient = tempNewPatient;
+    // });
+
+    useEffect(() => {
+        return navigation.addListener("focus", () => {
+            const { newPatient: tempNewPatient } = getPatientProfiles();
+            // newPatient = tempNewPatient;
+            setPatientProfilesState(getPatientProfiles());
+            console.log("[PatientSelectScreen] focus firing", newPatient);
+        });
+    }, [navigation]);
 
     return (
         <UniformPageWrapper centerContent={true}>
             <LayoutSkeleton
-                title={showOverrides ? "Patient Override" : "Patient Select"}
+                title={areOverridingPatient ? "Patient Override" : "Patient Select"}
                 subtitle={"Choose method to input patient info"}
                 stepper={2}
             >
@@ -40,19 +54,22 @@ function PatientSelectScreen({ route, navigation }) {
                     </Text>
                 </Pressable>
 
-                {info != null ? (
-                    <View style={{ alignItems: "center" }}>
+                {newPatient != null ? (
+                    <>
                         <Text style={[Styles.h5]}>or</Text>
                         <Pressable
-                            style={Styles.smallButton}
+                            style={Styles.button}
                             onPress={() => navigation.push("Confirm Patient", { reused: true })}
                         >
-                            <Text style={[Styles.smallButton, Styles.buttonText, { backgroundColor: "blue" }]}>
-                                Use Information For {"\n"}
-                                {info.first} {info.last}
+                            <Text style={[Styles.button, Styles.buttonText, { backgroundColor: Styles.colors.GEPurple }]}>
+                                Select {newPatient.first} {newPatient.last}
                             </Text>
                         </Pressable>
-                    </View>
+                        <Text style={{ color: Styles.colors.TextColor, textAlign: "center", width: "90%" }}>
+                            You are being shown the above option because you just input {newPatient.first} {newPatient.last}
+                            's information.
+                        </Text>
+                    </>
                 ) : (
                     <></>
                 )}

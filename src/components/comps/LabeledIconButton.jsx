@@ -21,8 +21,6 @@ function LabeledIconButton({
     }
     finalStyles.push(style);
 
-    // console.log(text, disabled ? "(disabled)" : "");
-
     return (
         <Pressable style={finalStyles} onPress={onPress} disabled={disabled}>
             {/* <Text>{"<-"}</Text> */}
@@ -39,7 +37,11 @@ function LabeledIconButton({
                 ]}
             >
                 {!iconOnRight ? <FontAwesome name={icon} size={iconSize} color={iconColor} /> : <></>}
-                <Text style={[{ color: "white", fontWeight: 500, fontSize: 16 }, textStyle]}>{text}</Text>
+                {text && text.length > 0 ? (
+                    <Text style={[{ color: "white", fontWeight: 500, fontSize: 16 }, textStyle]}>{text}</Text>
+                ) : (
+                    <></>
+                )}
                 {iconOnRight ? <FontAwesome name={icon} size={iconSize} color={iconColor} /> : <></>}
             </View>
         </Pressable>

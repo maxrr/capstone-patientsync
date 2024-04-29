@@ -19,6 +19,9 @@ function DeviceInfoPane({
             rssi: 0
         };
     }
+
+    // console.debug("[DeviceInfoPane] device info:", showOverrides, device);
+
     return loading ? (
         <ActivityIndicator />
     ) : (
