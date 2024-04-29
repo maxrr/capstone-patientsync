@@ -7,6 +7,7 @@ import CurrentFlowSettingsContext from "../CurrentFlowSettingsContext";
 import Styles from "../../styles/main";
 import LayoutSkeleton from "../comps/LayoutSkeleton";
 import UniformPageWrapper from "../comps/UniformPageWrapper";
+import PatientInfoPane from "../comps/PatientInfoPane";
 
 function PatientSelectScreen({ navigation }) {
     const [getCurrentFlowSettings, setCurrentFlowSettings] = useContext(CurrentFlowSettingsContext);
@@ -46,7 +47,7 @@ function PatientSelectScreen({ navigation }) {
                     </Text>
                 </Pressable>
 
-                <Text style={[Styles.h5, { textAlign: "center" }]}>or</Text>
+                <Text style={[Styles.h5, { textAlign: "center", marginTop: 4 }]}>or</Text>
 
                 <Pressable style={Styles.button} onPress={() => navigation.push("Scan Barcode", { manual: true })}>
                     <Text style={[Styles.button, Styles.buttonText, { backgroundColor: Styles.colors.GEPurple }]}>
@@ -56,15 +57,20 @@ function PatientSelectScreen({ navigation }) {
 
                 {newPatient != null ? (
                     <>
-                        <Text style={[Styles.h5]}>or</Text>
-                        <Pressable
+                        <Text style={[Styles.h5, { marginVertical: 8 }]}>or reuse info for</Text>
+                        {/* <Pressable
                             style={Styles.button}
                             onPress={() => navigation.push("Confirm Patient", { reused: true })}
                         >
                             <Text style={[Styles.button, Styles.buttonText, { backgroundColor: Styles.colors.GEPurple }]}>
                                 Select {newPatient.first} {newPatient.last}
                             </Text>
-                        </Pressable>
+                        </Pressable> */}
+                        <PatientInfoPane
+                            profile={newPatient}
+                            style={{ width: 335 }}
+                            onPress={() => navigation.push("Confirm Patient", { reused: true })}
+                        />
                         <Text style={{ color: Styles.colors.TextColor, textAlign: "center", width: "90%" }}>
                             You are being shown the above option because you just input {newPatient.first} {newPatient.last}
                             's information.

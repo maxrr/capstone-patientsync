@@ -51,6 +51,15 @@ function LinkCompleteScreen({ navigation, route }) {
                     detailed={flowType == CONTEXT_CURRENTFLOWSETTINGS_LINKING}
                     profile={flowType == CONTEXT_CURRENTFLOWSETTINGS_LINKING ? newPatient : null}
                 />
+                {flowType == CONTEXT_CURRENTFLOWSETTINGS_LINKING && areOverridingPatient ? (
+                    <>
+                        <Text style={{ color: Styles.colors.TextColor }}>This action unlinked the following user:</Text>
+                        <PatientInfoPane profile={existingPatient} />
+                    </>
+                ) : (
+                    <></>
+                )}
+
                 <LabeledIconButton
                     text="Return home"
                     icon="home"

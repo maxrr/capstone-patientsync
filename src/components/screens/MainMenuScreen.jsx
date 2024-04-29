@@ -40,7 +40,7 @@ function MainMenuScreen({ navigation }) {
                                 a.flowType = CONTEXT_CURRENTFLOWSETTINGS_LINKING;
                                 return a;
                             });
-                            navigation.push("Device Select");
+                            navigation.navigate("Device Select");
                         }}
                     >
                         <Text style={[Styles.button, Styles.buttonText, { backgroundColor: Styles.colors.GEPurple }]}>
@@ -60,7 +60,7 @@ function MainMenuScreen({ navigation }) {
                                 a.flowType = CONTEXT_CURRENTFLOWSETTINGS_UNLINKING;
                                 return a;
                             });
-                            navigation.push("Device Select");
+                            navigation.navigate("Device Select");
                         }}
                     >
                         <Text style={[Styles.button, Styles.buttonText, { backgroundColor: Styles.colors.GEPurple }]}>

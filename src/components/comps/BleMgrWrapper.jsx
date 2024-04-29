@@ -858,7 +858,7 @@ function BleMgrWrapper() {
         // TODO: Check for incoming states
 
         const id = connectingDevice?.id ?? connectedDevice?.id;
-        if (id) {
+        if (id && getPeripherals().get(id)) {
             // if (getPeripherals().get(id)?.connected) {
             console.log(`[BleMgr] Disconnecting from ${id}`);
             setManagerState(BLE_MGR_STATE_DISCONNECTING);
@@ -916,7 +916,7 @@ function BleMgrWrapper() {
                             `Error occurred while writing characteristic "${prettyName}" (${[key]}). Please try again.`
                         );
                     }
-                    await sleep(1600);
+                    await sleep(800);
                 }
 
                 return true;

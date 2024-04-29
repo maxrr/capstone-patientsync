@@ -1,5 +1,5 @@
-import { useState, useContext, useEffect } from "react";
-import { Text, View, ActivityIndicator, Alert, Pressable } from "react-native";
+import { useState, useContext, useEffect, useCallback, useRef } from "react";
+import { Text, View, ActivityIndicator, Alert, Pressable, BackHandler } from "react-native";
 import { FontAwesome } from "@expo/vector-icons";
 
 import Styles from "../../styles/main";
@@ -18,6 +18,7 @@ import StyledTextInput from "../comps/StyledTextInput";
 import PatientContext from "../PatientContext";
 import { fetchPatient } from "../utils/FetchPatient";
 import LabeledIconButton from "../comps/LabeledIconButton";
+import { useFocusEffect } from "@react-navigation/native";
 
 function StartStopScanButton({ icon, onPress }) {
     return (
@@ -33,6 +34,7 @@ function DeviceSelectScreen({ navigation }) {
     const {
         bluetoothDevices,
         bluetoothConnectingDevice,
+        bluetoothConnectedDevice,
         bluetoothManagerIsScanning,
         bluetoothStartScan,
         bluetoothStopScan,
@@ -47,12 +49,27 @@ function DeviceSelectScreen({ navigation }) {
     const [searchedDevices, setSearchedDevices] = useState([]);
     const [connectionModalVisible, setConnectionModalVisible] = useState(false);
     const [refreshing, setRefreshing] = useState(false);
+    const isDeviceConnecting = useRef(false);
 
     useEffect(() => {
         if (refreshing) {
             setRefreshing(bluetoothManagerIsScanning);
         }
     }, [bluetoothManagerState]);
+
+    useFocusEffect(
+        useCallback(() => {
+            const onBackPress = () => {
+                if (bluetoothConnectingDevice || bluetoothConnectedDevice) {
+                    return true;
+                }
+            };
+
+            const subscription = BackHandler.addEventListener("hardwareBackPress", onBackPress);
+
+            return () => subscription.remove();
+        }, [bluetoothConnectingDevice])
+    );
 
     // Completely changing how this was done, before it was a lot of hardcoded buttons, now going to map
     // and then filter them based on search use state. Could use ? visibility for each button but that seems
@@ -110,6 +127,10 @@ function DeviceSelectScreen({ navigation }) {
     useEffect(() => {
         return navigation.addListener("focus", () => {
             console.debug("[DeviceSelectScreen focus] firing...");
+            isDeviceConnecting.current = true;
+            setTimeout(() => {
+                isDeviceConnecting.current = false;
+            }, 1500);
             setPatientProfiles(null);
             bluetoothDisconnectFromDevice()
                 .then(() => {
@@ -145,7 +166,6 @@ function DeviceSelectScreen({ navigation }) {
 
     const selectDevice = async (device) => {
         if (!connectionModalVisible) setConnectionModalVisible(true);
-
         try {
             const deviceInfo = await bluetoothConnectToDevice(device.id);
             if (bluetoothManagerGetImmediateState() == BLE_MGR_STATE_CONNECTED) {
@@ -200,7 +220,7 @@ function DeviceSelectScreen({ navigation }) {
                         style={[
                             Styles.h6,
                             {
-                                color: "red",
+                                color: "#ff3d3d",
                                 fontWeight: "bold",
                                 textAlign: "center"
                             }
@@ -234,23 +254,34 @@ function DeviceSelectScreen({ navigation }) {
                             key={device?.id}
                             device={device}
                             onPress={() => {
-                                selectDevice(device)
-                                    .then(() => {
-                                        setConnectionModalVisible(false);
-                                        if (flowType == CONTEXT_CURRENTFLOWSETTINGS_LINKING) {
-                                            navigation.push("Device Details");
-                                        } else {
-                                            navigation.push("Confirm Link");
-                                        }
-                                    })
-                                    .catch((error) => {
-                                        setConnectionModalVisible(false);
-                                        Alert.alert(
-                                            "A problem occurred while connecting to this device.",
-                                            "Please try again."
-                                        );
-                                        console.error("[BleMgr] Frontend error when trying to connect to device:", error);
-                                    });
+                                if (
+                                    !bluetoothConnectingDevice &&
+                                    !bluetoothConnectingDevice &&
+                                    !isDeviceConnecting.current
+                                ) {
+                                    isDeviceConnecting.current = true;
+                                    selectDevice(device)
+                                        .then(() => {
+                                            isDeviceConnecting.current = false;
+                                            setConnectionModalVisible(false);
+                                            if (flowType == CONTEXT_CURRENTFLOWSETTINGS_LINKING) {
+                                                navigation.push("Device Details");
+                                            } else {
+                                                navigation.push("Confirm Link");
+                                            }
+                                        })
+                                        .catch((error) => {
+                                            setConnectionModalVisible(false);
+                                            Alert.alert(
+                                                "A problem occurred while connecting to this device.",
+                                                "Please try again."
+                                            );
+                                            console.error(
+                                                "[BleMgr] Frontend error when trying to connect to device:",
+                                                error
+                                            );
+                                        });
+                                }
                             }}
                             showOverrides={flowType == CONTEXT_CURRENTFLOWSETTINGS_UNLINKING}
                         />

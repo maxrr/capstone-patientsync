@@ -29,6 +29,8 @@ function CameraScanScreen({ route, navigation }) {
     // text to assess barcode viability
     const [scanningText, setScanningText] = useState("");
 
+    const [scanBool, setScanBool] = useState(false);
+
     // request permission if not already granted and camera is on
     useEffect(() => {
         if (cameraState && !permission) {
@@ -41,20 +43,37 @@ function CameraScanScreen({ route, navigation }) {
     // Handle barcode scan
     function handleScan(result) {
         // Parse barcode and store the resultign profile in context
-        parseBarcodeData(result)
-            .then((profile) => {
-                setPatientProfiles({
-                    newPatient: profile
+        try {
+            const barcodeProfile = parseBarcodeData(result);
+            fetchPatient(barcodeProfile.mrn)
+                .then((profile) => {
+                    setTimeout(() => {
+                        setScanBool(false);
+                    }, 1500);
+                    setPatientProfiles({
+                        newPatient: profile
+                    });
+                    navigation.navigate("Confirm Patient", { reused: false });
+                })
+                .catch((error) => {
+                    if (error instanceof SyntaxError) {
+                        console.log(`[confirmInput] Patient lookup returned no data.`);
+                        Alert.alert(
+                            "MRN lookup error",
+                            "There was an error looking up this MRN. Please double-check and try again."
+                        );
+                    } else {
+                        console.error(`[confirmInput] Fetching patient returned an unexpected error: `, error);
+                    }
                 });
-                navigation.navigate("Confirm Patient", { reused: false });
-            })
-            .catch((error) => {
-                console.error(`[handleScan] Retrieving profile returned the following error:`, error);
-                Alert.alert(
-                    "Error retrieving profile.",
-                    `There was an error looking up the user with the MRN ${result}: ${error}`
-                );
-            });
+        } catch (error) {
+            console.error(`[handleScan] Retrieving profile returned the following error:`, error);
+            Alert.alert(
+                "Error retrieving profile.",
+                `There was an error looking up the user with the MRN ${result}: ${error}`
+            );
+            navigation.pop();
+        }
     }
 
     // Validate manual input
@@ -91,16 +110,18 @@ function CameraScanScreen({ route, navigation }) {
                     facing={"back"}
                     barcodeScannerSettings={{ barcodeTypes: ["pdf417", "code39", "code128"] }}
                     onBarcodeScanned={(scanningResult) => {
-                        // console.log(scanningResult.data.length)
-
-                        // if barcode is expected length, parse the information
-                        if (scanningResult.data.length === 53) {
-                            setScanningText("");
-                            handleScan(scanningResult.data);
-                        } else if (scanningResult.data.length < 53) {
-                            setScanningText("Barcode is too short!");
-                        } else {
-                            setScanningText("Barcode is too long!");
+                        if (!scanBool) {
+                            // console.log(scanningResult.data.length)
+                            // if barcode is expected length, parse the information
+                            if (scanningResult.data.length === 53) {
+                                setScanBool(true);
+                                setScanningText("");
+                                handleScan(scanningResult.data);
+                            } else if (scanningResult.data.length < 53) {
+                                setScanningText("Barcode is too short!");
+                            } else {
+                                setScanningText("Barcode is too long!");
+                            }
                         }
                     }}
                 >

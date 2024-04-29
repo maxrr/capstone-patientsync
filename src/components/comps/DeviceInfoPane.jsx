@@ -1,5 +1,6 @@
 import { ActivityIndicator, Pressable, Text } from "react-native";
 import Styles from "../../styles/main";
+import { FontAwesome } from "@expo/vector-icons";
 
 function DeviceInfoPane({
     device,
@@ -33,6 +34,8 @@ function DeviceInfoPane({
                     { backgroundColor: Styles.colors.GEPurple }
                 ]}
             >
+                <FontAwesome name="bluetooth" size={20} color="white" style={{ width: "auto", marginRight: 8 }} />
+                {"  "}
                 <Text style={{ fontWeight: "bold", fontSize: 20 }}>Room {device?.room}</Text>
                 {"\n"}
                 <Text style={[{ fontWeight: "bold" }]}>

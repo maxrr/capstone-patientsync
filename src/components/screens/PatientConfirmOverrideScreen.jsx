@@ -118,6 +118,14 @@ function PatientConfirmOverrideScreen({ navigation }) {
                     confirmText={
                         flowType == CONTEXT_CURRENTFLOWSETTINGS_LINKING ? "Confirm override" : "Unlink this patient"
                     }
+                    confirmStyle={
+                        flowType == CONTEXT_CURRENTFLOWSETTINGS_LINKING && areOverridingPatient
+                            ? { backgroundColor: "#e05600" }
+                            : {}
+                    }
+                    confirmIcon={
+                        flowType == CONTEXT_CURRENTFLOWSETTINGS_LINKING && areOverridingPatient ? "exchange" : "check"
+                    }
                     onCancel={() => {
                         navigation.pop();
                     }}

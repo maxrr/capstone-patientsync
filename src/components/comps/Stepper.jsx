@@ -11,7 +11,7 @@ export default function Stepper({ step }) {
     // const route = useRoute();
     // const { linkingStepper } = route.params || { linkingStepper: true };
     const [getCurrentFlowSettings, setCurrentFlowSettings] = useContext(CurrentFlowSettingsContext);
-    const { flowType } = getCurrentFlowSettings();
+    const { flowType, areOverridingPatient } = getCurrentFlowSettings();
 
     return (
         <>
@@ -117,7 +117,13 @@ export default function Stepper({ step }) {
                     }}
                 >
                     <FontAwesome
-                        name={flowType == CONTEXT_CURRENTFLOWSETTINGS_LINKING ? "link" : "unlink"}
+                        name={
+                            flowType == CONTEXT_CURRENTFLOWSETTINGS_LINKING
+                                ? areOverridingPatient
+                                    ? "exchange"
+                                    : "link"
+                                : "unlink"
+                        }
                         size={24}
                         color={step > 3 ? "white" : "black"}
                     />

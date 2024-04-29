@@ -1,5 +1,6 @@
-import { Pressable, Text, ActivityIndicator } from "react-native";
+import { Pressable, Text, ActivityIndicator, View } from "react-native";
 import Styles from "../../styles/main";
+import { FontAwesome } from "@expo/vector-icons";
 
 const placeholderProfile = {
     first: "FIRST",
@@ -23,24 +24,37 @@ function PatientInfoPane({ profile = placeholderProfile, onPress = () => {}, sty
                     { backgroundColor: Styles.colors.GEPurple }
                 ]}
             >
-                <Text style={{ fontWeight: "bold", fontSize: 20 }}>
-                    {last}, {first}
+                <Text style={{ fontSize: 20, color: "white" }}>
+                    <FontAwesome name="user" size={20} color="white" style={{ width: "auto", marginRight: 8 }} />{" "}
+                    <Text style={{ fontWeight: "bold" }}>
+                        {last}, {first}
+                    </Text>{" "}
+                    ({dob})
+                    {/* {": "}
+                    {mrn} */}
                 </Text>
-                {"\n"}
-                <Text>
+                {/* {"\n"} */}
+                {/* <Text>
                     <Text style={[{ fontWeight: "bold" }]}>Visit #: </Text>
                     {visit}
-                </Text>
-                {"\n"}
+                </Text> */}
+                {/* {"\n"}
                 <Text>
+                    <Text style={[{ fontWeight: "bold" }]}>MRN: </Text>
+                    {mrn}
+                </Text> */}
+                {"\n"}
+                <Text style={{ fontSize: 18 }}>
                     <Text style={[{ fontWeight: "bold" }]}>MRN: </Text>
                     {mrn}
                 </Text>
                 {"\n"}
-                <Text>
-                    <Text style={[{ fontWeight: "bold" }]}>DOB: </Text>
-                    {dob}
+                <Text style={{ fontSize: 18 }}>
+                    <Text style={[{ fontWeight: "bold" }]}>VST: </Text>
+                    {visit}
                 </Text>
+                {/* {"\n"}
+                {dob} */}
             </Text>
         </Pressable>
     );
