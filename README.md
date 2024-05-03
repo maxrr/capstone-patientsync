@@ -2,6 +2,8 @@
 
 An app that aims to allow nurses to quickly and easily associate a patient with a GE Connect+ device.
 
+Link to GitHub repository: <https://github.com/cxhuy/cs639-gehealthcare-1>
+
 > [!NOTE]
 > This document will outline the basic steps on how to get the project running. These instructions were written under the assumption that you are using a Windows 10 or 11 device to host the Expo server and the placeholder Bluetooth devices, and using a separate Linux (or WSL) machine to run the placeholder backend, but this is not the only option available. All components (with the exception of Zadig, which is only used to manage drivers when using a real Android device) are compatible with macOS and Linux, but you'll need to adapt the instructions slightly.
 
@@ -173,3 +175,26 @@ Launch the devices with `python3 bumble_custom/examples/gehc_sample_devices.py (
 1. Open the app on your Android device
     - If the device is connected to your host device with a USB cable, this may automatically launch the app on your device; you can also press 'a' to trigger this after launch
 1. The app should now stream the required resources from the Expo server and afterwards load
+
+## What Works?
+
+All features presented to the user in our app are functional.
+
+## What Doesn't?
+
+There are several features that we had on our stretch list and were hoping to add but did not get around to (some are listed below this, in the Further Steps section). Apart from these, there are no functions advertised to the user in the app that are not functional.
+
+## Further Steps (to-dos)
+
+- Implement encryption or authentication for placeholder devices
+- Integrate application with an EMR
+  - User authentication, patient record retrieval, audit logging, etc.
+  - We were looking at using [OpenEMR](https://www.open-emr.org/) but felt its wide featureset was unnecessary for our simple use
+- Implement a longer-tracking audit log for placeholder devices
+- Add support for variable-length barcodes in a settings menu of the app
+- Add debugging mode or display for raw information sent/received to and from the placeholder devices
+- Add further animation and gesture support
+- Improve UI features and make the app look more appealing
+- Ensure cross-compatibility with iOS
+- Add a field to include a reason for unlinking or overriding a patient (or even linking too!)
+  - ex. New patient arrival, patient room change, patient discharge
