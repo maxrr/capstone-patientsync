@@ -16,11 +16,11 @@ This project contains multiple components:
 2. Placeholder ("Fake") GE Connect+ device
     - Built in Python using Google's [bumble](https://github.com/google/bumble) module
 3. Placeholder backend
-    - Built using (TBA)
+    - Built using Flask
 
 ## Project Setup
 
-There are **two options** for getting the project up and running, steps unique to each option are listed below.
+There are **two options** for running the app, complete steps for each option are listed below.
 
 ## Option 1: Using Android Studio with an Android Virtual Device
 
@@ -30,24 +30,30 @@ There are **two options** for getting the project up and running, steps unique t
 - [Android Studio (version TBA)](https://developer.android.com/studio)
   - Req'd tools and packages TBA
 - [Python 3.12 or later](https://www.python.org/downloads/)
-- Machine to host lightweight placeholder backend
-  - System requirements TBA
+- Somewhere to run a Flask server
+  - Requires Python (version >=3.12 recommended)
 
 ### Installation
 
 1. Install project packages by navigating to the project directory and executing `npm i`
 1. Install [eas-cli](https://expo.dev/tools#cli) by executing `npm i -g eas-cli`
 1. Log into Expo App Services by executing `eas login`
-1. Build the .apk by executing `eas build`
+1. Build the .apk by executing `eas build -p android --profile preview`
+    - You can also run a plain `eas build -p android` to get an .abb file, which can be uploaded to the Google Play store
+    - You can ALSO run a plain `eas build` for options to build to iOS (untested!)
 1. Create and start an Android Virtual Device through Android Studio
     - OS version TBA
+    - You may need to enable [developer mode and USB device connections](https://developer.android.com/studio/debug/dev-options) on the device
+1. Download the .apk from [Expo](https://www.expo.dev)
 1. Install the .apk on the Android Virtual Device by dragging and dropping
 
 ### Launching
 
-1. Start the Android Virtual Device through Android Studio
+1. Start the Android Virtual Device through Android Studio, and wait for it to fully boot
 1. Start the Expo server with `npm run android`
-    - This will launch the app
+    - This *should* automatically launch the app
+    - If this doesn't launch the app, you can try pressing 'a', or opening it manually on the virtual device, and inputting the IP address of the machine that the Expo server is hosted on
+1. The app should now stream the required resources from the Expo server and afterwards launch
 
 ## Option 2: Using a real Android Device
 
@@ -62,3 +68,24 @@ There are **two options** for getting the project up and running, steps unique t
   - The Bluetooth adapter we used for this project and our demos is [this one](https://www.amazon.com/dp/B09DMP6T22)
 - Machine to host lightweight placeholder backend
   - System requirements TBA
+
+### Installation
+
+1. Install project packages by navigating to the project directory and executing `npm i`
+1. Install [eas-cli](https://expo.dev/tools#cli) by executing `npm i -g eas-cli`
+1. Log into Expo App Services by executing `eas login`
+1. Build the .apk by executing `eas build -p android --profile preview`
+    - You can also run a plain `eas build -p android` to get an .abb file, which can be uploaded to the Google Play store
+    - You can ALSO run a plain `eas build` for options to build to iOS (untested!)
+1. You may need to enable [developer mode and (optionally) USB device connections](https://developer.android.com/studio/debug/dev-options) on the Android device that you're using
+1. Download the .apk from [Expo](https://www.expo.dev)
+1. Transfer the .apk to the Android device that you're using
+1. Navigate to the download point, and install the .apk on the Android device
+    - You may need to go through several UAC prompts
+
+### Launching
+
+1. Start the Expo server with `npm run android`
+1. Open the app on your Android device
+    - If the device is connected to your host device with a USB cable, this may automatically launch the app on your device; you can also press 'a' to trigger this after launch
+1. The app should now stream the required resources from the Expo server and afterwards launch
