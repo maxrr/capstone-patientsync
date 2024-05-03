@@ -40,7 +40,7 @@ It is perfectly fine to host all three services on one machine, it is also okay 
 - A sample configuration file for these devices is located at `bumble_custom/multiple_devices.json`
   - See also these sample configuration files from Bumble itself for more device-specific configuration options: [[1]](https://github.com/google/bumble/blob/main/examples/device1.json) [[2]](https://github.com/google/bumble/blob/main/examples/device2.json) [[3]](https://github.com/google/bumble/blob/main/examples/device3.json)
 - The devices serve a simple [GATT](https://learn.adafruit.com/introduction-to-bluetooth-low-energy/gatt) server with a couple modifiable attributes
-- The device does not support more than one simultaneous connection on purpose and does not currently implement a connection or disconnection timeout; this means that if the app crashes (hopefully it doesn't!), the user leaves their phone somewhere for a long period of time, or for some reason the connection between the app and device is not destroyed, that the device will not advertise itself as connectable
+- The device does not support more than one simultaneous connection on purpose and does not currently implement a connection or disconnection timeout; this means that, if the app crashes (hopefully it doesn't!), the user leaves their phone somewhere for a long period of time, or for some reason the connection between the app and device is not destroyed, the device will not appear in the app; restart the placeholder device to resolve this
 
 > [!WARNING]
 > There is no use of encryption, security, or authentication in the transfer of data to or from the placeholder Bluetooth device. This placeholder device should absolutely not be used in an untrusted or unsecured environment.
@@ -62,7 +62,7 @@ Launch the devices with `python3 bumble_custom/examples/gehc_sample_devices.py (
 ### Flask Server / Placeholder API
 
 > [!NOTE]
-> In the current implementation of this simple server, changes to the `patients.json` file are not automatically seen, you must restart the service for these changes to be applied.
+> In the current implementation of this simple server, changes to the `patients.json` file are not taken into account, you must restart the service for these changes to be applied.
 
 - This simple Flask server serves patient data when given an MRN. It is not recommended to use any kind of solution similar to this in a production scenario, as this lacks any notion of security
 - The system that this runs on must support Python (version >= 3.12 recommended), as Flask is a Python module
@@ -93,12 +93,12 @@ Launch the devices with `python3 bumble_custom/examples/gehc_sample_devices.py (
     - Android SDK Platform-Tools
     - Google Play Licensing Library
     - Google Play services
-- [Python 3.12 or later](https://www.python.org/downloads/)
+- [Python 3.12 or later](https://www.python.org/downloads/) (for the placeholder devices and Flask server)
 - Somewhere to run a Flask server (see requirements in above section)
 
 ### Installation
 
-1. Download Google's [bumble module](https://github.com/google/bumble) to a separate directory, and navigate to this directory
+1. Download Google's [bumble module](https://github.com/google/bumble) to a separate directory, and navigate to that directory
 1. Install bumble's dependences: `python -m pip install ".[test,development,documentation]"`
 1. Install the bumble module to your system: `python -m pip install -e .`
 1. Navigate to this project's directory and nstall this project's packages: `npm i`
@@ -122,7 +122,7 @@ Launch the devices with `python3 bumble_custom/examples/gehc_sample_devices.py (
 1. Start the Expo server for the mobile app with `npm run android`
     - This *should* automatically launch the app
     - If this doesn't launch the app, you can try pressing 'a', or opening it manually on the virtual device and inputting the IP address of the machine that the Expo server is hosted on
-1. The app should now stream the required resources from the Expo server and afterwards launch
+1. The app should now stream the required resources from the Expo server and afterwards load
 
 ## Option 2: Using a real Android Device
 
@@ -135,7 +135,7 @@ Launch the devices with `python3 bumble_custom/examples/gehc_sample_devices.py (
   - You must be able to locate the `.bin` firmware associated with it
   - Some Realtek firmware DL sources: [(1)](https://git.kernel.org/pub/scm/linux/kernel/git/firmware/linux-firmware.git/plain/rtl_bt), [(2)](https://github.com/Realtek-OpenSource/android_hardware_realtek/raw/rtk1395/bt/rtkbt/Firmware/BT), [(3)](https://anduin.linuxfromscratch.org/sources/linux-firmware/rtl_bt)
   - The Bluetooth adapter we used for this project and our demos is [this one](https://www.amazon.com/dp/B09DMP6T22)
-- [Python 3.12 or later](https://www.python.org/downloads/)
+- [Python 3.12 or later](https://www.python.org/downloads/) (for the placeholder devices and Flask server)
 - Somewhere to run a Flask server (see requirements in above section)
 
 > [!IMPORTANT]
@@ -143,7 +143,7 @@ Launch the devices with `python3 bumble_custom/examples/gehc_sample_devices.py (
 
 ### Installation
 
-1. Download Google's [bumble module](https://github.com/google/bumble) to a separate directory, and navigate to this directory
+1. Download Google's [bumble module](https://github.com/google/bumble) to a separate directory, and navigate to that directory
 1. Install bumble's dependences: `python -m pip install ".[test,development,documentation]"`
 1. Install the bumble module to your system: `python -m pip install -e .`
 1. Navigate to this project's directory and nstall this project's packages: `npm i`
@@ -172,4 +172,4 @@ Launch the devices with `python3 bumble_custom/examples/gehc_sample_devices.py (
 1. Start the Expo server for the mobile app with `npm run android`
 1. Open the app on your Android device
     - If the device is connected to your host device with a USB cable, this may automatically launch the app on your device; you can also press 'a' to trigger this after launch
-1. The app should now stream the required resources from the Expo server and afterwards launch
+1. The app should now stream the required resources from the Expo server and afterwards load
