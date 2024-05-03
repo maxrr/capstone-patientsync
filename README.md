@@ -82,7 +82,7 @@ Launch the devices with `python3 bumble_custom/examples/gehc_sample_devices.py (
 ### Prerequisites
 
 - [Node.js and npm](https://nodejs.org/)
-- [Android Studio (version TBA)](https://developer.android.com/studio)
+- [Android Studio (version >= 2023.2.1)](https://developer.android.com/studio)
   - The following **SDK Tools** are recommended (install or make changes by launching Android Studio, then on the Projects tab, select 'More Actions', and then 'SDK Manager'):
     - Android SDK Build-Tools
     - NDK
@@ -98,13 +98,13 @@ Launch the devices with `python3 bumble_custom/examples/gehc_sample_devices.py (
 
 ### Installation
 
-1. Download Google's [bumble module](https://github.com/google/bumble) to a separate directory, and navigate to this directory for the following steps
-1. Install bumble's dependences by executing `python -m pip install ".[test,development,documentation]"`
-1. Install the bumble module to your system by executing `python -m pip install -e .`
-1. Install this project's packages by navigating to the project directory and executing `npm i`
-1. Install [eas-cli](https://expo.dev/tools#cli) by executing `npm i -g eas-cli`
-1. Log into Expo App Services by executing `eas login`
-1. Build the .apk by executing `eas build -p android --profile preview`
+1. Download Google's [bumble module](https://github.com/google/bumble) to a separate directory, and navigate to this directory
+1. Install bumble's dependences: `python -m pip install ".[test,development,documentation]"`
+1. Install the bumble module to your system: `python -m pip install -e .`
+1. Navigate to this project's directory and nstall this project's packages: `npm i`
+1. Install [eas-cli](https://expo.dev/tools#cli): `npm i -g eas-cli`
+1. Log into Expo App Services: `eas login`
+1. Build the .apk: `eas build -p android --profile preview`
     - You can also run a plain `eas build -p android` to get an .aab file, which can be uploaded to the Google Play store
     - You can ALSO run a plain `eas build` for the option to build to iOS (untested!)
 1. Create and start an Android Virtual Device through Android Studio
@@ -143,10 +143,10 @@ Launch the devices with `python3 bumble_custom/examples/gehc_sample_devices.py (
 
 ### Installation
 
-1. Download Google's [bumble module](https://github.com/google/bumble) to a separate directory, and navigate to this directory for the following steps
-1. Install bumble's dependences by executing `python -m pip install ".[test,development,documentation]"`
-1. Install the bumble module to your system by executing `python -m pip install -e .`
-1. Install this project's packages by navigating to the project directory and executing `npm i`
+1. Download Google's [bumble module](https://github.com/google/bumble) to a separate directory, and navigate to this directory
+1. Install bumble's dependences: `python -m pip install ".[test,development,documentation]"`
+1. Install the bumble module to your system: `python -m pip install -e .`
+1. Navigate to this project's directory and nstall this project's packages: `npm i`
 1. Install [eas-cli](https://expo.dev/tools#cli) by executing `npm i -g eas-cli`
 1. Log into Expo App Services by executing `eas login`
 1. Build the .apk by executing `eas build -p android --profile preview`
