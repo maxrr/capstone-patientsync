@@ -39,4 +39,5 @@ linux/
 android
 ios
 *.apk
+*.aab
 bumble_custom/examples/data/

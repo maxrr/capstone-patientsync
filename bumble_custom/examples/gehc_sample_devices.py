@@ -36,6 +36,7 @@ from bumble.gatt import (
     GATT_DEVICE_INFORMATION_SERVICE,
 )
 
+LAUNCH_MULTIPLE_DEVICES = False
 SERVICE_PATIENTSYNC_UUID = '50DB505C-8AC4-4738-8448-3B1D9CC09CC5'
 CHAR_CUR_ROOM_UUID = 'EB6E7163-A3EA-424B-87B4-F63EB8CCB65A'
 CHAR_CUR_PATIENT_UUID = '6DF4D135-1F8A-409E-BCA4-5265DA56DF4F'
@@ -403,8 +404,8 @@ async def main():
 
             configs.append((config, data))
 
-            # DEBUG:
-            break
+            if not LAUNCH_MULTIPLE_DEVICES:
+                break
             
     
     await asyncio.gather(*[run_device(i[0], i[1]) for i in configs])
