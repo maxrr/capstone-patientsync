@@ -98,6 +98,9 @@ Launch the devices with `python3 bumble_custom/examples/gehc_sample_devices.py (
 - [Python 3.12 or later](https://www.python.org/downloads/) (for the placeholder devices and Flask server)
 - Somewhere to run a Flask server (see requirements in above section)
 
+> [!CAUTION]
+> Trying to open the native camera while using the Android Virtual Device and Expo will cause the app to crash. This is due to a limitation in either Expo, Android's Virtual Device framework, or the combination of the two. To avoid this, please use manual input when using a Virtual Device.
+
 ### Installation
 
 1. Download Google's [bumble module](https://github.com/google/bumble) to a separate directory, and navigate to that directory
@@ -182,7 +185,12 @@ All features presented to the user in our app are functional.
 
 ## What Doesn't?
 
-There are several features that we had on our stretch list and were hoping to add but did not get around to (some are listed below this, in the Further Steps section). Apart from these, there are no functions advertised to the user in the app that are not functional.
+There are several features that we had on our stretch list and were hoping to add but did not get around to (some are listed below this, in the Further Steps section). In addition to these, we ran into a short list of limitations based on libraries and modules we used:
+
+- Trying to use or open the camera within the Android Virtual Device will crash the app
+- When scanning a barcode, the barcode must be mostly flat, or it will not be recognized and fail to scan
+
+Apart from these, there are no functions advertised to the user in the app that are not functional.
 
 ## Further Steps (to-dos)
 
